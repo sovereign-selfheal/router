@@ -1,0 +1,90 @@
+# Policy: chain  (Phase 4a — composed routing: efficiency -> privacy)
+# =============================================================================
+# Additive, NON-BREAKING successor that COMPOSES the earlier policies instead of
+# picking one. The shipped cost.yaml / complexity.yaml / privacy.yaml and the
+# privacy-plus engine are UNTOUCHED and still selectable for earlier phases.
+#
+# SEMANTICS (union-of-LOCAL / intersection-of-SOTA):
+#   Gates are evaluated in `gate_order`. The FIRST gate that says LOCAL wins
+#   (short-circuit). A request reaches SOTA only if EVERY gate says SOTA.
+#   Because `privacy` is LAST, no payload reaches SOTA without clearing the
+#   privacy scan — the sovereignty guarantee, for free, from the ordering.
+#
+# Consumed by litellm/policy_hook_chain.py, selected by running LiteLLM with
+# litellm/config-chain.yaml (see manifests/70-chain/).
+#
+# SUPPORT STATUS: LiteLLM is community / customer-operated, and the privacy gate
+# additionally calls the community Presidio analyzer — NOT Red Hat-supported
+# (CLAUDE.md §3). Both run in-cluster on CPU with no external egress. The real
+# LOCAL<->SOTA fan-out to an external provider is Tech Preview.
+# =============================================================================
+policy: chain
+local_model: local-fast
+sota_model: sota-smart
+
+# Backstop for SOTA token accounting, used only when the routing metadata is lost.
+# Matched against the model id seen at response time — either the one the PROVIDER
+# reports ("qwen38-27b-fp8") or the configured one ("openai/Qwen3.8-27B"). Both sides
+# are normalised to bare alphanumerics, so this single token covers every form.
+# Comma-separated string or YAML list; "" disables it.
+# UPDATE THIS whenever sota_model_name changes, or budget capping degrades silently.
+sota_served_match: "qwen38-27b"
+
+
+# Order of evaluation. First gate returning LOCAL short-circuits the decision.
+gate_order: [efficiency, privacy]
+
+# --- Gate 1 — efficiency (MERGED cost + complexity) --------------------------
+# The two old policies overlapped heavily (both keyed off length/complexity), so
+# they collapse into ONE gate here. LOCAL when the user question is short AND
+# simple AND not flagged by a complex keyword; also LOCAL once the cumulative
+# SOTA token budget is exhausted (cost cap). Otherwise SOTA. Reads the user
+# question only (the last user turn) — length/complexity is a property of the ask.
+efficiency:
+  max_prompt_chars_for_local: 280   # at/under this (chars) contributes to LOCAL
+  simple_max_words: 40              # at/under this (words) contributes to LOCAL
+  complex_keywords:                 # any match marks the query complex -> SOTA
+    - analyze
+    - compare
+    - summarize the following
+    - explain why
+    - prove
+    - derive
+    - refactor
+    - debug
+    - step by step
+    - reasoning
+    # Italian (the demo is in Italian). Matching is a lowercase substring, so stems
+    # cover several forms: "confront" matches confronta, confrontando, confronto.
+    - analizz
+    - confront
+    - riassum
+    - spiega perch
+    - dimostr
+    - rifattorizz
+    - passo dopo passo
+    - passo passo
+    - ragionament
+  sota_token_budget: 2000000        # cumulative SOTA tokens before fallback-to-LOCAL.
+                                    # In-memory, resets on pod restart (demo-grade). A safety
+                                    # net only: the per-tier limits of the gateway are the
+                                    # real budget. 100000 was reached after 30-60 SOTA answers
+                                    # in a demo day, then every request silently went LOCAL.
+                                    # Set to 0 to disable the cap; lower it to show fallback.
+                                    # Counted per pod: with 2 LiteLLM replicas the real cap is
+                                    # up to 2x this value, and the pod that gets the request
+                                    # decides the fallback.
+
+# --- Gate 2 — privacy --------------------------------------------------------
+# Reuses the hardened privacy-plus engine (A regex+validators, B lexicons,
+# C1 Presidio NER, optional C2 LLM classifier). To keep ONE source of truth for
+# privacy tuning, the engine loads its detectors/threshold from this file:
+privacy_policy_file: privacy-plus   # -> policy/privacy-plus.yaml (mounted alongside)
+
+# --- Per-team guardrail (applied AFTER the chain) ----------------------------
+# A team capped to LOCAL never reaches SOTA regardless of the gate outcome. Can
+# only pull toward LOCAL, never toward SOTA (same semantics as cost/complexity).
+tiering:
+  legal: [local-fast]
+  research: [local-fast, sota-smart]
+  _default: [local-fast, sota-smart]

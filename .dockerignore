@@ -1,0 +1,3 @@
+# The Containerfile copies nothing from the repo: keep the build context small.
+*
+!Containerfile

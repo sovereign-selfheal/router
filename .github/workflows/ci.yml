@@ -1,0 +1,91 @@
+---
+name: ci
+
+"on":
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  HADOLINT_VERSION: v2.15.1
+
+# Quay builds and pushes the image on git tags (build trigger). This workflow only
+# checks the code and that the image builds; it pushes nothing.
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.2.0
+
+      - name: Install the Python tools
+        run: uv sync --locked
+
+      - name: ruff
+        run: uv run ruff check .
+
+      - name: yamllint
+        run: uv run yamllint .
+
+      - name: shellcheck
+        run: shellcheck scripts/*.sh
+
+      - name: hadolint
+        run: docker run --rm -i "hadolint/hadolint:${HADOLINT_VERSION}" < Containerfile
+
+      - name: Unit tests
+        run: uv run pytest
+
+  eval:
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    services:
+      # Presidio for the evaluation, pinned by digest (the env context is not available
+      # here). quay.io/sovereign-selfheal/presidio has the same content: switch to it,
+      # by digest, after its first release.
+      presidio:
+        # tag 0.2, resolved on quay.io on 2026-09-25
+        image: quay.io/asalvati/presidio-analyzer-multilang@sha256:bfb1d374f704ca0744fe96d1a414b4f14fb35e2b41fa3be78ae6206b2bf89836
+        ports:
+          - 3000:3000
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.2.0
+
+      - name: Install the Python tools
+        run: uv sync --locked
+
+      - name: Download the language-id model
+        run: scripts/fetch-lid-model.sh
+
+      - name: Evaluation (fails on a new leak compared with eval/baseline.json)
+        env:
+          PRESIDIO_URL: http://localhost:3000/analyze
+        run: uv run eval/check_baseline.py
+
+  build:
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Build the image (no push)
+        run: podman build -f Containerfile -t localhost/router:ci .
+
+      - name: Check fastText and the model in the image
+        run: |
+          podman run --rm localhost/router:ci python -c "
+          import fasttext
+          model = fasttext.load_model('/opt/models/lid.176.ftz')
+          assert model.predict('Confronta Kubernetes e le VM tradizionali.')[0][0] == '__label__it'
+          print('fastText OK')"

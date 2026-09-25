@@ -1,0 +1,22 @@
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# Downloaded at build or test time (scripts/fetch-lid-model.sh), not committed
+.cache/
+*.ftz
+
+# Credentials: never commit
+*.kubeconfig
+kubeconfig
+*.pem
+*.key
+.secrets/
+auth.json
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

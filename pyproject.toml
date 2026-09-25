@@ -1,0 +1,39 @@
+[project]
+name = "sovereign-selfheal-router"
+version = "0.3.0"
+description = "LiteLLM hook code of the Sovereign Self-Healing Platform router: tests and evaluation"
+# The LiteLLM image runs Python 3.13.
+requires-python = ">=3.13"
+dependencies = [
+    # The same libraries the hook code uses inside the LiteLLM image.
+    "pyyaml>=6.0",
+    "httpx>=0.27",
+    # Same version as the Containerfile: language detection in the evaluation.
+    "fasttext-predict==0.9.2.4",
+]
+
+[dependency-groups]
+# Installed by default with `uv sync`; skip them with `uv sync --no-dev`.
+dev = [
+    "pytest>=8.3",
+    "ruff>=0.14",
+    "yamllint>=1.35.0",
+]
+
+[tool.uv]
+# This repo is not a Python package: uv manages only the virtual environment.
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["litellm"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+# The hook code comes from the old repo with its own style: lint it for errors only.
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "I"]
+[tool.ruff.lint.per-file-ignores]
+"litellm/*.py" = ["E501", "B", "I", "W"]
+"eval/run_eval.py" = ["E501", "B", "I", "W"]

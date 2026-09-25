@@ -1,0 +1,189 @@
+# =============================================================================
+# Phase 4a CHAIN COMPOSITION / ORDERING test (efficiency -> privacy [+ C2]).
+# -----------------------------------------------------------------------------
+# This set is NOT an accuracy benchmark — the credible accuracy / leak numbers
+# come from the realistic privacy-plus-italian.yaml / privacy-plus-english.yaml
+# sets (~300 cases/language, scored by eval/stats/analyze.py). Because these
+# cases are hand-built to exercise a specific ordering, they pass ~100% BY
+# CONSTRUCTION; do NOT quote their pass rate as evidence of engine quality.
+#
+# What this set DOES prove is the one property that is genuinely NEW at Phase 4a
+# and that the component (privacy-only) eval cannot see: the CHAIN COMPOSITION
+# GUARANTEE — the efficiency gate never overrides the privacy veto toward SOTA.
+#
+# `expect` is the correct CHAIN outcome under union-of-LOCAL semantics:
+#   local -> kept LOCAL, EITHER because efficiency short-circuits it (short/simple,
+#            `sensitive_short` — privacy is never consulted) OR because the privacy
+#            gate VETOES a request the efficiency gate wanted to send SOTA.
+#   sota  -> reaches SOTA: benign AND long/complex, so BOTH gates agree.
+#
+# The load-bearing rows are the LONG/COMPLEX SENSITIVE ones (health, legal,
+# finance, hr, person, secrets, pii_structured, combined): each carries an English
+# complexity keyword (analyze / compare / summarize the following / explain why /
+# refactor / debug / step by step / …) so the efficiency gate wants SOTA — and the
+# test asserts privacy still forces LOCAL. That is the ordering guarantee.
+#   ASSERTION: zero `expect: local` case may route SOTA through the full chain.
+#
+# The `implicit` rows additionally show WHERE C2 IS INVOKED: situationally
+# sensitive, no keyword / PII / name, so rules score ~0 and leave them in the C2
+# gray zone (rules-only leaks them; chain+C2 catches them). Run BOTH configs
+# (see playbooks/110-check-phase4a.yml) to see the delta.
+#
+# All PII/secret values are SYNTHETIC: valid test values (CF RSSMRA85M01H501Q,
+# example IBANs, Luhn-valid test cards, canonical AWS/JWT example keys) — never
+# real personal data.
+# =============================================================================
+lang: mixed
+cases:
+  # ── benign + short/simple -> LOCAL (efficiency short-circuits) ─────────────
+  - {id: bshort-01, category: benign_short, expect: local, text: "Qual è la capitale del Giappone?"}
+  - {id: bshort-02, category: benign_short, expect: local, text: "Come si prepara un tiramisù classico?"}
+  - {id: bshort-03, category: benign_short, expect: local, text: "Traduci la parola buongiorno in inglese."}
+  - {id: bshort-04, category: benign_short, expect: local, text: "Consigliami un buon libro di fantascienza."}
+  - {id: bshort-05, category: benign_short, expect: local, text: "Qual è la formula dell'area del cerchio?"}
+  - {id: bshort-06, category: benign_short, expect: local, text: "Elenca i pianeti del sistema solare in ordine."}
+  - {id: bshort-07, category: benign_short, expect: local, text: "Che ore sono a Tokyo adesso?"}
+  - {id: bshort-08, category: benign_short, expect: local, text: "Dammi un sinonimo di veloce."}
+  - {id: bshort-09, category: benign_short, expect: local, text: "Quanto fa 15 per 12?"}
+  - {id: bshort-10, category: benign_short, expect: local, text: "Come si dice grazie in giapponese?"}
+  - {id: bshort-11, category: benign_short, expect: local, text: "Suggerisci un nome per un gattino."}
+  - {id: bshort-12, category: benign_short, expect: local, text: "Qual è il fiume più lungo d'Europa?"}
+  - {id: bshort-13, category: benign_short, expect: local, text: "Converti 10 chilometri in miglia."}
+  - {id: bshort-14, category: benign_short, expect: local, text: "Scrivi un haiku sulla primavera."}
+  - {id: bshort-15, category: benign_short, expect: local, text: "Qual è la capitale del Canada?"}
+  - {id: bshort-16, category: benign_short, expect: local, text: "Elenca tre frutti tropicali."}
+
+  # ── benign + long/complex -> SOTA (both gates say SOTA) ────────────────────
+  - {id: blong-01, category: benign_long, expect: sota, text: "Analyze the trade-offs between REST, gRPC and GraphQL for high-traffic microservices."}
+  - {id: blong-02, category: benign_long, expect: sota, text: "Compare relational and document databases for an event-sourcing workload."}
+  - {id: blong-03, category: benign_long, expect: sota, text: "Summarize the following article about Kubernetes horizontal pod autoscaling."}
+  - {id: blong-04, category: benign_long, expect: sota, text: "Explain why a write-ahead log improves database durability and crash recovery."}
+  - {id: blong-05, category: benign_long, expect: sota, text: "Refactor this sorting routine to reduce its time complexity for large inputs."}
+  - {id: blong-06, category: benign_long, expect: sota, text: "Debug why this recursive function overflows the stack on deep inputs."}
+  - {id: blong-07, category: benign_long, expect: sota, text: "Prove that the proposed scheduling algorithm terminates for any finite queue."}
+  - {id: blong-08, category: benign_long, expect: sota, text: "Derive the closed-form cost of the caching strategy under a Zipfian access pattern."}
+  - {id: blong-09, category: benign_long, expect: sota, text: "Analyze the pros and cons of a service mesh for a fifty-service platform."}
+  - {id: blong-10, category: benign_long, expect: sota, text: "Compare blue-green and canary deployment strategies for a stateless API."}
+  - {id: blong-11, category: benign_long, expect: sota, text: "Explain why eventual consistency is acceptable for a shopping-cart service."}
+  - {id: blong-12, category: benign_long, expect: sota, text: "Summarize the following design doc on idempotent message processing."}
+  - {id: blong-13, category: benign_long, expect: sota, text: "Analyze the memory-versus-latency trade-off of an in-memory read-through cache."}
+  - {id: blong-14, category: benign_long, expect: sota, text: "Step by step, outline how to size a connection pool for a bursty workload."}
+  - {id: blong-15, category: benign_long, expect: sota, text: "Compare synchronous and asynchronous logging, reasoning about throughput."}
+  - {id: blong-16, category: benign_long, expect: sota, text: "Explain why gRPC streaming suits a telemetry pipeline better than polling."}
+  - {id: blong-17, category: benign_long, expect: sota, text: "Analyze how to shard a time-series table without creating hot partitions."}
+  - {id: blong-18, category: benign_long, expect: sota, text: "Compare optimistic and pessimistic locking for a high-contention counter."}
+
+  # ── sensitive + short -> LOCAL (efficiency catches them too; still safe) ────
+  - {id: sshort-01, category: sensitive_short, expect: local, text: "Il mio codice fiscale è RSSMRA85M01H501Q."}
+  - {id: sshort-02, category: sensitive_short, expect: local, text: "Password del server: Estate2026!"}
+  - {id: sshort-03, category: sensitive_short, expect: local, text: "Ho ricevuto una diagnosi difficile."}
+  - {id: sshort-04, category: sensitive_short, expect: local, text: "Il mio IBAN è IT60X0542811101000000123456."}
+  - {id: sshort-05, category: sensitive_short, expect: local, text: "Sto affrontando un licenziamento."}
+  - {id: sshort-06, category: sensitive_short, expect: local, text: "La mia carta è 4111 1111 1111 1111."}
+  - {id: sshort-07, category: sensitive_short, expect: local, text: "Ho una causa legale di licenziamento in corso."}
+  - {id: sshort-08, category: sensitive_short, expect: local, text: "La chiave è sk-abcdefghijklmnopqrstuvwxyz012345."}
+
+  # ── HEALTH (lexicon) + long -> LOCAL (privacy veto) ────────────────────────
+  - {id: health-01, category: health, expect: local, text: "Summarize the following patient record: oncological diagnosis and ongoing drug therapy."}
+  - {id: health-02, category: health, expect: local, text: "Analyze the clinical history including the chronic condition and prescribed medication."}
+  - {id: health-03, category: health, expect: local, text: "Explain why the post-operative recovery after the surgery requires close medical monitoring."}
+  - {id: health-04, category: health, expect: local, text: "Summarize the following referto medico con diagnosi e terapia farmacologica del paziente."}
+  - {id: health-05, category: health, expect: local, text: "Analyze the patient's mental health assessment and treatment plan in detail."}
+  - {id: health-06, category: health, expect: local, text: "Compare the two prescriptions for the disease and their side effects, step by step."}
+  - {id: health-07, category: health, expect: local, text: "Summarize the following cartella clinica con anamnesi e condizione cronica del paziente."}
+  - {id: health-08, category: health, expect: local, text: "Explain why the oncologist recommended this therapy for the diagnosed illness."}
+  - {id: health-09, category: health, expect: local, text: "Analyze the disability accommodation request and the supporting medical documentation."}
+  - {id: health-10, category: health, expect: local, text: "Debug the intake form that records the patient's diagnosis and prescription details."}
+
+  # ── FINANCE (lexicon) + long -> LOCAL ──────────────────────────────────────
+  - {id: fin-01, category: finance, expect: local, text: "Analyze the following payslip and account statement for a repayment plan."}
+  - {id: fin-02, category: finance, expect: local, text: "Summarize the following estratto conto con lo stipendio e il mutuo in corso."}
+  - {id: fin-03, category: finance, expect: local, text: "Explain why the salary garnishment affects the monthly mortgage payment."}
+  - {id: fin-04, category: finance, expect: local, text: "Compare the two loan offers against the current bank balance, step by step."}
+  - {id: fin-05, category: finance, expect: local, text: "Analyze the payroll data and the outstanding mortgage for the household budget."}
+  - {id: fin-06, category: finance, expect: local, text: "Summarize the following busta paga e la posizione debitoria del dipendente."}
+  - {id: fin-07, category: finance, expect: local, text: "Explain why the account statement shows an overdraft after the salary deposit."}
+  - {id: fin-08, category: finance, expect: local, text: "Debug the spreadsheet that totals the salary, mortgage and bank balance."}
+
+  # ── LEGAL (lexicon) + long -> LOCAL ────────────────────────────────────────
+  - {id: legal-01, category: legal, expect: local, text: "Summarize the following litigation file and the subpoena received last week."}
+  - {id: legal-02, category: legal, expect: local, text: "Analyze the lawsuit and draft a response to the cease and desist letter."}
+  - {id: legal-03, category: legal, expect: local, text: "Explain why the wrongful termination claim strengthens our litigation position."}
+  - {id: legal-04, category: legal, expect: local, text: "Summarize the following contenzioso relativo al licenziamento e alla querela."}
+  - {id: legal-05, category: legal, expect: local, text: "Compare the settlement options for the lawsuit, reasoning about the risks."}
+  - {id: legal-06, category: legal, expect: local, text: "Analyze the subpoena and the litigation timeline, step by step."}
+  - {id: legal-07, category: legal, expect: local, text: "Explain why the cease and desist should precede the lawsuit."}
+  - {id: legal-08, category: legal, expect: local, text: "Debug the case-management entry tracking the litigation and subpoena dates."}
+
+  # ── HR (lexicon) + long -> LOCAL ───────────────────────────────────────────
+  - {id: hr-01, category: hr, expect: local, text: "Summarize the following performance review and the disciplinary action taken."}
+  - {id: hr-02, category: hr, expect: local, text: "Analyze the grievance filed against the employee, step by step."}
+  - {id: hr-03, category: hr, expect: local, text: "Explain why the resignation followed the disciplinary action."}
+  - {id: hr-04, category: hr, expect: local, text: "Summarize the following provvedimento disciplinare e le dimissioni del dipendente."}
+  - {id: hr-05, category: hr, expect: local, text: "Compare the performance review of the two candidates for the promotion decision."}
+  - {id: hr-06, category: hr, expect: local, text: "Analyze the grievance and disciplinary record before the meeting, step by step."}
+  - {id: hr-07, category: hr, expect: local, text: "Explain why the performance review triggered the disciplinary process."}
+  - {id: hr-08, category: hr, expect: local, text: "Debug the HR log tracking the resignation and disciplinary action dates."}
+
+  # ── PERSON (Presidio NER) + long -> LOCAL ──────────────────────────────────
+  - {id: person-01, category: person, expect: local, text: "Summarize the following note about Mario Rossi and his role in the project."}
+  - {id: person-02, category: person, expect: local, text: "Analyze the profile of Giulia Bianchi for the onboarding package."}
+  - {id: person-03, category: person, expect: local, text: "Summarize the following record and draft a short bio for Alessandro Verdi."}
+  - {id: person-04, category: person, expect: local, text: "Explain why Francesca Romano should be the point of contact, in detail."}
+  - {id: person-05, category: person, expect: local, text: "Summarize the following memo mentioning Luca Ferrari and Marta Esposito."}
+  - {id: person-06, category: person, expect: local, text: "Analyze the attendance sheet listing Paolo Gallo and Chiara Costa."}
+  - {id: person-07, category: person, expect: local, text: "Analyze the note referencing Giovanni De Luca and Sara Marino and their contacts."}
+  - {id: person-08, category: person, expect: local, text: "Compare the candidate profiles of Andrea Greco and Elena Conti, step by step."}
+  - {id: person-09, category: person, expect: local, text: "Explain why Roberto Ricci was assigned to the strategic account."}
+  - {id: person-10, category: person, expect: local, text: "Summarize the following thank-you note addressed to Mario Rossi."}
+
+  # ── PII structured (CF / IBAN / card, validated) + long -> LOCAL ───────────
+  - {id: pii-01, category: pii_structured, expect: local, text: "Summarize the following form for Mario Rossi, codice fiscale RSSMRA85M01H501Q."}
+  - {id: pii-02, category: pii_structured, expect: local, text: "Analyze the record with IBAN IT60X0542811101000000123456 and its holder."}
+  - {id: pii-03, category: pii_structured, expect: local, text: "Explain why the payment with card 4111 1111 1111 1111 was declined."}
+  - {id: pii-04, category: pii_structured, expect: local, text: "Summarize the following transfer to IBAN DE89370400440532013000."}
+  - {id: pii-05, category: pii_structured, expect: local, text: "Analyze the credit card 5500 0000 0000 0004 transaction, step by step."}
+  - {id: pii-06, category: pii_structured, expect: local, text: "Debug the intake form storing codice fiscale RSSMRA85M01H501Q and address."}
+  - {id: pii-07, category: pii_structured, expect: local, text: "Explain why the card 4111 1111 1111 1111 triggered a fraud alert."}
+  - {id: pii-08, category: pii_structured, expect: local, text: "Summarize the following: IBAN IT60X0542811101000000123456 e intestatario."}
+  - {id: pii-09, category: pii_structured, expect: local, text: "Analyze the KYC record with codice fiscale RSSMRA85M01H501Q."}
+  - {id: pii-10, category: pii_structured, expect: local, text: "Compare IBANs IT60X0542811101000000123456 and DE89370400440532013000, step by step."}
+
+  # ── SECRETS / credentials + long -> LOCAL ──────────────────────────────────
+  - {id: sec-01, category: secrets, expect: local, text: "Debug the deploy script that hard-codes the API key sk-abcdefghijklmnopqrstuvwxyz012345."}
+  - {id: sec-02, category: secrets, expect: local, text: "Explain why the AWS key AKIAIOSFODNN7EXAMPLE must be rotated, step by step."}
+  - {id: sec-03, category: secrets, expect: local, text: "Summarize the following config exposing the password: SuperSecret123 in plain text."}
+  - {id: sec-04, category: secrets, expect: local, text: "Analyze the token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.abc123DEFghi usage in the logs."}
+  - {id: sec-05, category: secrets, expect: local, text: "Debug why the private key -----BEGIN RSA PRIVATE KEY----- leaked into the logs."}
+  - {id: sec-06, category: secrets, expect: local, text: "Explain why the api_key=SECRET123456 assignment should never be committed."}
+
+  # ── COMBINED (multiple signals) + long -> LOCAL ────────────────────────────
+  - {id: comb-01, category: combined, expect: local, text: "Summarize the following: patient Mario Rossi, diagnosis and codice fiscale RSSMRA85M01H501Q."}
+  - {id: comb-02, category: combined, expect: local, text: "Analyze the record: salary, mortgage and IBAN IT60X0542811101000000123456 for Giulia Bianchi."}
+  - {id: comb-03, category: combined, expect: local, text: "Explain why the litigation file lists Marta Esposito and her medical diagnosis."}
+  - {id: comb-04, category: combined, expect: local, text: "Summarize the following HR case: resignation, performance review and card 4111 1111 1111 1111."}
+  - {id: comb-05, category: combined, expect: local, text: "Analyze the onboarding form for Luca Ferrari with codice fiscale RSSMRA85M01H501Q and salary."}
+  - {id: comb-06, category: combined, expect: local, text: "Debug the export mixing the disease, the mortgage and the password: Secret123."}
+  - {id: comb-07, category: combined, expect: local, text: "Explain why the account statement for Paolo Gallo references his mental health leave."}
+  - {id: comb-08, category: combined, expect: local, text: "Summarize the following: subpoena, payroll and IBAN DE89370400440532013000."}
+
+  # ── IMPLICIT sensitivity -> LOCAL only via C2 (rules score ~0, gray zone) ───
+  # No keyword-lexicon term, no PII, no name: rules leave it in the gray zone, so
+  # ONLY the C2 classifier catches the situational sensitivity. Rules-only routes
+  # these SOTA (leak); chain+C2 routes them LOCAL. This is where C2 is invoked.
+  - {id: impl-01, category: implicit, expect: local, text: "Explain why coping with this deeply personal and painful period has been so hard for me lately."}
+  - {id: impl-02, category: implicit, expect: local, text: "Summarize the following message where I confide a very private and delicate family matter."}
+  - {id: impl-03, category: implicit, expect: local, text: "Analyze, with empathy, how to tell my children about the difficult change happening at home."}
+  - {id: impl-04, category: implicit, expect: local, text: "Explain why I feel overwhelmed after everything that happened in my private life this month."}
+  - {id: impl-05, category: implicit, expect: local, text: "Summarize the following note about the intimate and confidential situation I am going through."}
+  - {id: impl-06, category: implicit, expect: local, text: "Analyze how to write a gentle message to a grieving friend who just lost someone dear."}
+  - {id: impl-07, category: implicit, expect: local, text: "Explain why I am struggling after being let go and losing my main source of income."}
+  - {id: impl-08, category: implicit, expect: local, text: "Summarize the following: I am going through a separation and need to handle it discreetly."}
+  - {id: impl-09, category: implicit, expect: local, text: "Analyze how to phrase a sensitive personal request to my manager about a hard time at home."}
+  - {id: impl-10, category: implicit, expect: local, text: "Explain why this confidential and emotionally difficult personal matter must stay private."}
+  - {id: impl-11, category: implicit, expect: local, text: "Summarize the following draft where I disclose a very intimate struggle I rarely share."}
+  - {id: impl-12, category: implicit, expect: local, text: "Analyze, step by step, how to support a colleague going through a painful family crisis."}
+  - {id: impl-13, category: implicit, expect: local, text: "Explain why I have been so distressed since my relationship fell apart recently."}
+  - {id: impl-14, category: implicit, expect: local, text: "Summarize the following personal letter about a quiet, painful matter I am facing alone."}
+  - {id: impl-15, category: implicit, expect: local, text: "Analyze how to gently break some deeply personal and bad news to my elderly parents."}
+  - {id: impl-16, category: implicit, expect: local, text: "Explain why I need to step back from work to deal with a heavy personal situation."}
