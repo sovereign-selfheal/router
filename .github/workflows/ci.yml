@@ -47,11 +47,10 @@ jobs:
     needs: lint-and-test
     services:
       # Presidio for the evaluation, pinned by digest (the env context is not available
-      # here). quay.io/sovereign-selfheal/presidio has the same content: switch to it,
-      # by digest, after its first release.
+      # here). Use the same version as the gitops repo (components/presidio/values.yaml).
       presidio:
-        # tag 0.2, resolved on quay.io on 2026-09-25
-        image: quay.io/asalvati/presidio-analyzer-multilang@sha256:bfb1d374f704ca0744fe96d1a414b4f14fb35e2b41fa3be78ae6206b2bf89836
+        # tag v0.3.0, resolved on quay.io on 2026-09-25
+        image: quay.io/sovereign-selfheal/presidio@sha256:584712c35c8b6628f460eab7013ce20c54d9285dd91a212e1a25edb2f819f73a
         ports:
           - 3000:3000
     steps:
