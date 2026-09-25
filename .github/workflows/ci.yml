@@ -83,7 +83,8 @@ jobs:
 
       - name: Check fastText and the model in the image
         run: |
-          podman run --rm localhost/router:ci python -c "
+          # The base image has an entrypoint (prod_entrypoint.sh): replace it.
+          podman run --rm --entrypoint python localhost/router:ci -c "
           import fasttext
           model = fasttext.load_model('/opt/models/lid.176.ftz')
           assert model.predict('Confronta Kubernetes e le VM tradizionali.')[0][0] == '__label__it'
