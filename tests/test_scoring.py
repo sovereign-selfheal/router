@@ -80,10 +80,10 @@ def test_ner_asks_only_scored_entity_types(make_scorer):
     assert not [s for s in signals if s[0] == "ner"]
 
 
-def test_today_nationality_plus_place_routes_local(make_scorer):
-    """Behaviour with the default policy keys (no E+D): the false positive of 2026-09-25."""
+def test_legacy_nationality_plus_place_routes_local(make_scorer, legacy_policy):
+    """Without ner.context_entities: the false positive of 2026-09-25."""
     scorer = make_scorer([("European", "NRP", 0.85), ("American", "NRP", 0.85),
-                          ("Italy", "LOCATION", 0.85)])
+                          ("Italy", "LOCATION", 0.85)], policy=legacy_policy)
     score, _signals = run(scorer.score(
         "Compare European and American cloud regulations for banks operating in Italy."))
     assert score == pytest.approx(1 - 0.45 * 0.60)          # 0.73 >= 0.70 (research)

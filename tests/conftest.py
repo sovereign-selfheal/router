@@ -79,6 +79,14 @@ def privacy_policy():
 
 
 @pytest.fixture
+def legacy_policy(privacy_policy):
+    """The policy without the keys added in v0.4.0: the behaviour before them."""
+    for key in ("person_min_words", "context_entities"):
+        privacy_policy["ner"].pop(key, None)
+    return privacy_policy
+
+
+@pytest.fixture
 def make_scorer(privacy_policy):
     """Build a PrivacyScorer with a fake Presidio and a fixed language."""
 

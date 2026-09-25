@@ -1,6 +1,6 @@
 [project]
 name = "sovereign-selfheal-router"
-version = "0.3.0"
+version = "0.4.0"
 description = "LiteLLM hook code of the Sovereign Self-Healing Platform router: tests and evaluation"
 # The LiteLLM image runs Python 3.13.
 requires-python = ">=3.13"

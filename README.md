@@ -30,6 +30,19 @@ truth. `tests/policy/` holds a copy for the tests and the evaluation.
 Then the **tiering** of the team can only move the decision to LOCAL. Any unexpected error routes LOCAL
 (fail-closed). Every decision is logged as one line, `[policy-router] {...}`.
 
+## Policy keys by version
+
+The code reads its settings from the gitops policies. A new key always has a default that keeps the
+previous behaviour, so an old policy works with a new release.
+
+| Key (in `privacy-plus.yaml`) | Since | Default | Meaning |
+|---|---|---|---|
+| `ner.person_min_words` | v0.4.0 | `1` | A `PERSON` entity counts only with at least this many words. `2` ignores single words that Presidio reads as names ("Kafka", "Paxos", "Spiega"); a full name like "Mario Rossi" still counts |
+| `ner.context_entities` | v0.4.0 | `[]` | These entity types (for example `NRP`, `LOCATION`) count only when the text also has an identifier: structured personal data (card, IBAN, email, phone...) or another entity that counts. "European banks in Italy" names nobody |
+
+Ignored entities stay in the log with weight 0, for example `NRP@0.85(no id):0.00` or
+`PERSON@0.85(<2 words):0.00`, so the log shows what the engine saw and why it did not count it.
+
 ## Develop and test
 
 The Python tools are managed with [uv](https://docs.astral.sh/uv/), never pip.

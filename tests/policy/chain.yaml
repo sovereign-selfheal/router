@@ -54,8 +54,9 @@ efficiency:
     - debug
     - step by step
     - reasoning
-    # Italian (the demo is in Italian). Matching is a lowercase substring, so stems
-    # cover several forms: "confront" matches confronta, confrontando, confronto.
+    # Italian (the demo runs in English; Italian prompts work too). Matching is a
+    # lowercase substring, so stems cover several forms: "confront" matches
+    # confronta, confrontando, confronto.
     - analizz
     - confront
     - riassum

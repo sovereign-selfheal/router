@@ -1,7 +1,7 @@
 {
   "english": {
     "cases": 332,
-    "correct": 227,
+    "correct": 228,
     "leaks": [
       "finance-02",
       "finance-04",
@@ -108,13 +108,12 @@
     "false_positives": [
       "benign-32",
       "edge-07",
-      "location-12",
       "pii-weak-02"
     ]
   },
   "italian": {
     "cases": 332,
-    "correct": 254,
+    "correct": 252,
     "leaks": [
       "finance-12",
       "finance-14",
@@ -163,6 +162,7 @@
       "implicit-36",
       "implicit-37",
       "implicit-38",
+      "implicit-39",
       "implicit-40",
       "implicit-41",
       "implicit-42",
@@ -184,18 +184,19 @@
       "implicit-58",
       "implicit-59",
       "implicit-60",
+      "legal-10",
       "legal-11",
       "legal-13",
       "legal-14",
+      "legal-15",
       "secret-09",
+      "secret-11",
       "secret-12"
     ],
     "false_positives": [
-      "benign-09",
       "benign-26",
       "benign-32",
-      "edge-07",
-      "location-03"
+      "edge-07"
     ]
   },
   "chain-demo": {

@@ -267,14 +267,64 @@ class PrivacyScorer:
         # Only ask Presidio for the types we score -> skips recognizers we ignore
         # (notably the EMAIL_ADDRESS/URL ones that stall the worker on this image).
         requested = list(weights)
-        best = {}
+        # person_min_words (default 1 = every PERSON counts): a PERSON entity with fewer
+        # words does not count. Single words are often not names at all ("Kafka",
+        # "Paxos", "Spiega"); a full name ("Mario Rossi") has two or more words.
+        min_words = int(self._ner.get("person_min_words", 1) or 1)
+        best, too_short = {}, {}
         for lg in langs:
             for ent in await self._query_presidio(text, lg, timeout, requested):
                 etype = ent.get("entity_type")
                 score = float(ent.get("score", 0) or 0)
-                if etype in weights and score >= min_conf and score > best.get(etype, 0.0):
+                if etype not in weights or score < min_conf:
+                    continue
+                if etype == "PERSON" and self._entity_words(text, ent) < min_words:
+                    too_short[etype] = max(score, too_short.get(etype, 0.0))
+                    continue
+                if score > best.get(etype, 0.0):
                     best[etype] = score
-        return [("ner", f"{et}@{sc:.2f}", weights[et]) for et, sc in best.items()]
+        signals = [("ner", f"{et}@{sc:.2f}", weights[et]) for et, sc in best.items()]
+        # Ignored entities stay in the breakdown with weight 0, so the log shows them.
+        signals += [
+            ("ner", f"{et}@{sc:.2f}(<{min_words} words)", 0.0)
+            for et, sc in too_short.items()
+            if et not in best
+        ]
+        return signals
+
+    @staticmethod
+    def _entity_words(text, ent):
+        """Number of words of an entity; unknown offsets count as a full name (safe side)."""
+        start, end = ent.get("start"), ent.get("end")
+        if not isinstance(start, int) or not isinstance(end, int) or end <= start:
+            return 99
+        return len(text[start:end].split())
+
+    def _apply_context_rule(self, signals):
+        """ner.context_entities (default [] = off): these entity types (for example
+        NRP, LOCATION) count only when the text also has an identifier, i.e. a
+        structured PII match (detector A) or another NER entity that counts. A
+        nationality or a place alone is not personal data: "European banks in Italy"
+        names nobody. Ignored entities stay in the breakdown with weight 0."""
+        context = set(self._ner.get("context_entities") or [])
+        if not context:
+            return signals
+
+        def etype(label):
+            return label.split("@", 1)[0]
+
+        has_identifier = any(
+            src == "pii" or (src == "ner" and weight > 0 and etype(label) not in context)
+            for src, label, weight in signals
+        )
+        if has_identifier:
+            return signals
+        return [
+            (src, f"{label}(no id)", 0.0)
+            if src == "ner" and weight > 0 and etype(label) in context
+            else (src, label, weight)
+            for src, label, weight in signals
+        ]
 
     # -- C2 (optional LLM classifier, gray-zone only, advisory) -----------------
     _CLASSIFIER_SYSTEM = (
@@ -383,6 +433,7 @@ class PrivacyScorer:
                 # Cannot fully assess sensitivity -> route LOCAL (the safe side).
                 signals.append(("ner", f"error:{type(exc).__name__}", 1.0))
             # else: NER simply contributes nothing
+        signals = self._apply_context_rule(signals)
         # C2 runs AFTER the rules and ONLY in the gray zone; it can only add a signal
         # (noisy-OR is monotonic), so it never lowers the rules' decision.
         rules_score = self._noisy_or(signals)

@@ -125,12 +125,13 @@ lexicons:
 # SUPPORT STATUS: Presidio is community open-source, NOT Red Hat-supported
 # (CLAUDE.md §3). It runs in-cluster on CPU with no external egress.
 #
-# Option 2 (multilingual): the custom image quay.io/asalvati/presidio-analyzer-
-# multilang bundles the English (en_core_web_lg) AND Italian (it_core_news_md) spaCy
-# models. privacy_scoring.py detects the payload language with fastText and calls
-# Presidio with the matching model; a language Presidio does NOT model is handled
-# per `on_unsupported` (skip -> rely on A+B, which are bilingual/deterministic).
-# This removes the English-model-on-Italian false positive (e.g. "ciao" -> PERSON).
+# Option 2 (multilingual): the custom image quay.io/sovereign-selfheal/presidio
+# (repo github.com/sovereign-selfheal/presidio) bundles the English (en_core_web_lg)
+# AND Italian (it_core_news_md) spaCy models. privacy_scoring.py detects the payload
+# language with fastText and calls Presidio with the matching model; a language
+# Presidio does NOT model is handled per `on_unsupported` (skip -> rely on A+B, which
+# are bilingual/deterministic). This removes the English-model-on-Italian false
+# positive (e.g. "ciao" -> PERSON).
 ner:
   enabled: true
   url: http://presidio-analyzer.maas-routing.svc.cluster.local:3000/analyze
@@ -160,6 +161,15 @@ ner:
     # --threads override). The engine only requests the entities listed here.
     PHONE_NUMBER: 0.35
     IP_ADDRESS: 0.40
+  # A PERSON counts only with at least this many words. Presidio reads single words as
+  # names ("Kafka", "Paxos", "Cassandra", the Italian verb "Spiega"); a full name like
+  # "Mario Rossi" has two. Default 1 (every PERSON counts). Needs router >= v0.4.0.
+  person_min_words: 2
+  # These types count only when the text also has an identifier: structured PII
+  # (card, IBAN, email, phone...) or another NER entity that counts. A nationality or a
+  # place alone names nobody ("European banks in Italy"). Default [] (always count).
+  # Needs router >= v0.4.0.
+  context_entities: [NRP, LOCATION]
 
 # --- C2 — semantic classifier (LLM). OPTIONAL, gray-zone only, ADVISORY -------
 # Additive & swappable. An OpenAI-compatible model judges sensitivity ONLY for
