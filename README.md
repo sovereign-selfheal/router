@@ -43,6 +43,53 @@ previous behaviour, so an old policy works with a new release.
 Ignored entities stay in the log with weight 0, for example `NRP@0.85(no id):0.00` or
 `PERSON@0.85(<2 words):0.00`, so the log shows what the engine saw and why it did not count it.
 
+## Traces and metrics (since v0.5.0)
+
+The hook shows each decision as a trace and as metrics. **Instrumentation is never on the decision
+path**: every tracing or metrics error is logged (`[policy-router] tracing error (ignored)`) and
+ignored, and the decision is the same with or without OpenTelemetry and `prometheus_client`. Both
+packages are in the LiteLLM image (opentelemetry 1.28.0, prometheus_client 0.20.0, extra
+`proxy-runtime` of LiteLLM 1.102.0); without them the hook works as before.
+
+**Traces.** With the `otel` callback of LiteLLM on, LiteLLM creates one span per proxy request and
+passes it to the hook (`metadata.litellm_parent_otel_span`). The hook adds:
+
+```
+<proxy request span>                      (LiteLLM)
+├── router.chain                          route.requested, route.target, route.decided_by,
+│   │                                     route.team, route.reason
+│   ├── gate.efficiency                   gate.verdict, gate.reason
+│   └── gate.privacy                      gate.verdict, gate.reason, privacy.score,
+│       │                                 privacy.threshold, privacy.team_key, privacy.signals
+│       └── presidio.analyze (per lang)   presidio.language, presidio.entities_found
+└── litellm_request                       (LiteLLM, with USE_OTEL_LITELLM_REQUEST_SPAN=true):
+                                          the model call; hidden_params has the api_base
+```
+
+A gate that is not evaluated (short-circuit) has no span. An error (for example Presidio down) is
+recorded on its span. Without a parent span, `router.chain` is a root span; without the `otel` callback
+the spans are no-ops. The decision gets one more key, `trace_id` (32 hex characters), only when a
+trace exists: the log line keeps all its previous keys.
+
+**Metrics.** The hook serves the default `prometheus_client` registry on `ROUTER_METRICS_PORT`:
+its own metrics, and the ones of LiteLLM's `prometheus` callback when that is on.
+
+| Metric | Type | Labels | Meaning |
+|---|---|---|---|
+| `router_requests_total` | counter | `routed_to`, `decided_by`, `team` | One per decision. `decided_by`: `efficiency`, `privacy`, `tiering`, `all-sota`, `fail-closed`. `team` is a team named in the policies, `none` or `other` |
+| `router_privacy_score` | histogram | `team` (threshold key) | Privacy score of the requests that reached the privacy gate |
+| `router_sota_budget_used_tokens` | gauge | | SOTA tokens counted by the budget of the efficiency gate, **per pod** |
+
+Tokens and fallbacks per model come from LiteLLM's `prometheus` callback
+(`litellm_total_tokens_metric_total{requested_model=...}`,
+`litellm_deployment_successful_fallbacks_total{requested_model="sota-smart",fallback_model="local-fast"}`).
+
+| Env var | Read by | Default | Meaning |
+|---|---|---|---|
+| `ROUTER_METRICS_PORT` | hook | `9091` | Port of the metrics server; `0` = off. Started once per process; a bind error is logged and the router works without metrics. Off when `PROMETHEUS_MULTIPROC_DIR` is set |
+| `OTEL_EXPORTER`, `OTEL_ENDPOINT`, `OTEL_SERVICE_NAME` | LiteLLM `otel` callback | | Where the traces go (the gitops repo sets the in-cluster collector) |
+| `USE_OTEL_LITELLM_REQUEST_SPAN` | LiteLLM | `false` | `true`: a child span for the model call |
+
 ## Develop and test
 
 The Python tools are managed with [uv](https://docs.astral.sh/uv/), never pip.

@@ -41,7 +41,10 @@ Rules. The same rules are in `gitops/AGENTS.md`: keep both in sync.
    - the entry point `policy_hook_chain.proxy_handler_instance` (named in `config-chain.yaml`);
    - the model aliases `local-fast` and `sota-smart` (defaults, overridable in `chain.yaml`);
    - the env vars `POLICY_DIR`, `SOTA_SERVED_MATCH`, `CLASSIFIER_ENABLED`, `CLASSIFIER_GRAY_LOW`,
-     `CLASSIFIER_BASE_URL`, `CLASSIFIER_MODEL`, `CLASSIFIER_API_KEY`;
+     `CLASSIFIER_BASE_URL`, `CLASSIFIER_MODEL`, `CLASSIFIER_API_KEY`, `ROUTER_METRICS_PORT` (v0.5.0);
+   - the span names `router.chain`, `gate.<name>`, `presidio.analyze` and their attributes, and the
+     metric names `router_requests_total`, `router_privacy_score`, `router_sota_budget_used_tokens`
+     (v0.5.0; the demo video and `gitops/docs/observability.md` use them);
    - in the image: the model at `/opt/models/lid.176.ftz`, the `litellm` command, a non-root user.
 5. **Presidio interface.** The code calls `POST /analyze` with `text`, `language` (`en` or `it`) and the
    `entities` it scores. The entity types come from `ner.entity_weights` in the policy. A change of the
@@ -64,6 +67,10 @@ Containerfile            # LiteLLM + fastText + lid.176.ftz
 - **Fail-closed.** On any error or doubt the request stays LOCAL. Never add a path that sends a request
   to SOTA when a detector fails.
 - **No LiteLLM import in `privacy_scoring.py`**: it must stay testable without LiteLLM.
+- **Instrumentation is never on the decision path.** Traces and metrics only observe: every tracing or
+  metrics call is wrapped so that its error is logged and ignored, the decision is computed the same
+  way with or without them, and fail-closed is unchanged. OpenTelemetry and `prometheus_client` stay
+  optional imports (like `httpx` and `fasttext`). Tests prove it (`tests/test_observability.py`).
 - **Tests for every change.** A code change comes with unit tests. A change of the routing behaviour also
   shows the evaluation results in the PR. `eval/baseline.json` changes only with `--update`, and the PR
   says why (new leaks are never accepted without a reason).

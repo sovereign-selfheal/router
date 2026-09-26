@@ -1,6 +1,6 @@
 [project]
 name = "sovereign-selfheal-router"
-version = "0.4.0"
+version = "0.5.0"
 description = "LiteLLM hook code of the Sovereign Self-Healing Platform router: tests and evaluation"
 # The LiteLLM image runs Python 3.13.
 requires-python = ">=3.13"
@@ -18,6 +18,10 @@ dev = [
     "pytest>=8.3",
     "ruff>=0.14",
     "yamllint>=1.35.0",
+    # Same versions as the LiteLLM image (extra proxy-runtime of litellm 1.102.0): the
+    # tests check the spans with an in-memory exporter and read the metrics registry.
+    "opentelemetry-sdk==1.28.0",
+    "prometheus-client==0.20.0",
 ]
 
 [tool.uv]
