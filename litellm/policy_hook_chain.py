@@ -28,6 +28,14 @@ plus a per-gate `chain` trace so `oc logs | grep policy-router` and the verify p
 keep working — and the demo can show *why* a request went where it went.
 
 Decision stays BINARY LOCAL/SOTA (no redaction).
+
+OBSERVABILITY (never on the decision path): with LiteLLM's `otel` callback on, the hook
+opens a `router.chain` span under the proxy request span, one `gate.<name>` span per gate
+and, through privacy_scoring, one `presidio.analyze` span per Presidio call. The router
+metrics (prometheus_client) are served on ROUTER_METRICS_PORT (default 9091, 0 = off),
+together with any other metric of the process registry (LiteLLM's `prometheus` callback).
+Every tracing or metrics error is logged and ignored: the decision and fail-closed are
+the same with or without OpenTelemetry and prometheus_client.
 """
 
 import os
@@ -37,7 +45,12 @@ import threading
 import yaml
 from litellm.integrations.custom_logger import CustomLogger
 
-from privacy_scoring import PrivacyScorer
+from privacy_scoring import PrivacyScorer, annotate_current_span, safe_span
+
+try:  # prometheus_client is in the LiteLLM image; optional so import never breaks the proxy
+    import prometheus_client
+except Exception:  # pragma: no cover - defensive
+    prometheus_client = None
 
 POLICY_DIR = os.environ.get("POLICY_DIR", "/app/litellm")
 
@@ -57,6 +70,63 @@ def _norm_model_id(value):
     failing on a stray dot or slash.
     """
     return re.sub(r"[^a-z0-9]", "", str(value).lower())
+
+
+# -- metrics: never on the decision path ----------------------------------------
+def _metrics_error(exc):
+    print(f"[policy-router] metrics error (ignored): {type(exc).__name__}: {exc}", flush=True)
+
+
+def _metric(kind, name, documentation, labels=(), **kwargs):
+    """Create a metric in the default registry, or reuse it if the module is loaded again."""
+    if prometheus_client is None:
+        return None
+    try:
+        return getattr(prometheus_client, kind)(name, documentation, labels, **kwargs)
+    except ValueError:  # already registered by an earlier import of this module
+        registry = prometheus_client.REGISTRY
+        return getattr(registry, "_names_to_collectors", {}).get(name)
+    except Exception as exc:
+        _metrics_error(exc)
+        return None
+
+
+REQUESTS = _metric("Counter", "router_requests",
+                   "Routing decisions of the policy hook.", ("routed_to", "decided_by", "team"))
+PRIVACY_SCORE = _metric("Histogram", "router_privacy_score",
+                        "Privacy score of the requests that reached the privacy gate.", ("team",),
+                        buckets=(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0))
+SOTA_BUDGET_USED = _metric("Gauge", "router_sota_budget_used_tokens",
+                           "SOTA tokens counted by the efficiency gate budget (this pod only).")
+
+
+def _start_metrics_server():
+    """Serve the default registry on ROUTER_METRICS_PORT, once per process.
+
+    Returns the port, or None when the server is off or cannot start. A bind error never
+    breaks the proxy: the router works without metrics. The "started" mark is kept on the
+    prometheus_client module, so a second import of this file does not bind again.
+    """
+    if prometheus_client is None:
+        return None
+    started = getattr(prometheus_client, "_policy_router_metrics_port", None)
+    if started:
+        return started
+    try:
+        port = int(os.environ.get("ROUTER_METRICS_PORT", "9091") or 0)
+        if port <= 0:
+            return None
+        if os.environ.get("PROMETHEUS_MULTIPROC_DIR"):
+            print("[policy-router] metrics server off: PROMETHEUS_MULTIPROC_DIR is set", flush=True)
+            return None
+        prometheus_client.start_http_server(port)
+        prometheus_client._policy_router_metrics_port = port
+        print(f"[policy-router] metrics on :{port}/metrics", flush=True)
+        return port
+    except Exception as exc:
+        _metrics_error(exc)
+        return None
+
 
 class ChainRouter(CustomLogger):
     def __init__(self):
@@ -98,6 +168,10 @@ class ChainRouter(CustomLogger):
         self.threshold_default = float(self.privacy_policy.get("threshold", 0.5))
         self.thresholds = self.privacy_policy.get("thresholds", {}) or {}
         self.scorer = PrivacyScorer(self.privacy_policy)
+        # Bounded values of the `team` metric label: the teams named in the policies.
+        self._known_teams = {
+            t for t in list(self.thresholds) + list(self.tiering) if not str(t).startswith("_")
+        }
 
     # -- text/context helpers --------------------------------------------------
     @staticmethod
@@ -183,6 +257,13 @@ class ChainRouter(CustomLogger):
         threshold, team_key = self._threshold_for(team)
         score, signals = await self.scorer.score(text, threshold)
         breakdown = self.scorer.format_breakdown(signals)
+        annotate_current_span({
+            "privacy.score": round(score, 4),
+            "privacy.threshold": threshold,
+            "privacy.team_key": team_key,
+            "privacy.signals": breakdown,
+        })
+        self._observe_privacy_score(score, team_key)
         if score >= threshold:
             return "local", (
                 f"privacy: score {score:.2f} ({breakdown}) >= {threshold:.2f}[team={team_key}]"
@@ -201,43 +282,91 @@ class ChainRouter(CustomLogger):
             )
         return target, None
 
+    # -- observability helpers: they log and ignore their own errors --------------
+    def _team_label(self, team):
+        if not team:
+            return "none"
+        return team if team in self._known_teams else "other"
+
+    def _observe_privacy_score(self, score, team_key):
+        try:
+            if PRIVACY_SCORE is not None:
+                PRIVACY_SCORE.labels(team=team_key).observe(score)
+        except Exception as exc:
+            _metrics_error(exc)
+
+    def _count_decision(self, decision, team):
+        try:
+            if REQUESTS is not None:
+                REQUESTS.labels(
+                    routed_to=decision.get("routed_to") or "unknown",
+                    decided_by=decision.get("decided_by") or "unknown",
+                    team=self._team_label(team),
+                ).inc()
+        except Exception as exc:
+            _metrics_error(exc)
+
+    @staticmethod
+    def _parent_span(user_api_key_dict, data):
+        """The proxy request span that LiteLLM creates when its `otel` callback is on."""
+        try:
+            md = data.get("metadata") or {}
+            return md.get("litellm_parent_otel_span") or getattr(
+                user_api_key_dict, "parent_otel_span", None
+            )
+        except Exception:
+            return None
+
     # -- LiteLLM hooks ---------------------------------------------------------
     async def async_pre_call_hook(self, user_api_key_dict, cache, data, call_type):
+        team = None
         try:
             if call_type not in ("completion", "acompletion", "text_completion"):
                 return data
             requested = data.get("model")
             team = self._team(data)
 
-            # Evaluate gates in order; first LOCAL wins (short-circuit). SOTA only if
-            # every gate says SOTA. Privacy, being last, is the egress guard.
-            target = self.sota_model
-            deciding = "all-sota"
-            trace = []
-            for gate in self.gate_order:
-                if gate == "efficiency":
-                    verdict, reason = self._gate_efficiency(data)
-                elif gate == "privacy":
-                    verdict, reason = await self._gate_privacy(data)
-                else:
-                    continue  # unknown gate name in config -> skip, don't crash
-                trace.append(f"{reason} -> {verdict.upper()}")
-                if verdict == "local":
-                    target, deciding = self.local_model, gate
-                    break
+            with safe_span("router.chain", parent=self._parent_span(user_api_key_dict, data)) as chain_span:
+                # Evaluate gates in order; first LOCAL wins (short-circuit). SOTA only if
+                # every gate says SOTA. Privacy, being last, is the egress guard.
+                target = self.sota_model
+                deciding = "all-sota"
+                trace = []
+                for gate in self.gate_order:
+                    if gate not in ("efficiency", "privacy"):
+                        continue  # unknown gate name in config -> skip, don't crash
+                    with safe_span(f"gate.{gate}") as gate_span:
+                        if gate == "efficiency":
+                            verdict, reason = self._gate_efficiency(data)
+                        else:
+                            verdict, reason = await self._gate_privacy(data)
+                        gate_span.set("gate.verdict", verdict)
+                        gate_span.set("gate.reason", reason)
+                    trace.append(f"{reason} -> {verdict.upper()}")
+                    if verdict == "local":
+                        target, deciding = self.local_model, gate
+                        break
 
-            target, tier_reason = self._apply_tiering(target, team)
-            data["model"] = target
+                target, tier_reason = self._apply_tiering(target, team)
+                data["model"] = target
 
-            decision = {
-                "policy": "chain",
-                "requested": requested,
-                "routed_to": target,
-                "decided_by": "tiering" if tier_reason else deciding,
-                "chain": trace,
-                "reason": tier_reason or (trace[-1] if trace else "no-gate"),
-                "team": team,
-            }
+                decision = {
+                    "policy": "chain",
+                    "requested": requested,
+                    "routed_to": target,
+                    "decided_by": "tiering" if tier_reason else deciding,
+                    "chain": trace,
+                    "reason": tier_reason or (trace[-1] if trace else "no-gate"),
+                    "team": team,
+                }
+                trace_id = chain_span.trace_id()
+                if trace_id:
+                    decision["trace_id"] = trace_id  # additive: find the trace from the log line
+                chain_span.set("route.requested", requested)
+                chain_span.set("route.target", target)
+                chain_span.set("route.decided_by", decision["decided_by"])
+                chain_span.set("route.team", team)
+                chain_span.set("route.reason", decision["reason"])
             data.setdefault("metadata", {})["routing_decision"] = decision
             print(f"[policy-router] {decision}", flush=True)
         except Exception as exc:
@@ -250,6 +379,8 @@ class ChainRouter(CustomLogger):
             }
             data.setdefault("metadata", {})["routing_decision"] = decision
             print(f"[policy-router] {decision}", flush=True)
+            decision = dict(decision, decided_by="fail-closed")
+        self._count_decision(decision, team)
         return data
 
     async def async_log_success_event(self, kwargs, response_obj, start_time, end_time):
@@ -276,9 +407,15 @@ class ChainRouter(CustomLogger):
                 with self._lock:
                     self._sota_tokens_used += total
                     used = self._sota_tokens_used
+                try:
+                    if SOTA_BUDGET_USED is not None:
+                        SOTA_BUDGET_USED.set(used)
+                except Exception as exc:
+                    _metrics_error(exc)
                 print(f"[policy-router] SOTA budget: {used}/{self.sota_token_budget} tokens used", flush=True)
         except Exception as exc:
             print(f"[policy-router] success-event error: {exc}", flush=True)
 
 
+_start_metrics_server()
 proxy_handler_instance = ChainRouter()

@@ -89,3 +89,10 @@ jobs:
           model = fasttext.load_model('/opt/models/lid.176.ftz')
           assert model.predict('Confronta Kubernetes e le VM tradizionali.')[0][0] == '__label__it'
           print('fastText OK')"
+
+      - name: Check the tracing and metrics packages in the image
+        run: |
+          # The hook works without them, but the demo needs them (README "Traces and metrics").
+          podman run --rm --entrypoint python localhost/router:ci -c "
+          import opentelemetry.sdk, opentelemetry.exporter.otlp.proto.http, prometheus_client
+          print('opentelemetry and prometheus_client OK')"

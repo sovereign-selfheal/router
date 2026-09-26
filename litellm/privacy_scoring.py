@@ -14,8 +14,12 @@ Everything here runs in-cluster with NO external egress. C1 reaches Presidio via
 cluster-internal Service; on any NER error the engine is FAIL-CLOSED (forces LOCAL).
 
 The module has no LiteLLM dependency so it can be unit-tested in isolation.
+
+Tracing: `safe_span` opens OpenTelemetry spans (the hook uses it too). It never changes a
+result: without the OpenTelemetry API, or on any tracing error, it does nothing.
 """
 
+import contextlib
 import json
 import os
 import re
@@ -30,6 +34,98 @@ try:  # fastText powers C1 language detection (Option 2); optional so import is 
     import fasttext
 except Exception:  # pragma: no cover - defensive
     fasttext = None
+
+try:  # OpenTelemetry API (in the LiteLLM image); optional so import is safe
+    from opentelemetry import context as otel_context
+    from opentelemetry import trace as otel_trace
+except Exception:  # pragma: no cover - defensive
+    otel_context = otel_trace = None
+
+TRACER_NAME = "sovereign-selfheal.router"
+
+
+# ---------------------------------------------------------------------------
+# Tracing helper: never on the decision path
+# ---------------------------------------------------------------------------
+def _tracing_error(exc):
+    print(f"[policy-router] tracing error (ignored): {type(exc).__name__}: {exc}", flush=True)
+
+
+class SpanHandle:
+    """Wraps one span (or none). Every method swallows tracing errors."""
+
+    def __init__(self, span=None):
+        self.span = span
+
+    def set(self, key, value):
+        """Set one attribute; None values are skipped (OpenTelemetry refuses them)."""
+        if self.span is None or value is None:
+            return
+        try:
+            if not isinstance(value, (str, bool, int, float)):
+                value = str(value)
+            self.span.set_attribute(key, value)
+        except Exception as exc:
+            _tracing_error(exc)
+
+    def trace_id(self):
+        """Trace id as 32 hex characters, or None without a valid span."""
+        if self.span is None:
+            return None
+        try:
+            ctx = self.span.get_span_context()
+            return format(ctx.trace_id, "032x") if ctx.is_valid else None
+        except Exception as exc:
+            _tracing_error(exc)
+            return None
+
+
+@contextlib.contextmanager
+def safe_span(name, parent=None):
+    """Run the block inside a span `name` (child of `parent`, else of the current span).
+
+    Tracing errors are logged and ignored. Errors of the block itself are recorded on the
+    span and raised again unchanged, so fail-closed handling works as before.
+    """
+    span = token = None
+    try:
+        if otel_trace is not None:
+            ctx = otel_trace.set_span_in_context(parent) if parent is not None else None
+            span = otel_trace.get_tracer(TRACER_NAME).start_span(name, context=ctx)
+            token = otel_context.attach(otel_trace.set_span_in_context(span))
+    except Exception as exc:
+        _tracing_error(exc)
+    try:
+        yield SpanHandle(span)
+    except Exception as exc:
+        try:
+            if span is not None:
+                span.record_exception(exc)
+                span.set_status(otel_trace.Status(otel_trace.StatusCode.ERROR, type(exc).__name__))
+        except Exception as trace_exc:
+            _tracing_error(trace_exc)
+        raise
+    finally:
+        try:
+            if token is not None:
+                otel_context.detach(token)
+            if span is not None:
+                span.end()
+        except Exception as exc:
+            _tracing_error(exc)
+
+
+def annotate_current_span(attributes):
+    """Set a dict of attributes on the current span (for example the gate span of the hook)."""
+    if otel_trace is None:
+        return
+    try:
+        handle = SpanHandle(otel_trace.get_current_span())
+    except Exception as exc:
+        _tracing_error(exc)
+        return
+    for key, value in attributes.items():
+        handle.set(key, value)
 
 
 # ---------------------------------------------------------------------------
@@ -273,7 +369,11 @@ class PrivacyScorer:
         min_words = int(self._ner.get("person_min_words", 1) or 1)
         best, too_short = {}, {}
         for lg in langs:
-            for ent in await self._query_presidio(text, lg, timeout, requested):
+            with safe_span("presidio.analyze") as span:
+                span.set("presidio.language", lg)
+                found = await self._query_presidio(text, lg, timeout, requested)
+                span.set("presidio.entities_found", len(found) if isinstance(found, list) else None)
+            for ent in found:
                 etype = ent.get("entity_type")
                 score = float(ent.get("score", 0) or 0)
                 if etype not in weights or score < min_conf:
