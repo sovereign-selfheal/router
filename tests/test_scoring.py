@@ -154,3 +154,70 @@ def test_classifier_skipped_outside_gray_zone(make_scorer, classifier_policy):
     _score, benign = run(scorer.score("Compare OpenShift and Kubernetes.", threshold=0.70))
     _score, strong = run(scorer.score("card 4111 1111 1111 1111", threshold=0.70))
     assert "classifier" not in [s[0] for s in benign + strong]
+
+
+class _FakeClassifierClient:
+    """Stands in for httpx.AsyncClient: records the payload, answers "sensitive"."""
+
+    payloads = []
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *exc):
+        return False
+
+    async def post(self, url, json=None, headers=None):
+        _FakeClassifierClient.payloads.append(json)
+
+        class _Resp:
+            def raise_for_status(self):
+                pass
+
+            def json(self):
+                verdict = '{"sensitive": true, "confidence": 0.9}'
+                return {"choices": [{"message": {"content": verdict}}]}
+
+        return _Resp()
+
+
+@pytest.fixture
+def fake_classifier(monkeypatch):
+    import privacy_scoring
+
+    _FakeClassifierClient.payloads = []
+    monkeypatch.setattr(privacy_scoring.httpx, "AsyncClient", _FakeClassifierClient)
+    monkeypatch.setenv("CLASSIFIER_BASE_URL", "http://classifier.test/v1")
+    monkeypatch.setenv("CLASSIFIER_MODEL", "local-test")
+    return _FakeClassifierClient
+
+
+def test_classifier_sends_no_chat_template_kwargs_by_default(
+    make_scorer, classifier_policy, fake_classifier
+):
+    scorer = make_scorer(policy=classifier_policy)
+    _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
+    assert ("classifier", "llm@0.90", 0.80) in signals
+    assert "chat_template_kwargs" not in fake_classifier.payloads[0]
+
+
+def test_classifier_sends_chat_template_kwargs_from_env(
+    make_scorer, classifier_policy, fake_classifier, monkeypatch
+):
+    monkeypatch.setenv("CLASSIFIER_CHAT_TEMPLATE_KWARGS", '{"enable_thinking": false}')
+    scorer = make_scorer(policy=classifier_policy)
+    run(scorer.score("My salary is too low.", threshold=0.70))
+    assert fake_classifier.payloads[0]["chat_template_kwargs"] == {"enable_thinking": False}
+
+
+def test_classifier_ignores_invalid_chat_template_kwargs(
+    make_scorer, classifier_policy, fake_classifier, monkeypatch
+):
+    monkeypatch.setenv("CLASSIFIER_CHAT_TEMPLATE_KWARGS", "enable_thinking=false")
+    scorer = make_scorer(policy=classifier_policy)
+    _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
+    assert ("classifier", "llm@0.90", 0.80) in signals
+    assert "chat_template_kwargs" not in fake_classifier.payloads[0]

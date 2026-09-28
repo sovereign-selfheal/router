@@ -40,6 +40,12 @@ previous behaviour, so an old policy works with a new release.
 | `ner.person_min_words` | v0.4.0 | `1` | A `PERSON` entity counts only with at least this many words. `2` ignores single words that Presidio reads as names ("Kafka", "Paxos", "Spiega"); a full name like "Mario Rossi" still counts |
 | `ner.context_entities` | v0.4.0 | `[]` | These entity types (for example `NRP`, `LOCATION`) count only when the text also has an identifier: structured personal data (card, IBAN, email, phone...) or another entity that counts. "European banks in Italy" names nobody |
 
+The key `classifier.chat_template_kwargs` (since v0.6.0, default: none) is a mapping of chat template
+arguments sent with the call of the C2 classifier. The env var `CLASSIFIER_CHAT_TEMPLATE_KWARGS` (a JSON
+object) overrides it. The gitops repo sets `{"enable_thinking": false}` when the classifier is the local
+Qwen3 model, which reasons by default: with reasoning, the classifier would spend its token budget and
+return no JSON verdict. Do not set it for a provider that does not accept this parameter.
+
 Ignored entities stay in the log with weight 0, for example `NRP@0.85(no id):0.00` or
 `PERSON@0.85(<2 words):0.00`, so the log shows what the engine saw and why it did not count it.
 

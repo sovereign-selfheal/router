@@ -254,6 +254,19 @@ class PrivacyScorer:
         _cls_gl = os.environ.get("CLASSIFIER_GRAY_LOW")
         if _cls_gl not in (None, ""):
             self._classifier["gray_low"] = float(_cls_gl)
+        # Chat template arguments sent with the classifier call (a JSON object), for
+        # example {"enable_thinking": false} for a local vLLM model that reasons by
+        # default: without it the reasoning uses the token budget and no JSON verdict
+        # comes back. Unset (default): nothing is sent, as before. An invalid value is
+        # ignored, so a typo cannot stop the proxy.
+        _cls_ctk = os.environ.get("CLASSIFIER_CHAT_TEMPLATE_KWARGS")
+        if _cls_ctk not in (None, ""):
+            try:
+                _ctk = json.loads(_cls_ctk)
+            except ValueError:
+                _ctk = None
+            if isinstance(_ctk, dict):
+                self._classifier["chat_template_kwargs"] = _ctk
         # Default decision threshold used for the C2 gray-zone bounds when the caller
         # (the hook) does not pass a per-team threshold to score().
         self._threshold = float(self.policy.get("threshold", 0.5))
@@ -480,6 +493,8 @@ class PrivacyScorer:
             "max_tokens": int(cfg.get("max_tokens", 200)),
             "temperature": float(cfg.get("temperature", 0.0)),
         }
+        if cfg.get("chat_template_kwargs"):
+            payload["chat_template_kwargs"] = dict(cfg["chat_template_kwargs"])
         headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
         timeout = float(cfg.get("timeout_seconds", 8.0))
         try:
