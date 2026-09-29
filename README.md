@@ -44,7 +44,8 @@ The key `classifier.chat_template_kwargs` (since v0.6.0, default: none) is a map
 arguments sent with the call of the C2 classifier. The env var `CLASSIFIER_CHAT_TEMPLATE_KWARGS` (a JSON
 object) overrides it. The gitops repo sets `{"enable_thinking": false}` when the classifier is the local
 Qwen3 model, which reasons by default: with reasoning, the classifier would spend its token budget and
-return no JSON verdict. Do not set it for a provider that does not accept this parameter.
+return no JSON verdict. Do not set it for a provider that does not accept this parameter. An invalid
+value (not a mapping, or an env var that is not a JSON object) is ignored with a `[policy-router]` log line.
 
 Ignored entities stay in the log with weight 0, for example `NRP@0.85(no id):0.00` or
 `PERSON@0.85(<2 words):0.00`, so the log shows what the engine saw and why it did not count it.

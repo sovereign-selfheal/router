@@ -221,3 +221,42 @@ def test_classifier_ignores_invalid_chat_template_kwargs(
     _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
     assert ("classifier", "llm@0.90", 0.80) in signals
     assert "chat_template_kwargs" not in fake_classifier.payloads[0]
+
+
+def test_classifier_logs_invalid_chat_template_kwargs_env(
+    make_scorer, classifier_policy, fake_classifier, monkeypatch, capsys
+):
+    monkeypatch.setenv("CLASSIFIER_CHAT_TEMPLATE_KWARGS", "[]")
+    make_scorer(policy=classifier_policy)
+    assert "CLASSIFIER_CHAT_TEMPLATE_KWARGS ignored" in capsys.readouterr().out
+
+
+def test_classifier_sends_chat_template_kwargs_from_policy(
+    make_scorer, classifier_policy, fake_classifier
+):
+    classifier_policy["classifier"]["chat_template_kwargs"] = {"enable_thinking": False}
+    scorer = make_scorer(policy=classifier_policy)
+    run(scorer.score("My salary is too low.", threshold=0.70))
+    assert fake_classifier.payloads[0]["chat_template_kwargs"] == {"enable_thinking": False}
+
+
+def test_classifier_env_overrides_policy_chat_template_kwargs(
+    make_scorer, classifier_policy, fake_classifier, monkeypatch
+):
+    classifier_policy["classifier"]["chat_template_kwargs"] = {"enable_thinking": True}
+    monkeypatch.setenv("CLASSIFIER_CHAT_TEMPLATE_KWARGS", '{"enable_thinking": false}')
+    scorer = make_scorer(policy=classifier_policy)
+    run(scorer.score("My salary is too low.", threshold=0.70))
+    assert fake_classifier.payloads[0]["chat_template_kwargs"] == {"enable_thinking": False}
+
+
+def test_classifier_ignores_invalid_chat_template_kwargs_in_policy(
+    make_scorer, classifier_policy, fake_classifier, capsys
+):
+    # A string instead of a mapping must not break the scoring (no fail-closed error).
+    classifier_policy["classifier"]["chat_template_kwargs"] = "enable_thinking=false"
+    scorer = make_scorer(policy=classifier_policy)
+    _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
+    assert ("classifier", "llm@0.90", 0.80) in signals
+    assert "chat_template_kwargs" not in fake_classifier.payloads[0]
+    assert "classifier.chat_template_kwargs ignored" in capsys.readouterr().out
