@@ -195,3 +195,9 @@ classifier:
   base_url_env: CLASSIFIER_BASE_URL
   model_env: CLASSIFIER_MODEL
   api_key_env: CLASSIFIER_API_KEY
+  # chat_template_kwargs (router v0.6.0, default: none): a mapping sent as
+  # `chat_template_kwargs` with the classifier call, for example {enable_thinking: false}
+  # for a local Qwen3 model that reasons by default. The env var
+  # CLASSIFIER_CHAT_TEMPLATE_KWARGS (a JSON object) overrides it; the LiteLLM Deployment
+  # sets it when classifier.mode is local. An invalid value is ignored with a log line.
+  # Do not set it for a provider that does not accept this parameter.

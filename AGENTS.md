@@ -41,7 +41,8 @@ Rules. The same rules are in `gitops/AGENTS.md`: keep both in sync.
    - the entry point `policy_hook_chain.proxy_handler_instance` (named in `config-chain.yaml`);
    - the model aliases `local-fast` and `sota-smart` (defaults, overridable in `chain.yaml`);
    - the env vars `POLICY_DIR`, `SOTA_SERVED_MATCH`, `CLASSIFIER_ENABLED`, `CLASSIFIER_GRAY_LOW`,
-     `CLASSIFIER_BASE_URL`, `CLASSIFIER_MODEL`, `CLASSIFIER_API_KEY`, `ROUTER_METRICS_PORT` (v0.5.0);
+     `CLASSIFIER_BASE_URL`, `CLASSIFIER_MODEL`, `CLASSIFIER_API_KEY`, `ROUTER_METRICS_PORT` (v0.5.0),
+     `CLASSIFIER_CHAT_TEMPLATE_KWARGS` (v0.6.0);
    - the span names `router.chain`, `gate.<name>`, `presidio.analyze` and their attributes, and the
      metric names `router_requests_total`, `router_privacy_score`, `router_sota_budget_used_tokens`
      (v0.5.0; the demo video and `gitops/docs/observability.md` use them);

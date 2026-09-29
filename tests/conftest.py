@@ -18,7 +18,12 @@ os.environ["POLICY_DIR"] = str(POLICY_DIR)
 # No metrics HTTP server in the tests (the tests read the registry directly).
 os.environ["ROUTER_METRICS_PORT"] = "0"
 # The C2 classifier must stay off unless a test turns it on.
-for _var in ("CLASSIFIER_ENABLED", "CLASSIFIER_GRAY_LOW", "SOTA_SERVED_MATCH"):
+for _var in (
+    "CLASSIFIER_ENABLED",
+    "CLASSIFIER_GRAY_LOW",
+    "CLASSIFIER_CHAT_TEMPLATE_KWARGS",
+    "SOTA_SERVED_MATCH",
+):
     os.environ.pop(_var, None)
 
 # Minimal stand-in for litellm.integrations.custom_logger.CustomLogger.
