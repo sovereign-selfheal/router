@@ -67,10 +67,22 @@ def test_sota_budget_exhausted_routes_local(router):
 
 
 def test_sota_usage_is_counted(router):
+    router.sota_token_budget = 1000
     kwargs = {"litellm_params": {"metadata": {"routing_decision": {"routed_to": "sota-smart"}}}}
     response = types.SimpleNamespace(model="x", usage=types.SimpleNamespace(total_tokens=42))
     asyncio.run(router.async_log_success_event(kwargs, response, None, None))
     assert router._sota_tokens_used == 42
+
+
+def test_sota_budget_zero_counts_nothing_and_never_caps(router):
+    router.sota_token_budget, router._sota_tokens_used = 0, 10**9
+    kwargs = {"litellm_params": {"metadata": {"routing_decision": {"routed_to": "sota-smart"}}}}
+    response = types.SimpleNamespace(model="x", usage=types.SimpleNamespace(total_tokens=42))
+    asyncio.run(router.async_log_success_event(kwargs, response, None, None))
+    assert router._sota_tokens_used == 10**9
+    out, decision = route(router, LONG_BENIGN)
+    assert out["model"] == "sota-smart"
+    assert "SOTA budget" not in decision["reason"]
 
 
 def test_unexpected_error_fails_closed(router, monkeypatch):

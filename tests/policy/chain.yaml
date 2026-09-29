@@ -38,7 +38,7 @@ gate_order: [efficiency, privacy]
 # The two old policies overlapped heavily (both keyed off length/complexity), so
 # they collapse into ONE gate here. LOCAL when the user question is short AND
 # simple AND not flagged by a complex keyword; also LOCAL once the cumulative
-# SOTA token budget is exhausted (cost cap). Otherwise SOTA. Reads the user
+# SOTA token budget is exhausted (cost cap, off by default). Otherwise SOTA. Reads the user
 # question only (the last user turn) — length/complexity is a property of the ask.
 efficiency:
   max_prompt_chars_for_local: 280   # at/under this (chars) contributes to LOCAL
@@ -66,15 +66,16 @@ efficiency:
     - passo dopo passo
     - passo passo
     - ragionament
-  sota_token_budget: 2000000        # cumulative SOTA tokens before fallback-to-LOCAL.
-                                    # In-memory, resets on pod restart (demo-grade). A safety
-                                    # net only: the per-tier limits of the gateway are the
-                                    # real budget. 100000 was reached after 30-60 SOTA answers
-                                    # in a demo day, then every request silently went LOCAL.
-                                    # Set to 0 to disable the cap; lower it to show fallback.
-                                    # Counted per pod: with 2 LiteLLM replicas the real cap is
-                                    # up to 2x this value, and the pod that gets the request
-                                    # decides the fallback.
+  sota_token_budget: 0              # cumulative SOTA tokens before fallback-to-LOCAL; 0 = no cap.
+                                    # Off because the counter is in memory and per pod, has no
+                                    # time window and resets only when the pod restarts: once
+                                    # full, that pod sends every request LOCAL until it
+                                    # restarts, while the other pod may still use SOTA, with
+                                    # only a log line to explain it. 100000 was reached after
+                                    # 30-60 SOTA answers in a demo day. The spend limit is the
+                                    # quota of the SOTA provider on its API key; the per-tier
+                                    # limits of the gateway bound the token rate. A value > 0
+                                    # turns the cap on again (for example to show fallback).
 
 # --- Gate 2 — privacy --------------------------------------------------------
 # Reuses the hardened privacy-plus engine (A regex+validators, B lexicons,
