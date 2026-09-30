@@ -31,6 +31,10 @@ Env:
                   before giving up on a case (default 360).
   MAX_READY_RETRIES  optional cap on retries against a CONFIRMED-READY backend (defaults
                   to CASE_RETRIES = off). Lower it only if a new poison input reappears.
+  CLASSIFIER_ENABLED / CLASSIFIER_GRAY_LOW  turn C2 on and lower its gray-zone floor.
+  CLASSIFIER_BACKEND / CLASSIFIER_BASE_URL / CLASSIFIER_MODEL / CLASSIFIER_FALLBACK_*
+                  read by the scorer itself (see README "Policy keys by version").
+  CLASSIFIER_SAMPLES  noise draws per question of the systemone backend (eval only).
   PROGRESS_EVERY / PROGRESS_SECS  print a `[progress]` line to stderr every N cases OR at
                   least every T seconds (defaults 25 / 30) — live feedback on slow runs.
 
@@ -100,6 +104,10 @@ def main():
     # keyword-less "implicit" sensitivity). Trade-off: more classifier calls.
     if os.environ.get("CLASSIFIER_GRAY_LOW"):
         privacy_policy.setdefault("classifier", {})["gray_low"] = float(os.environ["CLASSIFIER_GRAY_LOW"])
+    # Noise draws per question of the systemone backend (eval only; policy key
+    # classifier.samples). Unset: the default of the decision server.
+    if os.environ.get("CLASSIFIER_SAMPLES"):
+        privacy_policy.setdefault("classifier", {})["samples"] = int(os.environ["CLASSIFIER_SAMPLES"])
 
     threshold = float(privacy_policy.get("threshold", 0.5))
     scorer = PrivacyScorer(privacy_policy)
@@ -248,7 +256,7 @@ def main():
             # Empty (not 0.0) when the privacy engine was never consulted, so the value
             # is never mistaken for a real privacy score in the distribution analysis.
             "privacy_score": "" if gate == "efficiency" else f"{score:.4f}",
-            "classifier_fired": int(any(src == "classifier" for src, _, _ in signals)),
+            "classifier_fired": int(any(src == "classifier" and w > 0 for src, _, w in signals)),
             "signals": PrivacyScorer.format_breakdown(signals),
             "latency_ms": f"{latency_ms:.1f}",
         })

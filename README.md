@@ -6,7 +6,10 @@ hook decides whether the **local model** or the external **SOTA model** answers.
 
 > **Support status:** LiteLLM is community software, operated by the customer, **not** supported by
 > Red Hat. The privacy gate also calls Presidio (community, see the `presidio` repo). Routing between a
-> local and an external model is Tech Preview in Red Hat OpenShift AI 3.5.
+> local and an external model is Tech Preview in Red Hat OpenShift AI 3.5. The `systemone` backend of the
+> C2 classifier (since v0.7.0) calls the example decision server of vLLM, which runs on an **unsupported
+> preview image** (DiffusionGemma, vLLM structured-read mode). It is planned as Developer Preview in Red
+> Hat AI Inference Server 3.6 GA and as Technology Preview in 3.7 EA1; its API may change.
 
 This repo delivers two things with the **same version** (git tag `vX.Y.Z`):
 
@@ -38,6 +41,10 @@ previous behaviour, so an old policy works with a new release.
 | Key (in `privacy-plus.yaml`) | Since | Default | Meaning |
 |---|---|---|---|
 | `ner.person_min_words` | v0.4.0 | `1` | A `PERSON` entity counts only with at least this many words. `2` ignores single words that Presidio reads as names ("Kafka", "Paxos", "Spiega"); a full name like "Mario Rossi" still counts |
+| `classifier.backend` | v0.7.0 | `chat` | Backend of the C2 classifier: `chat` (one JSON verdict from a chat model, as before) or `systemone` (a decision server, see "C2 backends"). Env override: `CLASSIFIER_BACKEND` |
+| `classifier.decision_threshold` | v0.7.0 | `0.5` | Backend `systemone`: a positive question at or above this probability adds the C2 signal |
+| `classifier.samples` | v0.7.0 | none | Backend `systemone`: noise draws per question; none = the default of the decision server (4) |
+| `classifier.fallback_base_url_env` / `fallback_model_env` | v0.7.0 | `CLASSIFIER_FALLBACK_BASE_URL` / `CLASSIFIER_FALLBACK_MODEL` | Backend `systemone`: env vars of the chat fallback |
 | `ner.context_entities` | v0.4.0 | `[]` | These entity types (for example `NRP`, `LOCATION`) count only when the text also has an identifier: structured personal data (card, IBAN, email, phone...) or another entity that counts. "European banks in Italy" names nobody |
 
 The key `classifier.chat_template_kwargs` (since v0.6.0, default: none) is a mapping of chat template
@@ -49,6 +56,33 @@ value (not a mapping, or an env var that is not a JSON object) is ignored with a
 
 Ignored entities stay in the log with weight 0, for example `NRP@0.85(no id):0.00` or
 `PERSON@0.85(<2 words):0.00`, so the log shows what the engine saw and why it did not count it.
+
+## C2 backends (since v0.7.0)
+
+The C2 classifier runs only in the gray zone of the privacy score, and it can only add a signal.
+
+| Backend | Call | Signal when sensitive |
+|---|---|---|
+| `chat` (default) | `POST $CLASSIFIER_BASE_URL/chat/completions`: one JSON verdict `{"sensitive", "confidence"}` | `llm@0.90` |
+| `systemone` | `POST $CLASSIFIER_BASE_URL/systemone` (the example decision server of vLLM): three yes/no questions with the text as state, one probability each from one forward pass | `systemone/llm@0.93` |
+
+The `systemone` questions keep the criteria of the chat prompt: `personal_sensitive` and `credentials`
+add the signal (weight 0.80, as the chat backend) when the higher of the two is at or above
+`classifier.decision_threshold`. `business_confidential` never adds weight; it stays in the log with
+weight 0, for example `systemone/business_confidential@0.99(ignored):0.00`, so the log shows why a
+confidential business text may still go to SOTA.
+
+**Fallback chain.** With `systemone`, an error, a timeout (`timeout_seconds`, 8 s by default) or a reply
+without a probability for every question does not fail closed at once. The hook asks the chat backend at
+`CLASSIFIER_FALLBACK_BASE_URL` / `CLASSIFIER_FALLBACK_MODEL` (the local Qwen model in the demo) with the
+chat prompt; its signal is `fallback/llm@0.90`. Only when the fallback fails too, or is not set, the
+signal is `error` (fail-closed). The worst case is two timeouts, 16 s. The span `gate.privacy` gets the
+attributes `classifier.backend` and `classifier.fallback` (boolean). The fallback matters in the demo:
+with `grayLow: "0"`, a fail-closed C2 would send every request LOCAL.
+
+Measured on 2026-09-30 on one NVIDIA L40S (the decision server with three questions, a new text each
+call): about 350 ms for a short prompt (134 ms with `samples: 1`), 570 ms for 3,800 tokens, 5.8 s for
+40,000 tokens. The first call after the model starts takes about 30 s.
 
 ## Traces and metrics (since v0.5.0)
 
@@ -127,6 +161,10 @@ uv run eval/check_baseline.py --update   # accept the new results (explain why i
 ```
 
 The classifier stays off in the evaluation, and the harness uses the default threshold of the policy.
+To compare the C2 backends, run `eval/run_eval.py` against a cluster (port-forward Presidio and the
+classifier) with `CLASSIFIER_ENABLED=1 CLASSIFIER_GRAY_LOW=0`, then `CLASSIFIER_BACKEND=chat` or
+`systemone` and the `CLASSIFIER_*` URLs; `CLASSIFIER_SAMPLES` sets `classifier.samples`. A row counts as
+`classifier_fired` when a classifier signal has weight above 0.
 
 ## Release
 

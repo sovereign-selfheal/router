@@ -271,3 +271,44 @@ def test_hook_works_without_the_packages():
         env=env, capture_output=True, text=True, timeout=60)
     assert result.returncode == 0, result.stdout + result.stderr
     assert "OK without opentelemetry and prometheus_client" in result.stdout
+
+
+def test_classifier_backend_and_fallback_on_the_privacy_span(router, monkeypatch):
+    # C2 with the systemone backend: the decision server times out, the chat fallback
+    # says sensitive. The gate span names the backend and the fallback; the reason of
+    # the decision names the fallback in the signal label.
+    class _Client:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *exc):
+            return False
+
+        async def post(self, url, json=None, headers=None):
+            if url.endswith("/systemone"):
+                raise privacy_scoring.httpx.TimeoutException("timeout")
+
+            class _Resp:
+                def raise_for_status(self):
+                    pass
+
+                def json(self):
+                    return {"choices": [{"message": {
+                        "content": '{"sensitive": true, "confidence": 0.9}'}}]}
+
+            return _Resp()
+
+    monkeypatch.setattr(privacy_scoring.httpx, "AsyncClient", _Client)
+    monkeypatch.setenv("CLASSIFIER_BASE_URL", "http://decision.test/v1")
+    monkeypatch.setenv("CLASSIFIER_FALLBACK_BASE_URL", "http://qwen.test/v1")
+    monkeypatch.setenv("CLASSIFIER_FALLBACK_MODEL", "qwen-local")
+    router.scorer._classifier.update({"enabled": True, "gray_low": 0.0, "backend": "systemone"})
+    _out, decision, spans, _proxy = route_under_proxy_span(router, LONG_BENIGN)
+    assert decision["routed_to"] == "local-fast" and decision["decided_by"] == "privacy"
+    assert "fallback/llm@0.90" in decision["reason"]
+    gate = spans["gate.privacy"]
+    assert gate.attributes["classifier.backend"] == "systemone"
+    assert gate.attributes["classifier.fallback"] is True
