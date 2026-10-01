@@ -209,4 +209,8 @@ classifier:
   # CLASSIFIER_FALLBACK_MODEL (fallback_base_url_env, fallback_model_env).
   # decision_threshold (router v0.7.0, default 0.5): systemone, a positive question at or
   # above this probability adds the signal (weight above).
-  # samples (router v0.7.0, default: the decision server's own, 4): noise draws per question.
+  # samples (router v0.7.0, default: none = the decision server's own, "auto": 1 to 4 noise
+  # draws per question, more when the answer is uncertain). Only the systemone backend reads it.
+  # 1: one draw. Same or better quality on the eval, lower and steadier latency (142 ms, p95
+  # 147 ms against p95 379 ms with "auto"); see router docs/c2-backends-*.md.
+  samples: 1

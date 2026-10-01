@@ -333,6 +333,8 @@ def systemone(monkeypatch, classifier_policy):
 
 
 def test_systemone_positive_adds_the_signal(make_scorer, classifier_policy, systemone):
+    # Without classifier.samples the request leaves the noise draws to the server.
+    classifier_policy["classifier"].pop("samples", None)
     systemone.replies = {"/systemone": _answers(personal=0.93, business=0.01)}
     scorer = make_scorer(policy=classifier_policy)
     _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
@@ -457,6 +459,15 @@ def test_unknown_backend_is_logged_and_uses_chat(
     _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
     assert ("classifier", "llm@0.90", 0.80) in signals
     assert "classifier.backend ignored" in capsys.readouterr().out
+
+
+def test_policy_samples_is_sent(make_scorer, classifier_policy, systemone):
+    # The gitops policy sets classifier.samples: 1 (one noise draw per question).
+    assert classifier_policy["classifier"]["samples"] == 1
+    systemone.replies = {"/systemone": _answers(personal=0.93)}
+    scorer = make_scorer(policy=classifier_policy)
+    run(scorer.score("My salary is too low.", threshold=0.70))
+    assert systemone.calls[0][1]["samples"] == 1
 
 
 def test_env_overrides_do_not_change_the_policy_dict(make_scorer, classifier_policy, systemone):
