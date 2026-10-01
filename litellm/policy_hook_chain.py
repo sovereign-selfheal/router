@@ -10,7 +10,10 @@ LOCAL. A request reaches SOTA only if EVERY gate returns SOTA.
                  or when the cumulative SOTA token budget is exhausted; SOTA for
                  long/complex ones. Reads the user question (last user turn), since
                  length/complexity is a property of the actual ask. Replaces the two
-                 overlapping cost/complexity policies with one gate.
+                 overlapping cost/complexity policies with one gate. Since v0.8.0 it
+                 also measures the WHOLE request (all turns, tool output, tool
+                 arguments, tool definitions): above `sota_max_prompt_chars` the SOTA
+                 model cannot take the request, so it stays LOCAL and no detector runs.
   * privacy    = the hardened privacy-plus engine (privacy_scoring.PrivacyScorer,
                  A+B+C1[+C2]). WHOLE-PAYLOAD scan, fail-closed. Loads its config from
                  policy/privacy-plus.yaml (single source of truth for privacy tuning).
@@ -38,6 +41,7 @@ Every tracing or metrics error is logged and ignored: the decision and fail-clos
 the same with or without OpenTelemetry and prometheus_client.
 """
 
+import json
 import os
 import re
 import threading
@@ -156,6 +160,9 @@ class ChainRouter(CustomLogger):
         self.simple_max_words = int(eff.get("simple_max_words", 40))
         self.complex_keywords = [k.lower() for k in eff.get("complex_keywords", [])]
         self.sota_token_budget = int(eff.get("sota_token_budget", 0))
+        # Size cap of a SOTA request, in characters of the whole request (v0.8.0).
+        # Unset or 0 = no cap (the behaviour before).
+        self.sota_max_prompt_chars = int(eff.get("sota_max_prompt_chars", 0) or 0)
         self._lock = threading.Lock()
         self._sota_tokens_used = 0
 
@@ -209,6 +216,16 @@ class ChainRouter(CustomLogger):
                 parts.append(fn_call["arguments"])
         return "\n".join(p for p in parts if p)
 
+    @classmethod
+    def _prompt_chars(cls, data):
+        """Size in characters of what would be sent to the SOTA model: the whole payload
+        (system, every turn, tool output, tool call arguments) plus the tool definitions."""
+        tools = data.get("tools") or data.get("functions") or []
+        size = len(cls._whole_payload(data))
+        if tools:
+            size += len(json.dumps(tools, ensure_ascii=False))
+        return size
+
     @staticmethod
     def _team(data):
         for src in ("metadata", "proxy_server_request"):
@@ -227,6 +244,18 @@ class ChainRouter(CustomLogger):
 
     # -- gates: each returns (verdict, reason) with verdict in {"local","sota"} --
     def _gate_efficiency(self, data):
+        if self.sota_max_prompt_chars > 0:
+            # FAIL-CLOSED: a request that cannot be measured stays LOCAL.
+            try:
+                chars = self._prompt_chars(data)
+            except Exception as exc:
+                return "local", (
+                    f"efficiency: SOTA context limit: count error ({type(exc).__name__})"
+                )
+            if chars > self.sota_max_prompt_chars:
+                return "local", (
+                    f"efficiency: SOTA context limit ({chars} > {self.sota_max_prompt_chars} chars)"
+                )
         text = self._last_user_text(data)
         if self.sota_token_budget > 0:
             with self._lock:
@@ -251,8 +280,15 @@ class ChainRouter(CustomLogger):
             why.append(f"keyword '{complex_kw}'")
         return "sota", "efficiency: long/complex (" + ", ".join(why) + ")"
 
-    async def _gate_privacy(self, data):
+    async def _gate_privacy(self, data, extra=None):
         text = self._whole_payload(data)
+        if extra is not None:
+            try:  # log fields only: never on the decision path
+                timeouts = self.scorer.timeouts_for(text)
+                extra["ner_timeout_s"] = timeouts["ner"]
+                extra["c2_timeout_s"] = timeouts["classifier"]
+            except Exception as exc:
+                print(f"[policy-router] timeout fields error (ignored): {exc}", flush=True)
         team = self._team(data)
         threshold, team_key = self._threshold_for(team)
         score, signals = await self.scorer.score(text, threshold)
@@ -283,6 +319,14 @@ class ChainRouter(CustomLogger):
         return target, None
 
     # -- observability helpers: they log and ignore their own errors --------------
+    def _size_fields(self, data):
+        """Log fields of the SOTA size cap: the request size and the cap (None = off)."""
+        try:
+            chars = self._prompt_chars(data)
+        except Exception:
+            chars = None
+        return {"prompt_chars": chars, "sota_cap": self.sota_max_prompt_chars or None}
+
     def _team_label(self, team):
         if not team:
             return "none"
@@ -332,6 +376,7 @@ class ChainRouter(CustomLogger):
                 target = self.sota_model
                 deciding = "all-sota"
                 trace = []
+                extra = {}
                 for gate in self.gate_order:
                     if gate not in ("efficiency", "privacy"):
                         continue  # unknown gate name in config -> skip, don't crash
@@ -339,7 +384,7 @@ class ChainRouter(CustomLogger):
                         if gate == "efficiency":
                             verdict, reason = self._gate_efficiency(data)
                         else:
-                            verdict, reason = await self._gate_privacy(data)
+                            verdict, reason = await self._gate_privacy(data, extra)
                         gate_span.set("gate.verdict", verdict)
                         gate_span.set("gate.reason", reason)
                     trace.append(f"{reason} -> {verdict.upper()}")
@@ -359,6 +404,8 @@ class ChainRouter(CustomLogger):
                     "reason": tier_reason or (trace[-1] if trace else "no-gate"),
                     "team": team,
                 }
+                decision.update(self._size_fields(data))  # additive (v0.8.0)
+                decision.update(extra)
                 trace_id = chain_span.trace_id()
                 if trace_id:
                     decision["trace_id"] = trace_id  # additive: find the trace from the log line

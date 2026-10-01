@@ -303,6 +303,30 @@ class PrivacyScorer:
         # (the hook) does not pass a per-team threshold to score().
         self._threshold = float(self.policy.get("threshold", 0.5))
 
+    # -- timeouts that grow with the text (router v0.8.0) --------------------------
+    @staticmethod
+    def _effective_timeout(cfg, base_default, n_chars):
+        """Timeout of ONE call to a detector (Presidio, or one C2 backend) for a text of
+        `n_chars` characters:
+
+            min(max(base, per_1k * n_chars / 1000), max(base, timeout_max))
+
+        `base` is `timeout_seconds`. `timeout_per_1k_chars` defaults to 0 and
+        `timeout_max_seconds` to `base`, so without the new keys the timeout is `base`,
+        as before. The cap can never go below `base`. A timeout still fails closed."""
+        base = float(cfg.get("timeout_seconds", base_default))
+        per_1k = float(cfg.get("timeout_per_1k_chars", 0) or 0)
+        top = max(base, float(cfg.get("timeout_max_seconds", base) or base))
+        return min(max(base, per_1k * n_chars / 1000.0), top)
+
+    def timeouts_for(self, text):
+        """Effective timeouts (seconds) of Presidio and C2 for this text, for the log line."""
+        n_chars = len(text)
+        return {
+            "ner": round(self._effective_timeout(self._ner, 3.0, n_chars), 2),
+            "classifier": round(self._effective_timeout(self._classifier, 8.0, n_chars), 2),
+        }
+
     # -- detector A -------------------------------------------------------------
     def _signals_structured(self, text):
         signals = []
@@ -400,7 +424,7 @@ class PrivacyScorer:
         else:            # uncertain -> be thorough
             langs = list(self._supported_langs)
 
-        timeout = float(self._ner.get("timeout_seconds", 3.0))
+        timeout = self._effective_timeout(self._ner, 3.0, len(text))
         min_conf = float(self._ner.get("min_confidence", 0.6))
         weights = self._ner.get("entity_weights") or {}
 
@@ -580,7 +604,7 @@ class PrivacyScorer:
         if cfg.get("chat_template_kwargs"):
             payload["chat_template_kwargs"] = dict(cfg["chat_template_kwargs"])
         headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
-        timeout = float(cfg.get("timeout_seconds", 8.0))
+        timeout = self._effective_timeout(cfg, 8.0, len(text))
         try:
             async with httpx.AsyncClient(timeout=timeout) as client:
                 resp = await client.post(
@@ -613,7 +637,7 @@ class PrivacyScorer:
         if cfg.get("samples") is not None:
             payload["samples"] = int(cfg["samples"])
         headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
-        timeout = float(cfg.get("timeout_seconds", 8.0))
+        timeout = self._effective_timeout(cfg, 8.0, len(text))
         try:
             async with httpx.AsyncClient(timeout=timeout) as client:
                 resp = await client.post(

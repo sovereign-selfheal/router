@@ -26,7 +26,8 @@ truth. `tests/policy/` holds a copy for the tests and the evaluation.
 `policy_hook_chain.py` runs two gates in order. The first gate that says LOCAL wins:
 
 1. **Efficiency**: short and simple questions stay local; long questions, or questions with a
-   complexity keyword, can go to SOTA.
+   complexity keyword, can go to SOTA. A request larger than the SOTA size cap stays local (since
+   v0.8.0, off by default; see "Large requests").
 2. **Privacy** (`privacy_scoring.py`): rules (regex with validators, lexicons), Presidio NER and an
    optional LLM classifier give a score. At or above the threshold of the team, the request stays local.
 
@@ -46,6 +47,11 @@ previous behaviour, so an old policy works with a new release.
 | `classifier.samples` | v0.7.0 | none | Backend `systemone`: noise draws per question; none = the default of the decision server (4) |
 | `classifier.fallback_base_url_env` / `fallback_model_env` | v0.7.0 | `CLASSIFIER_FALLBACK_BASE_URL` / `CLASSIFIER_FALLBACK_MODEL` | Backend `systemone`: env vars of the chat fallback |
 | `ner.context_entities` | v0.4.0 | `[]` | These entity types (for example `NRP`, `LOCATION`) count only when the text also has an identifier: structured personal data (card, IBAN, email, phone...) or another entity that counts. "European banks in Italy" names nobody |
+| `ner.timeout_per_1k_chars` / `classifier.timeout_per_1k_chars` | v0.8.0 | `0` | Seconds of timeout per 1,000 characters of text, for Presidio and for each C2 call. `0` = the fixed `timeout_seconds`, as before. See "Large requests" |
+| `ner.timeout_max_seconds` / `classifier.timeout_max_seconds` | v0.8.0 | `timeout_seconds` | Upper bound of the timeout that grows with the text |
+
+One key is in `chain.yaml`: `efficiency.sota_max_prompt_chars` (since v0.8.0, default `0` = no cap), the
+SOTA size cap of "Large requests".
 
 The key `classifier.chat_template_kwargs` (since v0.6.0, default: none) is a mapping of chat template
 arguments sent with the call of the C2 classifier. The env var `CLASSIFIER_CHAT_TEMPLATE_KWARGS` (a JSON
@@ -56,6 +62,41 @@ value (not a mapping, or an env var that is not a JSON object) is ignored with a
 
 Ignored entities stay in the log with weight 0, for example `NRP@0.85(no id):0.00` or
 `PERSON@0.85(<2 words):0.00`, so the log shows what the engine saw and why it did not count it.
+
+## Large requests (since v0.8.0)
+
+The self-heal agents send the whole conversation each turn: system prompt, tool definitions, tool calls
+and their output. These requests can be larger than the SOTA model accepts, and Presidio and C2 need more
+time for them. Measurements: [`docs/c2-large-context-2026-10-01.md`](docs/c2-large-context-2026-10-01.md).
+Both features are off by default.
+
+**SOTA size cap** (`efficiency.sota_max_prompt_chars` in `chain.yaml`). The efficiency gate measures the
+whole request in characters: every message, the tool call arguments and the tool definitions. Above the
+cap the request stays LOCAL with the reason `efficiency: SOTA context limit (<size> > <cap> chars)`, and
+no detector runs (no Presidio call, no C2 call). An error while measuring also routes LOCAL. The cap is
+in characters, not in tokens: the router has no tokenizer, and the SOTA model would count with its own.
+Choose it as `(SOTA context window - max_tokens of the agents - margin) x characters per token`.
+Log text has about 2.3 characters per token (measured), English prose about 4: a cap computed for log
+text is safe, and keeps prose LOCAL earlier than needed. Example: a 65,536-token window, `max_tokens`
+8,192 and a 10% margin give about 51,000 tokens, so about 117,000 characters.
+
+**Timeouts that grow with the text** (`ner.*` and `classifier.*` in `privacy-plus.yaml`). The timeout of
+one call is
+
+```
+min(max(timeout_seconds, timeout_per_1k_chars x characters / 1000), max(timeout_seconds, timeout_max_seconds))
+```
+
+where the characters are those of the text sent to the detector. With `timeout_per_1k_chars: 0` the
+timeout is `timeout_seconds`, as before. A timeout still fails closed. Values from the measurements of
+2026-10-01, with a margin of about 1.4-1.5x: Presidio `0.052` s per 1,000 characters, max `10`;
+C2 `0.11`, max `15`. The bound is per call: Presidio is called twice (`en` and `it`) when the language
+is uncertain, and C2 with `systemone` calls the chat fallback after a failure. The worst case of the
+gate with these values is 2 x 10 + 2 x 15 = 50 s.
+
+**Log line.** The decision has four more keys (additive, the previous keys do not change):
+`prompt_chars` (size of the whole request, `None` if it could not be measured), `sota_cap` (`None` =
+off), and, when the privacy gate ran, `ner_timeout_s` and `c2_timeout_s` (the effective timeouts).
 
 ## C2 backends (since v0.7.0)
 
