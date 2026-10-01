@@ -144,6 +144,16 @@ ner:
   on_unsupported: skip               # only for a CONFIDENTLY-detected unsupported language:
                                      # skip (rely on A+B) | force_local
   timeout_seconds: 3.0
+  # Timeout that grows with the text (router >= v0.8.0). Timeout of one Presidio call =
+  #   min(max(timeout_seconds, timeout_per_1k_chars x characters / 1000),
+  #       max(timeout_seconds, timeout_max_seconds))
+  # Default 0 = always timeout_seconds (as before). A timeout still fails closed (LOCAL).
+  # Measured on 2026-10-01 (one call): 0.66 s at 18k characters, 2.57 s at 71k, 5.0 s at 143k;
+  # 0.052 and 10 give a margin of about 1.5x. The bound is per call: Presidio is called twice
+  # (en and it) when the language is uncertain. Several agents at once queue on Presidio: a
+  # longer timeout does not fix that.
+  timeout_per_1k_chars: 0     # suggested: 0.052
+  timeout_max_seconds: 3.0    # suggested: 10
   min_confidence: 0.60
   entity_weights:
     PERSON: 0.60
@@ -188,6 +198,14 @@ classifier:
                               # rules score >= threshold -> already LOCAL, skip the LLM
   weight: 0.80                # signal weight when the LLM says "sensitive"
   timeout_seconds: 8.0
+  # Timeout that grows with the text (router >= v0.8.0), same formula as ner.* above.
+  # Default 0 = always timeout_seconds (as before). The bound is per call: with backend
+  # systemone, a failure calls the chat fallback with the same timeout. Measured on 2026-10-01:
+  # systemone 0.69 s / 3.78 s / 10.6 s, chat on Qwen3.8 0.79 s / 3.28 s / 8.1 s at 18k / 71k /
+  # 143k characters; 0.11 and 15 give a margin of about 1.4x. With the suggested values the
+  # worst case of the privacy gate is 2 x 10 + 2 x 15 = 50 s.
+  timeout_per_1k_chars: 0     # suggested: 0.11
+  timeout_max_seconds: 8.0    # suggested: 15
   max_tokens: 200
   temperature: 0.0
   # Backend params injected from the Secret (classifier-provider-secret) via env, so
