@@ -260,3 +260,205 @@ def test_classifier_ignores_invalid_chat_template_kwargs_in_policy(
     assert ("classifier", "llm@0.90", 0.80) in signals
     assert "chat_template_kwargs" not in fake_classifier.payloads[0]
     assert "classifier.chat_template_kwargs ignored" in capsys.readouterr().out
+
+
+# ------------------------------------------------- C2 backend systemone (v0.7.0)
+class _FakeRoutes:
+    """Stands in for httpx.AsyncClient: answers by URL suffix, records each call.
+
+    `replies` maps a URL suffix to a JSON body, or to an Exception to raise (for
+    example httpx.TimeoutException), or to a string (a body that is not the JSON the
+    client expects)."""
+
+    replies = {}
+    calls = []
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *exc):
+        return False
+
+    async def post(self, url, json=None, headers=None):
+        _FakeRoutes.calls.append((url, json))
+        matches = [r for suffix, r in _FakeRoutes.replies.items() if url.endswith(suffix)]
+        if not matches:
+            raise AssertionError(f"unexpected URL {url}")
+        reply = matches[0]
+        if isinstance(reply, Exception):
+            raise reply
+
+        class _Resp:
+            def raise_for_status(self):
+                pass
+
+            def json(self):
+                if isinstance(reply, str):
+                    raise ValueError("not JSON")
+                return reply
+
+        return _Resp()
+
+
+def _answers(personal=0.0, credentials=0.0, business=0.0):
+    return {
+        "model": "dgemma",
+        "answers": {
+            "personal_sensitive": {"type": "noul", "noul": personal},
+            "credentials": {"type": "noul", "noul": credentials},
+            "business_confidential": {"type": "noul", "noul": business},
+        },
+    }
+
+
+_CHAT_SENSITIVE = {"choices": [{"message": {"content": '{"sensitive": true, "confidence": 0.9}'}}]}
+
+
+@pytest.fixture
+def systemone(monkeypatch, classifier_policy):
+    import privacy_scoring
+
+    _FakeRoutes.replies = {}
+    _FakeRoutes.calls = []
+    monkeypatch.setattr(privacy_scoring.httpx, "AsyncClient", _FakeRoutes)
+    monkeypatch.setenv("CLASSIFIER_BACKEND", "systemone")
+    monkeypatch.setenv("CLASSIFIER_BASE_URL", "http://decision.test/v1")
+    monkeypatch.setenv("CLASSIFIER_MODEL", "dgemma")
+    monkeypatch.setenv("CLASSIFIER_FALLBACK_BASE_URL", "http://qwen.test/v1")
+    monkeypatch.setenv("CLASSIFIER_FALLBACK_MODEL", "qwen-local")
+    return _FakeRoutes
+
+
+def test_systemone_positive_adds_the_signal(make_scorer, classifier_policy, systemone):
+    systemone.replies = {"/systemone": _answers(personal=0.93, business=0.01)}
+    scorer = make_scorer(policy=classifier_policy)
+    _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
+    assert ("classifier", "systemone/llm@0.93", 0.80) in signals
+    assert ("classifier", "systemone/business_confidential@0.01(ignored)", 0.0) in signals
+    url, payload = systemone.calls[0]
+    assert url == "http://decision.test/v1/systemone"
+    assert payload["state"] == {"text": "My salary is too low."}
+    assert set(payload["questions"]) == {
+        "personal_sensitive", "credentials", "business_confidential"}
+    assert all(q["type"] == "noul" for q in payload["questions"].values())
+    assert "samples" not in payload
+    assert len(systemone.calls) == 1
+
+
+def test_systemone_takes_the_highest_positive_question(make_scorer, classifier_policy, systemone):
+    systemone.replies = {"/systemone": _answers(personal=0.2, credentials=0.97)}
+    scorer = make_scorer(policy=classifier_policy)
+    _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
+    assert ("classifier", "systemone/llm@0.97", 0.80) in signals
+
+
+def test_systemone_negative_adds_no_weight(make_scorer, classifier_policy, systemone):
+    # A confidential business text: the ignored question is shown, nothing is added.
+    systemone.replies = {"/systemone": _answers(personal=0.01, business=0.99)}
+    scorer = make_scorer(policy=classifier_policy)
+    score_only_rules = run(make_scorer().score("My salary is too low.", threshold=0.70))[0]
+    score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
+    classifier = [s for s in signals if s[0] == "classifier"]
+    assert classifier == [("classifier", "systemone/business_confidential@0.99(ignored)", 0.0)]
+    assert score == score_only_rules
+
+
+def test_systemone_decision_threshold_from_policy(make_scorer, classifier_policy, systemone):
+    classifier_policy["classifier"]["decision_threshold"] = 0.95
+    classifier_policy["classifier"]["samples"] = 1
+    systemone.replies = {"/systemone": _answers(personal=0.93)}
+    scorer = make_scorer(policy=classifier_policy)
+    _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
+    assert not [s for s in signals if s[0] == "classifier" and s[2] > 0]
+    assert systemone.calls[0][1]["samples"] == 1
+
+
+def test_systemone_timeout_falls_back_to_chat(make_scorer, classifier_policy, systemone):
+    import privacy_scoring
+
+    systemone.replies = {
+        "/systemone": privacy_scoring.httpx.TimeoutException("timeout"),
+        "/chat/completions": _CHAT_SENSITIVE,
+    }
+    scorer = make_scorer(policy=classifier_policy)
+    _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
+    assert ("classifier", "fallback/llm@0.90", 0.80) in signals
+    assert [c[0] for c in systemone.calls] == [
+        "http://decision.test/v1/systemone",
+        "http://qwen.test/v1/chat/completions",
+    ]
+    assert systemone.calls[1][1]["model"] == "qwen-local"
+
+
+def test_systemone_and_fallback_fail_closed(make_scorer, classifier_policy, systemone):
+    import privacy_scoring
+
+    systemone.replies = {
+        "/systemone": privacy_scoring.httpx.TimeoutException("timeout"),
+        "/chat/completions": privacy_scoring.httpx.ConnectError("refused"),
+    }
+    scorer = make_scorer(policy=classifier_policy)
+    _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
+    assert ("classifier", "error", 0.80) in signals
+
+
+def test_systemone_without_fallback_fails_closed(
+    make_scorer, classifier_policy, systemone, monkeypatch
+):
+    monkeypatch.delenv("CLASSIFIER_FALLBACK_BASE_URL")
+    systemone.replies = {"/systemone": "<html>502</html>"}
+    scorer = make_scorer(policy=classifier_policy)
+    _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
+    assert ("classifier", "error", 0.80) in signals
+    assert len(systemone.calls) == 1
+
+
+@pytest.mark.parametrize(
+    "reply",
+    [
+        "<html>502</html>",                                   # not JSON
+        {"model": "dgemma"},                                  # no answers
+        {"answers": {"personal_sensitive": {"noul": 0.9}}},  # a question missing
+        _answers(personal=1.7),                               # not a probability
+    ],
+)
+def test_systemone_malformed_reply_falls_back(make_scorer, classifier_policy, systemone, reply):
+    systemone.replies = {"/systemone": reply, "/chat/completions": _CHAT_SENSITIVE}
+    scorer = make_scorer(policy=classifier_policy)
+    _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
+    assert ("classifier", "fallback/llm@0.90", 0.80) in signals
+
+
+def test_systemone_skipped_outside_gray_zone(make_scorer, classifier_policy, systemone):
+    scorer = make_scorer(policy=classifier_policy)
+    run(scorer.score("card 4111 1111 1111 1111", threshold=0.70))
+    assert systemone.calls == []
+
+
+def test_backend_chat_is_unchanged(make_scorer, classifier_policy, systemone, monkeypatch):
+    # backend chat: one call to <base>/chat/completions, no fallback, the old label.
+    monkeypatch.setenv("CLASSIFIER_BACKEND", "chat")
+    systemone.replies = {"/chat/completions": _CHAT_SENSITIVE}
+    scorer = make_scorer(policy=classifier_policy)
+    _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
+    assert ("classifier", "llm@0.90", 0.80) in signals
+    assert [c[0] for c in systemone.calls] == ["http://decision.test/v1/chat/completions"]
+
+
+def test_unknown_backend_is_logged_and_uses_chat(
+    make_scorer, classifier_policy, systemone, monkeypatch, capsys
+):
+    monkeypatch.setenv("CLASSIFIER_BACKEND", "sytemone")
+    systemone.replies = {"/chat/completions": _CHAT_SENSITIVE}
+    scorer = make_scorer(policy=classifier_policy)
+    _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
+    assert ("classifier", "llm@0.90", 0.80) in signals
+    assert "classifier.backend ignored" in capsys.readouterr().out
+
+
+def test_env_overrides_do_not_change_the_policy_dict(make_scorer, classifier_policy, systemone):
+    make_scorer(policy=classifier_policy)
+    assert "backend" not in classifier_policy["classifier"]

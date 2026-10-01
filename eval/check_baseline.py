@@ -50,7 +50,8 @@ def run_set(name, policy_dir):
             "CSV_OUT": str(csv_out),
             "EVAL_LABEL": name,
         })
-        for var in ("CLASSIFIER_ENABLED", "CLASSIFIER_GRAY_LOW"):
+        for var in ("CLASSIFIER_ENABLED", "CLASSIFIER_GRAY_LOW",
+                    "CLASSIFIER_BACKEND", "CLASSIFIER_SAMPLES"):
             env.pop(var, None)
         proc = subprocess.run([sys.executable, str(ROOT / "eval" / "run_eval.py")], env=env,
                               capture_output=True, text=True)

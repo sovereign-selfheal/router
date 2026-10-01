@@ -201,3 +201,12 @@ classifier:
   # CLASSIFIER_CHAT_TEMPLATE_KWARGS (a JSON object) overrides it; the LiteLLM Deployment
   # sets it when classifier.mode is local. An invalid value is ignored with a log line.
   # Do not set it for a provider that does not accept this parameter.
+  # backend (router v0.7.0, default: chat): `chat` asks a chat model for a JSON verdict;
+  # `systemone` asks the decision server of the decision model three yes/no questions
+  # (one probability each). The env var CLASSIFIER_BACKEND overrides it; the LiteLLM
+  # Deployment sets systemone when decisionModel.enabled. With systemone, an error or a
+  # timeout falls back to the chat model of CLASSIFIER_FALLBACK_BASE_URL and
+  # CLASSIFIER_FALLBACK_MODEL (fallback_base_url_env, fallback_model_env).
+  # decision_threshold (router v0.7.0, default 0.5): systemone, a positive question at or
+  # above this probability adds the signal (weight above).
+  # samples (router v0.7.0, default: the decision server's own, 4): noise draws per question.
