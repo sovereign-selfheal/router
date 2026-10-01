@@ -40,6 +40,7 @@ gate_order: [efficiency, privacy]
 # simple AND not flagged by a complex keyword; also LOCAL once the cumulative
 # SOTA token budget is exhausted (cost cap, off by default). Otherwise SOTA. Reads the user
 # question only (the last user turn) — length/complexity is a property of the ask.
+# Exception (router >= v0.8.0): the SOTA size cap below measures the WHOLE request.
 efficiency:
   max_prompt_chars_for_local: 280   # at/under this (chars) contributes to LOCAL
   simple_max_words: 40              # at/under this (words) contributes to LOCAL
@@ -76,6 +77,18 @@ efficiency:
                                     # quota of the SOTA provider on its API key; the per-tier
                                     # limits of the gateway bound the token rate. A value > 0
                                     # turns the cap on again (for example to show fallback).
+  # SOTA size cap (router >= v0.8.0; default 0 = off). Size of the WHOLE request in characters:
+  # every message, tool output, tool call arguments and tool definitions. Above the cap the
+  # request stays LOCAL (reason "efficiency: SOTA context limit") and no detector runs: the SOTA
+  # model could not take it, and Presidio and C2 would spend seconds on it for nothing. A counting
+  # error also routes LOCAL. Characters, not tokens: the router has no tokenizer, and the SOTA
+  # model counts with its own. Choose the value as
+  #   (SOTA context window - max_tokens of the agents - margin) x characters per token.
+  # Log text has about 2.3 characters per token (measured on 2026-10-01), English prose about 4:
+  # a cap computed for log text is safe and keeps prose LOCAL earlier than needed. Example: a
+  # 65,536-token window, max_tokens 8192 (components/triage-agent) and a 10% margin give about
+  # 51,000 tokens, so about 117000 characters. Off until the window of the SOTA model is known.
+  sota_max_prompt_chars: 0
 
 # --- Gate 2 — privacy --------------------------------------------------------
 # Reuses the hardened privacy-plus engine (A regex+validators, B lexicons,

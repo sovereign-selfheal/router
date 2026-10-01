@@ -1,0 +1,238 @@
+{
+ "cluster": "ocp.5bw8q",
+ "date": "2026-10-01",
+ "router": "v0.8.0",
+ "phases": {
+  "phase1": {
+   "keys": "new keys off (gitops main e1533c9)",
+   "cases": [
+    {
+     "id": "K1",
+     "status": "PASS",
+     "name": "agent context ~8k tokens, benign",
+     "prompt_tokens": 8577,
+     "prompt_chars": 19736,
+     "first_chunk_s": 2.7,
+     "routed_to": "local-fast",
+     "decided_by": "privacy",
+     "reason": "privacy: score 0.76 (PERSON@0.85:0.60, LOCATION@0.85:0.40) >= 0.70[team=research] -> LOCAL"
+    },
+    {
+     "id": "K2",
+     "status": "PASS",
+     "name": "agent context ~8k tokens, sensitive sentence",
+     "prompt_tokens": 8672,
+     "prompt_chars": 19943,
+     "first_chunk_s": 2.2,
+     "routed_to": "local-fast",
+     "decided_by": "privacy",
+     "reason": "privacy: score 0.76 (PERSON@0.85:0.60, LOCATION@0.85:0.40) >= 0.70[team=research] -> LOCAL"
+    },
+    {
+     "id": "K3",
+     "status": "PASS",
+     "name": "agent context ~30k tokens, benign",
+     "prompt_tokens": 30892,
+     "prompt_chars": 69852,
+     "first_chunk_s": 6.9,
+     "routed_to": "local-fast",
+     "decided_by": "privacy",
+     "reason": "privacy: score 0.97 (MEDICAL_LICENSE@1.00:0.70, LOCATION@0.85:0.40, NRP@0.85:0.55, PERSON@0.85:0.60) >= 0.70[team=research] -> LOCAL"
+    },
+    {
+     "id": "K4",
+     "status": "PASS",
+     "name": "agent context ~30k tokens, sensitive sentence",
+     "prompt_tokens": 30988,
+     "prompt_chars": 70060,
+     "first_chunk_s": 6.9,
+     "routed_to": "local-fast",
+     "decided_by": "privacy",
+     "reason": "privacy: score 0.97 (MEDICAL_LICENSE@1.00:0.70, LOCATION@0.85:0.40, NRP@0.85:0.55, PERSON@0.85:0.60) >= 0.70[team=research] -> LOCAL"
+    },
+    {
+     "id": "K5",
+     "status": "WARN",
+     "name": "agent context ~60k tokens, benign",
+     "prompt_tokens": 61615,
+     "prompt_chars": 138518,
+     "first_chunk_s": 12.8,
+     "routed_to": "local-fast",
+     "decided_by": "privacy",
+     "reason": "privacy: score 1.00 (error:ReadTimeout:1.00) >= 0.70[team=research] -> LOCAL"
+    },
+    {
+     "id": "K6",
+     "status": "PASS",
+     "name": "agent context ~60k tokens, sensitive sentence",
+     "prompt_tokens": 61711,
+     "prompt_chars": 138726,
+     "first_chunk_s": 12.4,
+     "routed_to": "local-fast",
+     "decided_by": "privacy",
+     "reason": "privacy: score 1.00 (error:ReadTimeout:1.00) >= 0.70[team=research] -> LOCAL"
+    },
+    {
+     "id": "K7",
+     "status": "WARN",
+     "name": "agent context ~100k tokens, benign",
+     "prompt_tokens": 101796,
+     "prompt_chars": 229153,
+     "first_chunk_s": 22.4,
+     "routed_to": "local-fast",
+     "decided_by": "privacy",
+     "reason": "privacy: score 1.00 (error:ReadTimeout:1.00) >= 0.70[team=research] -> LOCAL"
+    },
+    {
+     "id": "K8",
+     "status": "SKIP",
+     "name": "agent context just under the SOTA size cap, benign",
+     "prompt_tokens": null,
+     "prompt_chars": null,
+     "first_chunk_s": null,
+     "routed_to": null,
+     "decided_by": null,
+     "reason": "SOTA size cap off (no sota_cap in the log line: router < v0.8.0 or efficiency.sota_max_prompt_chars unset)"
+    },
+    {
+     "id": "K9",
+     "status": "SKIP",
+     "name": "agent context just under the SOTA size cap, sensitive sentence",
+     "prompt_tokens": null,
+     "prompt_chars": null,
+     "first_chunk_s": null,
+     "routed_to": null,
+     "decided_by": null,
+     "reason": "SOTA size cap off (no sota_cap in the log line: router < v0.8.0 or efficiency.sota_max_prompt_chars unset)"
+    },
+    {
+     "id": "K10",
+     "status": "SKIP",
+     "name": "agent context just over the SOTA size cap, benign",
+     "prompt_tokens": null,
+     "prompt_chars": null,
+     "first_chunk_s": null,
+     "routed_to": null,
+     "decided_by": null,
+     "reason": "SOTA size cap off (no sota_cap in the log line: router < v0.8.0 or efficiency.sota_max_prompt_chars unset)"
+    }
+   ]
+  },
+  "phase2": {
+   "keys": "new keys on (gitops router-keys-on f813a09): cap 117000 chars, Presidio 0.052 s/1k max 10, C2 0.11 s/1k max 15",
+   "cases": [
+    {
+     "id": "K1",
+     "status": "PASS",
+     "name": "agent context ~8k tokens, benign",
+     "prompt_tokens": 8577,
+     "prompt_chars": 19736,
+     "first_chunk_s": 2.2,
+     "routed_to": "local-fast",
+     "decided_by": "privacy",
+     "reason": "privacy: score 0.76 (PERSON@0.85:0.60, LOCATION@0.85:0.40) >= 0.70[team=research] -> LOCAL"
+    },
+    {
+     "id": "K2",
+     "status": "PASS",
+     "name": "agent context ~8k tokens, sensitive sentence",
+     "prompt_tokens": 8672,
+     "prompt_chars": 19943,
+     "first_chunk_s": 2.1,
+     "routed_to": "local-fast",
+     "decided_by": "privacy",
+     "reason": "privacy: score 0.76 (PERSON@0.85:0.60, LOCATION@0.85:0.40) >= 0.70[team=research] -> LOCAL"
+    },
+    {
+     "id": "K3",
+     "status": "PASS",
+     "name": "agent context ~30k tokens, benign",
+     "prompt_tokens": 30892,
+     "prompt_chars": 69852,
+     "first_chunk_s": 6.9,
+     "routed_to": "local-fast",
+     "decided_by": "privacy",
+     "reason": "privacy: score 0.97 (MEDICAL_LICENSE@1.00:0.70, LOCATION@0.85:0.40, NRP@0.85:0.55, PERSON@0.85:0.60) >= 0.70[team=research] -> LOCAL"
+    },
+    {
+     "id": "K4",
+     "status": "PASS",
+     "name": "agent context ~30k tokens, sensitive sentence",
+     "prompt_tokens": 30988,
+     "prompt_chars": 70060,
+     "first_chunk_s": 7.3,
+     "routed_to": "local-fast",
+     "decided_by": "privacy",
+     "reason": "privacy: score 0.97 (MEDICAL_LICENSE@1.00:0.70, LOCATION@0.85:0.40, NRP@0.85:0.55, PERSON@0.85:0.60) >= 0.70[team=research] -> LOCAL"
+    },
+    {
+     "id": "K5",
+     "status": "PASS",
+     "name": "agent context ~60k tokens, benign",
+     "prompt_tokens": 61615,
+     "prompt_chars": 138518,
+     "first_chunk_s": 9.7,
+     "routed_to": "local-fast",
+     "decided_by": "efficiency",
+     "reason": "efficiency: SOTA context limit (138518 > 117000 chars) -> LOCAL"
+    },
+    {
+     "id": "K6",
+     "status": "PASS",
+     "name": "agent context ~60k tokens, sensitive sentence",
+     "prompt_tokens": 61711,
+     "prompt_chars": 138726,
+     "first_chunk_s": 9.7,
+     "routed_to": "local-fast",
+     "decided_by": "efficiency",
+     "reason": "efficiency: SOTA context limit (138726 > 117000 chars) -> LOCAL"
+    },
+    {
+     "id": "K7",
+     "status": "PASS",
+     "name": "agent context ~100k tokens, benign",
+     "prompt_tokens": 101796,
+     "prompt_chars": 229153,
+     "first_chunk_s": 19.2,
+     "routed_to": "local-fast",
+     "decided_by": "efficiency",
+     "reason": "efficiency: SOTA context limit (229153 > 117000 chars) -> LOCAL"
+    },
+    {
+     "id": "K8",
+     "status": "PASS",
+     "name": "agent context just under the SOTA size cap, benign",
+     "prompt_tokens": 49567,
+     "prompt_chars": 111147,
+     "first_chunk_s": 11.6,
+     "routed_to": "local-fast",
+     "decided_by": "privacy",
+     "reason": "privacy: score 0.97 (MEDICAL_LICENSE@1.00:0.70, LOCATION@0.85:0.40, PERSON@0.85:0.60, NRP@0.85:0.55) >= 0.70[team=research] -> LOCAL"
+    },
+    {
+     "id": "K9",
+     "status": "PASS",
+     "name": "agent context just under the SOTA size cap, sensitive sentence",
+     "prompt_tokens": 49454,
+     "prompt_chars": 111086,
+     "first_chunk_s": 11.9,
+     "routed_to": "local-fast",
+     "decided_by": "privacy",
+     "reason": "privacy: score 0.97 (MEDICAL_LICENSE@1.00:0.70, LOCATION@0.85:0.40, PERSON@0.85:0.60, NRP@0.85:0.55) >= 0.70[team=research] -> LOCAL"
+    },
+    {
+     "id": "K10",
+     "status": "PASS",
+     "name": "agent context just over the SOTA size cap, benign",
+     "prompt_tokens": 54567,
+     "prompt_chars": 122741,
+     "first_chunk_s": 8.3,
+     "routed_to": "local-fast",
+     "decided_by": "efficiency",
+     "reason": "efficiency: SOTA context limit (122741 > 117000 chars) -> LOCAL"
+    }
+   ]
+  }
+ },
+ "note": "prompt_tokens: usage of the local model (Qwen3.8 tokenizer, the same model family as the SOTA model of this cluster). prompt_chars of K1-K7: the prompt_chars field of the router log line (phase 2), the same text in both phases (fixed seeds)."
+}

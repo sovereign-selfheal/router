@@ -68,6 +68,7 @@ Ignored entities stay in the log with weight 0, for example `NRP@0.85(no id):0.0
 The self-heal agents send the whole conversation each turn: system prompt, tool definitions, tool calls
 and their output. These requests can be larger than the SOTA model accepts, and Presidio and C2 need more
 time for them. Measurements: [`docs/c2-large-context-2026-10-01.md`](docs/c2-large-context-2026-10-01.md).
+The values below, and the tests behind them: [`docs/sota-size-cap-2026-10-01.md`](docs/sota-size-cap-2026-10-01.md).
 Both features are off by default.
 
 **SOTA size cap** (`efficiency.sota_max_prompt_chars` in `chain.yaml`). The efficiency gate measures the
