@@ -5,6 +5,7 @@ import copy
 
 import httpx
 import pytest
+from privacy_scoring import PrivacyScorer
 
 
 def run(coro):
@@ -473,3 +474,99 @@ def test_policy_samples_is_sent(make_scorer, classifier_policy, systemone):
 def test_env_overrides_do_not_change_the_policy_dict(make_scorer, classifier_policy, systemone):
     make_scorer(policy=classifier_policy)
     assert "backend" not in classifier_policy["classifier"]
+
+
+# ------------------------------------------- timeouts that grow with the text (v0.8.0)
+def test_timeout_without_new_keys_is_the_base(make_scorer):
+    scorer = make_scorer()
+    assert scorer.timeouts_for("x" * 200000) == {"ner": 3.0, "classifier": 8.0}
+
+
+@pytest.mark.parametrize("n_chars, expected", [
+    (0, 3.0),          # per_1k * 0 < base -> base
+    (50000, 3.0),      # 2.5 s < base -> base
+    (100000, 5.0),     # between base and max
+    (143000, 7.15),    # about 62k tokens of log text
+    (500000, 10.0),    # capped at max
+])
+def test_timeout_formula(n_chars, expected):
+    cfg = {"timeout_seconds": 3.0, "timeout_per_1k_chars": 0.05, "timeout_max_seconds": 10.0}
+    assert PrivacyScorer._effective_timeout(cfg, 3.0, n_chars) == pytest.approx(expected)
+
+
+def test_timeout_max_below_base_keeps_the_base():
+    cfg = {"timeout_seconds": 8.0, "timeout_per_1k_chars": 0.11, "timeout_max_seconds": 2.0}
+    assert PrivacyScorer._effective_timeout(cfg, 8.0, 500000) == 8.0
+
+
+def test_timeout_without_max_never_grows():
+    cfg = {"timeout_seconds": 3.0, "timeout_per_1k_chars": 0.05}
+    assert PrivacyScorer._effective_timeout(cfg, 3.0, 500000) == 3.0
+
+
+def test_presidio_gets_the_effective_timeout(make_scorer, privacy_policy):
+    policy = copy.deepcopy(privacy_policy)
+    policy["ner"].update(timeout_per_1k_chars=0.05, timeout_max_seconds=10.0)
+    timeouts = []
+    scorer = make_scorer(policy=policy)
+    fake = scorer.fake_presidio
+
+    async def spy(text, lang, timeout, entities=None):
+        timeouts.append(timeout)
+        return await fake(text, lang, timeout, entities)
+
+    scorer._query_presidio = spy
+    run(scorer.score("Compare OpenShift and Kubernetes. " + "x" * 100000))
+    assert timeouts == [pytest.approx(5.0, abs=0.01)]
+
+
+def test_presidio_timeout_still_fails_closed_with_the_new_keys(make_scorer, privacy_policy):
+    policy = copy.deepcopy(privacy_policy)
+    policy["ner"].update(timeout_per_1k_chars=0.05, timeout_max_seconds=10.0)
+    scorer = make_scorer(policy=policy, error=httpx.ReadTimeout("slow"))
+    score, signals = run(scorer.score("x" * 100000))
+    assert score == 1.0
+    assert ("ner", "error:ReadTimeout", 1.0) in signals
+
+
+class _TimeoutSpyClient(_FakeRoutes):
+    """Like _FakeRoutes, and records the timeout of each client."""
+
+    timeouts = []
+
+    def __init__(self, *args, timeout=None, **kwargs):
+        _TimeoutSpyClient.timeouts.append(timeout)
+
+
+def test_classifier_and_fallback_get_the_effective_timeout(
+    make_scorer, classifier_policy, systemone, monkeypatch
+):
+    import privacy_scoring
+
+    classifier_policy["classifier"].update(timeout_per_1k_chars=0.11, timeout_max_seconds=15.0)
+    _TimeoutSpyClient.timeouts = []
+    monkeypatch.setattr(privacy_scoring.httpx, "AsyncClient", _TimeoutSpyClient)
+    systemone.replies = {
+        "/systemone": privacy_scoring.httpx.TimeoutException("timeout"),
+        "/chat/completions": _CHAT_SENSITIVE,
+    }
+    scorer = make_scorer(policy=classifier_policy)
+    text = "My salary is too low. " + "x" * 100000                # about 11 s
+    _score, signals = run(scorer.score(text, threshold=0.70))
+    assert ("classifier", "fallback/llm@0.90", 0.80) in signals
+    assert _TimeoutSpyClient.timeouts == [pytest.approx(11.0, abs=0.01)] * 2
+
+
+def test_classifier_timeout_still_fails_closed_with_the_new_keys(
+    make_scorer, classifier_policy, systemone
+):
+    import privacy_scoring
+
+    classifier_policy["classifier"].update(timeout_per_1k_chars=0.11, timeout_max_seconds=15.0)
+    systemone.replies = {
+        "/systemone": privacy_scoring.httpx.TimeoutException("timeout"),
+        "/chat/completions": privacy_scoring.httpx.TimeoutException("timeout"),
+    }
+    scorer = make_scorer(policy=classifier_policy)
+    _score, signals = run(scorer.score("My salary is too low. " + "x" * 100000, threshold=0.70))
+    assert ("classifier", "error", 0.80) in signals
