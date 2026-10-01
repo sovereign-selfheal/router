@@ -1,0 +1,29 @@
+{"scenario": "context", "backend": "presidio", "size": 4000, "chars": 18226, "n": 3, "p50": 659, "p95": 673, "max": 673, "errors": 0, "error_types": [], "entities_found": 10}
+{"scenario": "context", "backend": "systemone-s1", "size": 4000, "n": 3, "p50": 692, "p95": 694, "max": 694, "errors": 0, "error_types": [], "tokens": 8319, "sensitive": [1.0, 1.0, 1.0]}
+{"scenario": "context", "backend": "chat", "size": 4000, "n": 3, "p50": 792, "p95": 805, "max": 805, "errors": 0, "error_types": [], "tokens": 7859, "sensitive": [true, true, true]}
+{"scenario": "context", "backend": "presidio", "size": 16000, "chars": 71186, "n": 3, "p50": 2571, "p95": 2574, "max": 2574, "errors": 0, "error_types": [], "entities_found": 48}
+{"scenario": "context", "backend": "systemone-s1", "size": 16000, "n": 3, "p50": 3783, "p95": 3795, "max": 3795, "errors": 0, "error_types": [], "tokens": 32529, "sensitive": [1.0, 1.0, 1.0]}
+{"scenario": "context", "backend": "chat", "size": 16000, "n": 3, "p50": 3276, "p95": 3287, "max": 3287, "errors": 0, "error_types": [], "tokens": 30322, "sensitive": [true, true, true]}
+{"scenario": "context", "backend": "presidio", "size": 32000, "chars": 142532, "n": 3, "p50": 5013, "p95": 5057, "max": 5057, "errors": 0, "error_types": [], "entities_found": 104}
+{"scenario": "context", "backend": "systemone-s1", "size": 32000, "n": 3, "p50": 10632, "p95": 10670, "max": 10670, "errors": 0, "error_types": [], "tokens": 63949, "sensitive": [1.0, 1.0, 1.0]}
+{"scenario": "context", "backend": "chat", "size": 32000, "n": 3, "p50": 8093, "p95": 8212, "max": 8212, "errors": 0, "error_types": [], "tokens": 59970, "sensitive": [true, true, true]}
+{"scenario": "context", "backend": "presidio", "size": 64000, "chars": 285149, "n": 3, "p50": 10538, "p95": 11026, "max": 11026, "errors": 0, "error_types": [], "entities_found": 205}
+{"scenario": "context", "backend": "systemone-s1", "size": 64000, "n": 3, "p50": 34932, "p95": 34963, "max": 34963, "errors": 0, "error_types": [], "tokens": 127486, "sensitive": [0.99, 1.0, 1.0]}
+{"scenario": "context", "backend": "chat", "size": 64000, "n": 3, "p50": 23401, "p95": 23423, "max": 23423, "errors": 0, "error_types": [], "tokens": 120246, "sensitive": [true, true, true]}
+{"scenario": "context", "backend": "presidio", "size": 100000, "skipped": "a smaller size took more than 10 s"}
+{"scenario": "context", "backend": "systemone-s1", "size": 100000, "n": 3, "p50": 78359, "p95": 79827, "max": 79827, "errors": 0, "error_types": [], "tokens": 197862, "sensitive": [1.0, 1.0, 1.0]}
+{"scenario": "context", "backend": "chat", "size": 100000, "n": 0, "errors": 3, "error_types": ["HTTPError"], "tokens": null, "sensitive": []}
+{"scenario": "context", "backend": "presidio", "size": 128000, "skipped": "a smaller size took more than 10 s"}
+{"scenario": "context", "backend": "systemone-s1", "size": 128000, "n": 0, "errors": 3, "error_types": ["TimeoutError"], "tokens": null, "sensitive": []}
+{"scenario": "context", "backend": "chat", "size": 128000, "n": 0, "errors": 3, "error_types": ["HTTPError"], "tokens": null, "sensitive": []}
+{"scenario": "router-context", "group": "context", "id": "K1", "name": "agent context ~8k tokens, benign", "status": "PASS", "detail": "HTTP 200 prompt_tokens=8577 first chunk 2.2s total 5.4s routed_to=local-fast by=privacy | privacy: score 0.76 (PERSON@0.85:0.60, LOCATION@0.85:0.40) >= 0.70[team=research] -> LOCAL"}
+{"scenario": "router-context", "group": "context", "id": "K2", "name": "agent context ~8k tokens, sensitive sentence", "status": "PASS", "detail": "HTTP 200 prompt_tokens=8672 first chunk 2.2s total 5.4s routed_to=local-fast by=privacy | privacy: score 0.76 (PERSON@0.85:0.60, LOCATION@0.85:0.40) >= 0.70[team=research] -> LOCAL"}
+{"scenario": "router-context", "group": "context", "id": "K3", "name": "agent context ~30k tokens, benign", "status": "PASS", "detail": "HTTP 200 prompt_tokens=30892 first chunk 6.6s total 9.9s routed_to=local-fast by=privacy | privacy: score 0.97 (MEDICAL_LICENSE@1.00:0.70, LOCATION@0.85:0.40, NRP@0.85:0.55, PERSON@0.85:0.60) >= 0.70[team=research] -> LOCAL"}
+{"scenario": "router-context", "group": "context", "id": "K4", "name": "agent context ~30k tokens, sensitive sentence", "status": "PASS", "detail": "HTTP 200 prompt_tokens=30988 first chunk 6.7s total 9.8s routed_to=local-fast by=privacy | privacy: score 0.97 (MEDICAL_LICENSE@1.00:0.70, LOCATION@0.85:0.40, NRP@0.85:0.55, PERSON@0.85:0.60) >= 0.70[team=research] -> LOCAL"}
+{"scenario": "router-context", "group": "context", "id": "K5", "name": "agent context ~60k tokens, benign", "status": "WARN", "detail": "HTTP 200 prompt_tokens=61615 first chunk 12.3s total 15.4s routed_to=local-fast by=privacy | privacy: score 1.00 (error:ReadTimeout:1.00) >= 0.70[team=research] -> LOCAL"}
+{"scenario": "router-context", "group": "context", "id": "K6", "name": "agent context ~60k tokens, sensitive sentence", "status": "PASS", "detail": "HTTP 200 prompt_tokens=61711 first chunk 12.9s total 15.9s routed_to=local-fast by=privacy | privacy: score 1.00 (error:ReadTimeout:1.00) >= 0.70[team=research] -> LOCAL"}
+{"scenario": "router-context", "group": "context", "id": "K7", "name": "agent context ~100k tokens, benign", "status": "WARN", "detail": "HTTP 200 prompt_tokens=101796 first chunk 22.1s total 25.9s routed_to=local-fast by=privacy | privacy: score 1.00 (error:ReadTimeout:1.00) >= 0.70[team=research] -> LOCAL"}
+{"scenario": "router-context-parallel", "status": 200, "first_chunk_s": 7.4, "total_s": 20.0, "prompt_tokens": 30964}
+{"scenario": "router-context-parallel", "status": 200, "first_chunk_s": 10.9, "total_s": 20.0, "prompt_tokens": 31470}
+{"scenario": "router-context-parallel", "status": 200, "first_chunk_s": 14.3, "total_s": 19.6, "prompt_tokens": 30782}
+{"scenario": "router-context-parallel", "status": 200, "first_chunk_s": 16.5, "total_s": 20.3, "prompt_tokens": 31106}
