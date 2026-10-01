@@ -1,0 +1,54 @@
+{"scenario": "concurrency", "backend": "systemone-auto", "concurrency": 1, "n": 20, "p50": 145, "p95": 379, "max": 379, "errors": 0, "error_types": [], "rps": 5.03, "tokens": 639}
+{"scenario": "concurrency", "backend": "systemone-auto", "concurrency": 2, "n": 20, "p50": 214, "p95": 2068, "max": 2068, "errors": 0, "error_types": [], "rps": 4.74, "tokens": 639}
+{"scenario": "concurrency", "backend": "systemone-auto", "concurrency": 4, "n": 20, "p50": 460, "p95": 2184, "max": 2184, "errors": 0, "error_types": [], "rps": 5.4, "tokens": 639}
+{"scenario": "concurrency", "backend": "systemone-auto", "concurrency": 8, "n": 32, "p50": 818, "p95": 1449, "max": 1514, "errors": 0, "error_types": [], "rps": 8.18, "tokens": 639}
+{"scenario": "concurrency", "backend": "systemone-auto", "concurrency": 16, "n": 64, "p50": 1033, "p95": 2080, "max": 2157, "errors": 0, "error_types": [], "rps": 12.85, "tokens": 639}
+{"scenario": "concurrency", "backend": "systemone-auto", "concurrency": 32, "n": 128, "p50": 2257, "p95": 5145, "max": 5306, "errors": 0, "error_types": [], "rps": 11.02, "tokens": 639}
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 1, "n": 20, "p50": 142, "p95": 147, "max": 147, "errors": 0, "error_types": [], "rps": 7.01, "tokens": 639}
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 2, "n": 20, "p50": 217, "p95": 219, "max": 219, "errors": 0, "error_types": [], "rps": 9.22, "tokens": 639}
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 4, "n": 20, "p50": 230, "p95": 232, "max": 232, "errors": 0, "error_types": [], "rps": 17.31, "tokens": 639}
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 8, "n": 32, "p50": 427, "p95": 510, "max": 510, "errors": 0, "error_types": [], "rps": 18.53, "tokens": 639}
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 16, "n": 64, "p50": 861, "p95": 1058, "max": 2018, "errors": 0, "error_types": [], "rps": 17.46, "tokens": 639}
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 32, "n": 128, "p50": 1668, "p95": 1707, "max": 2639, "errors": 0, "error_types": [], "rps": 18.87, "tokens": 639}
+{"scenario": "concurrency", "backend": "chat", "concurrency": 1, "n": 20, "p50": 242, "p95": 274, "max": 274, "errors": 0, "error_types": [], "rps": 4.0, "tokens": 578}
+{"scenario": "concurrency", "backend": "chat", "concurrency": 2, "n": 20, "p50": 339, "p95": 372, "max": 372, "errors": 0, "error_types": [], "rps": 5.79, "tokens": 578}
+{"scenario": "concurrency", "backend": "chat", "concurrency": 4, "n": 20, "p50": 428, "p95": 551, "max": 551, "errors": 0, "error_types": [], "rps": 9.05, "tokens": 578}
+{"scenario": "concurrency", "backend": "chat", "concurrency": 8, "n": 32, "p50": 586, "p95": 673, "max": 790, "errors": 0, "error_types": [], "rps": 13.39, "tokens": 578}
+{"scenario": "concurrency", "backend": "chat", "concurrency": 16, "n": 64, "p50": 936, "p95": 1234, "max": 1237, "errors": 0, "error_types": [], "rps": 15.87, "tokens": 578}
+{"scenario": "concurrency", "backend": "chat", "concurrency": 32, "n": 128, "p50": 1670, "p95": 2131, "max": 2766, "errors": 0, "error_types": [], "rps": 18.75, "tokens": 578}
+{"scenario": "size", "backend": "systemone-auto", "size": 400, "n": 5, "p50": 363, "p95": 369, "max": 369, "errors": 0, "error_types": [], "rps": 3.11, "tokens": 660}
+{"scenario": "size", "backend": "systemone-auto", "size": 4000, "n": 5, "p50": 271, "p95": 1021, "max": 1021, "errors": 0, "error_types": [], "rps": 2.37, "tokens": 3429}
+{"scenario": "size", "backend": "systemone-auto", "size": 16000, "n": 5, "p50": 1086, "p95": 1394, "max": 1394, "errors": 0, "error_types": [], "rps": 0.87, "tokens": 12660}
+{"scenario": "size", "backend": "systemone-auto", "size": 40000, "n": 5, "p50": 3532, "p95": 3691, "max": 3691, "errors": 0, "error_types": [], "rps": 0.28, "tokens": 31122}
+{"scenario": "size", "backend": "systemone-s1", "size": 400, "n": 5, "p50": 143, "p95": 149, "max": 149, "errors": 0, "error_types": [], "rps": 6.94, "tokens": 660}
+{"scenario": "size", "backend": "systemone-s1", "size": 4000, "n": 5, "p50": 271, "p95": 272, "max": 272, "errors": 0, "error_types": [], "rps": 3.67, "tokens": 3429}
+{"scenario": "size", "backend": "systemone-s1", "size": 16000, "n": 5, "p50": 1089, "p95": 1090, "max": 1090, "errors": 0, "error_types": [], "rps": 0.92, "tokens": 12660}
+{"scenario": "size", "backend": "systemone-s1", "size": 40000, "n": 5, "p50": 3543, "p95": 3550, "max": 3550, "errors": 0, "error_types": [], "rps": 0.28, "tokens": 31122}
+{"scenario": "size", "backend": "chat", "size": 400, "n": 5, "p50": 242, "p95": 253, "max": 253, "errors": 0, "error_types": [], "rps": 4.06, "tokens": 599}
+{"scenario": "size", "backend": "chat", "size": 4000, "n": 5, "p50": 416, "p95": 443, "max": 443, "errors": 0, "error_types": [], "rps": 2.36, "tokens": 3368}
+{"scenario": "size", "backend": "chat", "size": 16000, "n": 5, "p50": 1244, "p95": 1275, "max": 1275, "errors": 0, "error_types": [], "rps": 0.8, "tokens": 12599}
+{"scenario": "size", "backend": "chat", "size": 40000, "n": 5, "p50": 3402, "p95": 3407, "max": 3407, "errors": 0, "error_types": [], "rps": 0.29, "tokens": 31061}
+{"scenario": "busy", "backend": "systemone-auto", "chat_streams": 4, "n": 15, "p50": 143, "p95": 356, "max": 356, "errors": 0, "error_types": [], "rps": 5.37, "tokens": 639}
+{"scenario": "busy", "backend": "systemone-s1", "chat_streams": 4, "n": 15, "p50": 142, "p95": 160, "max": 160, "errors": 0, "error_types": [], "rps": 6.97, "tokens": 639}
+{"scenario": "busy", "backend": "chat", "chat_streams": 4, "n": 15, "p50": 290, "p95": 322, "max": 322, "errors": 0, "error_types": [], "rps": 3.36, "tokens": 578}
+{"scenario": "busy-load", "chat_streams": 4, "answers_done": 8}
+{"scenario": "busy", "backend": "systemone-auto", "chat_streams": 8, "n": 15, "p50": 143, "p95": 355, "max": 355, "errors": 0, "error_types": [], "rps": 5.85, "tokens": 639}
+{"scenario": "busy", "backend": "systemone-s1", "chat_streams": 8, "n": 15, "p50": 141, "p95": 147, "max": 147, "errors": 0, "error_types": [], "rps": 7.07, "tokens": 639}
+{"scenario": "busy", "backend": "chat", "chat_streams": 8, "n": 15, "p50": 339, "p95": 491, "max": 491, "errors": 0, "error_types": [], "rps": 2.93, "tokens": 578}
+{"scenario": "busy-load", "chat_streams": 8, "answers_done": 12}
+{"scenario": "busy", "backend": "systemone-auto", "chat_streams": 16, "busy_prompt": 600, "n": 20, "p50": 141, "p95": 351, "max": 351, "errors": 0, "error_types": [], "rps": 5.46, "tokens": 639}
+{"scenario": "busy", "backend": "systemone-s1", "chat_streams": 16, "busy_prompt": 600, "n": 20, "p50": 139, "p95": 146, "max": 146, "errors": 0, "error_types": [], "rps": 7.12, "tokens": 639}
+{"scenario": "busy", "backend": "chat", "chat_streams": 16, "busy_prompt": 600, "n": 20, "p50": 340, "p95": 478, "max": 478, "errors": 0, "error_types": [], "rps": 2.79, "tokens": 578}
+{"scenario": "busy-load", "chat_streams": 16, "answers_done": 22}
+{"scenario": "busy", "backend": "systemone-auto", "chat_streams": 32, "busy_prompt": 600, "n": 20, "p50": 140, "p95": 347, "max": 347, "errors": 0, "error_types": [], "rps": 6.61, "tokens": 639}
+{"scenario": "busy", "backend": "systemone-s1", "chat_streams": 32, "busy_prompt": 600, "n": 20, "p50": 139, "p95": 150, "max": 150, "errors": 0, "error_types": [], "rps": 7.17, "tokens": 639}
+{"scenario": "busy", "backend": "chat", "chat_streams": 32, "busy_prompt": 600, "n": 20, "p50": 415, "p95": 469, "max": 469, "errors": 0, "error_types": [], "rps": 2.37, "tokens": 578}
+{"scenario": "busy-load", "chat_streams": 32, "answers_done": 32}
+{"scenario": "busy", "backend": "systemone-auto", "chat_streams": 8, "busy_prompt": 8000, "n": 20, "p50": 143, "p95": 365, "max": 365, "errors": 0, "error_types": [], "rps": 4.87, "tokens": 639}
+{"scenario": "busy", "backend": "systemone-s1", "chat_streams": 8, "busy_prompt": 8000, "n": 20, "p50": 141, "p95": 209, "max": 209, "errors": 0, "error_types": [], "rps": 6.91, "tokens": 639}
+{"scenario": "busy", "backend": "chat", "chat_streams": 8, "busy_prompt": 8000, "n": 20, "p50": 315, "p95": 797, "max": 797, "errors": 0, "error_types": [], "rps": 2.67, "tokens": 578}
+{"scenario": "busy-load", "chat_streams": 8, "answers_done": 13}
+{"scenario": "busy", "backend": "systemone-auto", "chat_streams": 16, "busy_prompt": 8000, "n": 20, "p50": 143, "p95": 357, "max": 357, "errors": 0, "error_types": [], "rps": 4.87, "tokens": 639}
+{"scenario": "busy", "backend": "systemone-s1", "chat_streams": 16, "busy_prompt": 8000, "n": 20, "p50": 139, "p95": 145, "max": 145, "errors": 0, "error_types": [], "rps": 7.15, "tokens": 639}
+{"scenario": "busy", "backend": "chat", "chat_streams": 16, "busy_prompt": 8000, "n": 20, "p50": 353, "p95": 849, "max": 849, "errors": 0, "error_types": [], "rps": 2.59, "tokens": 578}
+{"scenario": "busy-load", "chat_streams": 16, "answers_done": 16}

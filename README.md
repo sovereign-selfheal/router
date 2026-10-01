@@ -81,7 +81,10 @@ attributes `classifier.backend` and `classifier.fallback` (boolean). The fallbac
 with `grayLow: "0"`, a fail-closed C2 would send every request LOCAL.
 
 The evaluation of both backends (quality and latency) is in
-[`docs/c2-backends-eval-2026-09-30.md`](docs/c2-backends-eval-2026-09-30.md).
+[`docs/c2-backends-eval-2026-09-30.md`](docs/c2-backends-eval-2026-09-30.md). Parallel calls, prompt
+size and C2 while the local model is busy are in
+[`docs/c2-backends-performance-2026-10-01.md`](docs/c2-backends-performance-2026-10-01.md); the test
+script is [`perf/c2_perf.py`](perf/c2_perf.py).
 
 Measured on 2026-09-30 on one NVIDIA L40S (the decision server with three questions, a new text each
 call): about 350 ms for a short prompt (134 ms with `samples: 1`), 570 ms for 3,800 tokens, 5.8 s for
