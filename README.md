@@ -76,10 +76,12 @@ whole request in characters: every message, the tool call arguments and the tool
 cap the request stays LOCAL with the reason `efficiency: SOTA context limit (<size> > <cap> chars)`, and
 no detector runs (no Presidio call, no C2 call). An error while measuring also routes LOCAL. The cap is
 in characters, not in tokens: the router has no tokenizer, and the SOTA model would count with its own.
-Choose it as `(SOTA context window - max_tokens of the agents - margin) x characters per token`.
-Log text has about 2.3 characters per token (measured), English prose about 4: a cap computed for log
-text is safe, and keeps prose LOCAL earlier than needed. Example: a 65,536-token window, `max_tokens`
-8,192 and a 10% margin give about 51,000 tokens, so about 117,000 characters.
+Choose it as the smaller of two limits: `(SOTA context window - max_tokens of the agents - margin) x
+characters per token`, and the largest text that Presidio and C2 read within their timeouts. Log text
+has about 2.3 characters per token for Qwen and about 1.6 for Gemini, English prose about 4. With a
+65,536-token window the first limit gave 117,000 characters
+([2026-10-01](docs/sota-size-cap-2026-10-01.md)). With gemini-2.5-pro the detectors set the limit:
+150,000 characters ([2026-10-02](docs/sota-size-cap-2026-10-02.md)).
 
 **Timeouts that grow with the text** (`ner.*` and `classifier.*` in `privacy-plus.yaml`). The timeout of
 one call is

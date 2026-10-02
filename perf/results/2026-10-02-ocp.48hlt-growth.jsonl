@@ -1,0 +1,25 @@
+{"backend": "systemone-s1", "kind": "cold", "size": 32000, "chars": 141963, "secs": 10.47, "tokens": 63616, "p": 0.0}
+{"backend": "systemone-s1", "kind": "first", "turn": 0, "chars": 141963, "secs": 10.59, "tokens": 63795, "p": 0.0}
+{"backend": "systemone-s1", "kind": "repeat", "turn": 0, "chars": 141963, "secs": 0.28, "tokens": 63795, "p": 0.0}
+{"backend": "systemone-s1", "kind": "grow", "turn": 1, "chars": 160021, "secs": 2.53, "tokens": 72016, "p": 0.0}
+{"backend": "systemone-s1", "kind": "grow", "turn": 2, "chars": 177745, "secs": 2.62, "tokens": 79767, "p": 0.0}
+{"backend": "systemone-s1", "kind": "grow", "turn": 3, "chars": 195539, "secs": 2.91, "tokens": 87677, "p": 0.0}
+{"backend": "systemone-s1", "kind": "grow", "turn": 4, "chars": 213020, "secs": 3.06, "tokens": 95373, "p": 0.0}
+{"backend": "systemone-s1", "kind": "grow", "turn": 5, "chars": 230690, "secs": 3.34, "tokens": 103257, "p": 0.0}
+{"backend": "systemone-s1", "kind": "grow", "turn": 6, "chars": 248303, "secs": 3.57, "tokens": 111047, "p": 0.0}
+{"backend": "systemone-s1", "kind": "grow", "turn": 7, "chars": 265890, "secs": 3.83, "tokens": 118946, "p": 0.0}
+{"backend": "systemone-s1", "kind": "grow", "turn": 8, "chars": 283501, "secs": 7.53, "tokens": 126720, "p": 0.0}
+{"backend": "systemone-s1", "kind": "cold", "size": 64000, "chars": 284326, "secs": 34.89, "tokens": 127021, "p": 0.0}
+{"backend": "chat", "kind": "cold", "size": 32000, "chars": 141587, "secs": 8.06, "tokens": 60021, "p": false}
+{"backend": "chat", "kind": "first", "turn": 0, "chars": 141587, "secs": 8.01, "tokens": 59728, "p": false}
+{"backend": "chat", "kind": "repeat", "turn": 0, "chars": 141587, "secs": 8.04, "tokens": 59728, "p": false}
+{"backend": "chat", "kind": "grow", "turn": 1, "chars": 159521, "secs": 9.62, "tokens": 67375, "p": false}
+{"backend": "chat", "kind": "grow", "turn": 2, "chars": 177317, "secs": 11.3, "tokens": 74804, "p": false}
+{"backend": "chat", "kind": "grow", "turn": 3, "chars": 195238, "secs": 13.02, "tokens": 82330, "p": false}
+{"backend": "chat", "kind": "grow", "turn": 4, "chars": 213177, "secs": 14.93, "tokens": 90022, "p": false}
+{"backend": "chat", "kind": "grow", "turn": 5, "chars": 230918, "secs": 16.88, "tokens": 97377, "p": false}
+{"backend": "chat", "kind": "grow", "turn": 6, "chars": 248890, "secs": 19.0, "tokens": 105071, "p": false}
+{"backend": "chat", "kind": "grow", "turn": 7, "chars": 266825, "secs": 21.33, "tokens": 112877, "p": false}
+{"backend": "chat", "kind": "grow", "turn": 8, "chars": 284837, "secs": 23.65, "tokens": 120497, "p": false}
+{"backend": "chat", "kind": "cold", "size": 64000, "chars": 284418, "secs": 23.64, "tokens": 120407, "p": false}
+{"done": true}
