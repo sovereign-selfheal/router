@@ -4,6 +4,9 @@ Router v0.8.0 adds two features for the large requests of the agents (see README
 a size cap for SOTA requests and detector timeouts that grow with the text. Both are off by default.
 This page explains the values we chose for them, and shows the tests that support the values.
 
+> **Update 2026-10-02:** the SOTA model is now gemini-2.5-pro and the cap is 150,000 characters. See
+> [`sota-size-cap-2026-10-02.md`](sota-size-cap-2026-10-02.md).
+
 > **Support status:** LiteLLM and Presidio are community software, not supported by Red Hat. The
 > decision model (`systemone`) runs on an unsupported preview image.
 

@@ -1,0 +1,18 @@
+{"scenario": "context", "backend": "presidio", "size": 32000, "chars": 143059, "n": 3, "p50": 5021, "p95": 5065, "max": 5065, "errors": 0, "error_types": [], "entities_found": 102}
+{"scenario": "context", "backend": "systemone-s1", "size": 32000, "n": 3, "p50": 10588, "p95": 10866, "max": 10866, "errors": 0, "error_types": [], "tokens": 63260, "sensitive": [1.0, 1.0, 1.0]}
+{"scenario": "context", "backend": "chat", "size": 32000, "n": 3, "p50": 8179, "p95": 8218, "max": 8218, "errors": 0, "error_types": [], "tokens": 60380, "sensitive": [true, true, true]}
+{"scenario": "context", "backend": "presidio", "size": 34000, "chars": 150045, "n": 3, "p50": 5428, "p95": 5443, "max": 5443, "errors": 0, "error_types": [], "entities_found": 99}
+{"scenario": "context", "backend": "systemone-s1", "size": 34000, "n": 3, "p50": 11669, "p95": 12089, "max": 12089, "errors": 0, "error_types": [], "tokens": 67402, "sensitive": [1.0, 1.0, 1.0]}
+{"scenario": "context", "backend": "chat", "size": 34000, "n": 3, "p50": 8916, "p95": 8936, "max": 8936, "errors": 0, "error_types": [], "tokens": 64141, "sensitive": [true, true, true]}
+{"scenario": "context", "backend": "presidio", "size": 40000, "chars": 178512, "n": 3, "p50": 6214, "p95": 6233, "max": 6233, "errors": 0, "error_types": [], "entities_found": 138}
+{"scenario": "context", "backend": "systemone-s1", "size": 40000, "n": 3, "p50": 15100, "p95": 15114, "max": 15114, "errors": 0, "error_types": [], "tokens": 79419, "sensitive": [1.0, 1.0, 1.0]}
+{"scenario": "context", "backend": "chat", "size": 40000, "n": 3, "p50": 11267, "p95": 11287, "max": 11287, "errors": 0, "error_types": [], "tokens": 75230, "sensitive": [true, true, true]}
+{"scenario": "context", "backend": "presidio", "size": 45000, "chars": 200708, "n": 3, "p50": 7169, "p95": 7297, "max": 7297, "errors": 0, "error_types": [], "entities_found": 153}
+{"scenario": "context", "backend": "systemone-s1", "size": 45000, "n": 3, "p50": 18829, "p95": 19018, "max": 19018, "errors": 0, "error_types": [], "tokens": 89803, "sensitive": [1.0, 1.0, 1.0]}
+{"scenario": "context", "backend": "chat", "size": 45000, "n": 3, "p50": 13523, "p95": 13734, "max": 13734, "errors": 0, "error_types": [], "tokens": 85327, "sensitive": [true, true, true]}
+{"scenario": "context", "backend": "presidio", "size": 54000, "chars": 241906, "n": 3, "p50": 8519, "p95": 8543, "max": 8543, "errors": 0, "error_types": [], "entities_found": 168}
+{"scenario": "context", "backend": "systemone-s1", "size": 54000, "n": 3, "p50": 25276, "p95": 26513, "max": 26513, "errors": 0, "error_types": [], "tokens": 107618, "sensitive": [1.0, 1.0, 1.0]}
+{"scenario": "context", "backend": "chat", "size": 54000, "n": 3, "p50": 17573, "p95": 18153, "max": 18153, "errors": 0, "error_types": [], "tokens": 101001, "sensitive": [true, true, true]}
+{"scenario": "context", "backend": "presidio", "size": 63000, "chars": 280811, "n": 3, "p50": 9878, "p95": 10016, "max": 10016, "errors": 0, "error_types": [], "entities_found": 201}
+{"scenario": "context", "backend": "systemone-s1", "size": 63000, "n": 3, "p50": 34087, "p95": 34668, "max": 34668, "errors": 0, "error_types": [], "tokens": 125790, "sensitive": [1.0, 1.0, 1.0]}
+{"scenario": "context", "backend": "chat", "size": 63000, "n": 3, "p50": 22817, "p95": 22910, "max": 22910, "errors": 0, "error_types": [], "tokens": 118416, "sensitive": [true, true, true]}
