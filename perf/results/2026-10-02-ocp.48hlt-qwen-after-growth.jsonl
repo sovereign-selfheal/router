@@ -1,0 +1,13 @@
+{"backend": "chat", "kind": "cold", "size": 32000, "chars": 142246, "secs": 8.19, "tokens": 59677, "p": false}
+{"backend": "chat", "kind": "first", "turn": 0, "chars": 142246, "secs": 8.13, "tokens": 60056, "p": false}
+{"backend": "chat", "kind": "repeat", "turn": 0, "chars": 142246, "secs": 0.68, "tokens": 60056, "p": false}
+{"backend": "chat", "kind": "grow", "turn": 1, "chars": 159767, "secs": 2.16, "tokens": 67377, "p": false}
+{"backend": "chat", "kind": "grow", "turn": 2, "chars": 177617, "secs": 2.22, "tokens": 74949, "p": false}
+{"backend": "chat", "kind": "grow", "turn": 3, "chars": 195609, "secs": 2.62, "tokens": 82513, "p": false}
+{"backend": "chat", "kind": "grow", "turn": 4, "chars": 213435, "secs": 2.73, "tokens": 90078, "p": false}
+{"backend": "chat", "kind": "grow", "turn": 5, "chars": 231494, "secs": 2.78, "tokens": 97758, "p": false}
+{"backend": "chat", "kind": "grow", "turn": 6, "chars": 249115, "secs": 2.79, "tokens": 105136, "p": false}
+{"backend": "chat", "kind": "grow", "turn": 7, "chars": 266990, "secs": 3.23, "tokens": 112677, "p": false}
+{"backend": "chat", "kind": "grow", "turn": 8, "chars": 284565, "secs": 3.22, "tokens": 119985, "p": false}
+{"backend": "chat", "kind": "cold", "size": 64000, "chars": 283709, "secs": 23.07, "tokens": 119376, "p": false}
+{"done": true}

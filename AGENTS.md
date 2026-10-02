@@ -61,8 +61,9 @@ litellm/                 # hook code, copied by gitops into the LiteLLM ConfigMa
 tests/                   # unit tests (fake Presidio, fake LiteLLM); tests/policy/ = copy of the gitops policies
 eval/                    # labelled prompt sets, run_eval.py, check_baseline.py, baseline.json
 scripts/                 # fetch-lid-model.sh
-docs/                    # evaluations and measurements (C2 backends, large contexts, SOTA size cap); img/ = charts
-perf/                    # c2_perf.py (C2 and Presidio performance, in a cluster pod), plot_context_cap.py; results/
+docs/                    # evaluations and measurements (C2 backends, large contexts, SOTA size cap, Qwen prefix cache); img/ = charts
+perf/                    # c2_perf.py (C2 and Presidio performance, in a cluster pod), agent_growth.py,
+                         # shared_prefix.py, vllm_metrics.py, qwen_cache_run.sh, plot_context_cap.py; results/
 Containerfile            # LiteLLM + fastText + lid.176.ftz
 ```
 

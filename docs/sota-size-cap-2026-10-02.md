@@ -94,6 +94,8 @@ last size, and the base sent twice. Raw data:
   prefix cache hit rate of 0.0%. Qwen3.8 is a hybrid model (attention and Mamba-like layers), and
   vLLM leaves the prefix cache off for it by default. This also means that every turn of an agent
   that runs on the local model reads its whole context again.
+  Update: the cache is on since the gitops change of 2026-10-02 (turns of 2-3 s instead of 10-23 s);
+  see [`qwen-prefix-cache-2026-10-02.md`](qwen-prefix-cache-2026-10-02.md).
 
 ## Findings
 
@@ -111,7 +113,8 @@ last size, and the base sent twice. Raw data:
 - The cap of 150,000 characters end to end (validation K8-K10 after the gitops change).
 - Several agents at once (Presidio queues behind its worker).
 - The prefix cache of `systemone` under load from several agents, and why turn 8 is slower.
-- Whether vLLM 0.24 can run Qwen3.8 with the prefix cache on.
+- Whether vLLM 0.24 can run Qwen3.8 with the prefix cache on (yes: measured in
+  [`qwen-prefix-cache-2026-10-02.md`](qwen-prefix-cache-2026-10-02.md)).
 
 ## Reproduce
 
