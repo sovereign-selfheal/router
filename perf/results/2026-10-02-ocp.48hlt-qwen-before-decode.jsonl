@@ -1,0 +1,9 @@
+{"kind": "decode", "i": 0, "ttft": 0.128, "secs": 9.723, "completion_tokens": 1024, "tok_per_s": 106.7}
+{"kind": "decode", "i": 1, "ttft": 0.138, "secs": 9.901, "completion_tokens": 1024, "tok_per_s": 104.9}
+{"kind": "decode", "i": 2, "ttft": 0.131, "secs": 8.986, "completion_tokens": 1024, "tok_per_s": 115.6}
+{"kind": "decode", "i": 3, "ttft": 0.129, "secs": 9.008, "completion_tokens": 1024, "tok_per_s": 115.3}
+{"kind": "decode", "i": 4, "ttft": 0.131, "secs": 9.358, "completion_tokens": 1024, "tok_per_s": 111.0}
+{"kind": "decode", "i": 5, "ttft": 0.129, "secs": 8.792, "completion_tokens": 1024, "tok_per_s": 118.2}
+{"kind": "decode", "i": 6, "ttft": 0.13, "secs": 9.642, "completion_tokens": 1024, "tok_per_s": 107.7}
+{"kind": "decode", "i": 7, "ttft": 0.127, "secs": 9.608, "completion_tokens": 1024, "tok_per_s": 108.0}
+{"done": true}
