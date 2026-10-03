@@ -1,0 +1,6 @@
+{"scenario": "parallel-context", "backend": "presidio", "size": 16000, "concurrency": 1, "n": 2, "p50": 2504, "p95": 2508, "max": 2508, "errors": 0, "error_types": [], "rps": 0.4, "questions": "split-v3"}
+{"scenario": "parallel-context", "backend": "presidio", "size": 16000, "concurrency": 4, "n": 8, "p50": 3235, "p95": 5499, "max": 5499, "errors": 0, "error_types": [], "rps": 0.91, "questions": "split-v3"}
+{"scenario": "parallel-context", "backend": "presidio", "size": 16000, "concurrency": 8, "n": 16, "p50": 5856, "p95": 12465, "max": 12465, "errors": 0, "error_types": [], "rps": 1.01, "questions": "split-v3"}
+{"scenario": "parallel-context", "backend": "systemone-s1", "size": 16000, "concurrency": 1, "n": 2, "p50": 3768, "p95": 3827, "max": 3827, "errors": 0, "error_types": [], "rps": 0.27, "questions": "split-v3"}
+{"scenario": "parallel-context", "backend": "systemone-s1", "size": 16000, "concurrency": 4, "n": 8, "p50": 14489, "p95": 15290, "max": 15290, "errors": 0, "error_types": [], "rps": 0.27, "questions": "split-v3"}
+{"scenario": "parallel-context", "backend": "systemone-s1", "size": 16000, "concurrency": 8, "n": 16, "p50": 30000, "p95": 30387, "max": 30387, "errors": 0, "error_types": [], "rps": 0.26, "questions": "split-v3"}

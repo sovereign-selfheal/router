@@ -339,7 +339,7 @@ def test_systemone_positive_adds_the_signal(make_scorer, classifier_policy, syst
     systemone.replies = {"/systemone": _answers(personal=0.93, business=0.01)}
     scorer = make_scorer(policy=classifier_policy)
     _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
-    assert ("classifier", "systemone/llm@0.93", 0.80) in signals
+    assert ("classifier", "systemone/llm@0.93(personal_sensitive)", 0.80) in signals
     assert ("classifier", "systemone/business_confidential@0.01(ignored)", 0.0) in signals
     url, payload = systemone.calls[0]
     assert url == "http://decision.test/v1/systemone"
@@ -355,7 +355,7 @@ def test_systemone_takes_the_highest_positive_question(make_scorer, classifier_p
     systemone.replies = {"/systemone": _answers(personal=0.2, credentials=0.97)}
     scorer = make_scorer(policy=classifier_policy)
     _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
-    assert ("classifier", "systemone/llm@0.97", 0.80) in signals
+    assert ("classifier", "systemone/llm@0.97(credentials)", 0.80) in signals
 
 
 def test_systemone_negative_adds_no_weight(make_scorer, classifier_policy, systemone):
@@ -433,6 +433,77 @@ def test_systemone_malformed_reply_falls_back(make_scorer, classifier_policy, sy
     scorer = make_scorer(policy=classifier_policy)
     _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
     assert ("classifier", "fallback/llm@0.90", 0.80) in signals
+
+
+_SPLIT_QUESTIONS = {
+    "health": {"instructions": "Health of a person?"},
+    "legal": {"instructions": "Legal matter of a person?"},
+    "biz": {"instructions": "Business confidential?", "ignored": True},
+}
+
+
+def test_systemone_questions_from_policy(make_scorer, classifier_policy, systemone):
+    # classifier.systemone.questions replaces the built-in set; the label names the
+    # positive question with the highest probability and keeps `llm@`.
+    classifier_policy["classifier"]["systemone"] = {"questions": _SPLIT_QUESTIONS}
+    systemone.replies = {"/systemone": {"answers": {
+        "health": {"type": "noul", "noul": 0.30},
+        "legal": {"type": "noul", "noul": 0.88},
+        "biz": {"type": "noul", "noul": 0.10},
+    }}}
+    scorer = make_scorer(policy=classifier_policy)
+    _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
+    payload = systemone.calls[0][1]
+    assert payload["questions"] == {
+        "health": {"type": "noul", "instructions": "Health of a person?"},
+        "legal": {"type": "noul", "instructions": "Legal matter of a person?"},
+        "biz": {"type": "noul", "instructions": "Business confidential?"},
+    }
+    classifier = [s for s in signals if s[0] == "classifier"]
+    assert classifier == [
+        ("classifier", "systemone/biz@0.10(ignored)", 0.0),
+        ("classifier", "systemone/llm@0.88(legal)", 0.80),
+    ]
+
+
+def test_systemone_show_all_lists_every_probability(make_scorer, classifier_policy, systemone):
+    classifier_policy["classifier"]["systemone"] = {
+        "questions": _SPLIT_QUESTIONS, "show_all": True}
+    systemone.replies = {"/systemone": {"answers": {
+        "health": {"type": "noul", "noul": 0.30},
+        "legal": {"type": "noul", "noul": 0.20},
+        "biz": {"type": "noul", "noul": 0.10},
+    }}}
+    scorer = make_scorer(policy=classifier_policy)
+    score_only_rules = run(make_scorer().score("My salary is too low.", threshold=0.70))[0]
+    score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
+    classifier = [s for s in signals if s[0] == "classifier"]
+    assert classifier == [
+        ("classifier", "systemone/biz@0.10(ignored)", 0.0),
+        ("classifier", "systemone/health@0.30(shown)", 0.0),
+        ("classifier", "systemone/legal@0.20(shown)", 0.0),
+    ]
+    assert score == score_only_rules
+
+
+@pytest.mark.parametrize("questions", [
+    {},                                                 # no positive question
+    {"biz": {"instructions": "x", "ignored": True}},    # only ignored questions
+    {"health": {"instructions": ""}},                   # empty instructions
+    {"health": "Health?"},                              # not a mapping
+    ["health"],                                         # not a mapping at all
+])
+def test_systemone_invalid_questions_use_the_built_in_set(
+    make_scorer, classifier_policy, systemone, questions, capsys
+):
+    classifier_policy["classifier"]["systemone"] = {"questions": questions}
+    systemone.replies = {"/systemone": _answers(personal=0.93)}
+    scorer = make_scorer(policy=classifier_policy)
+    _score, signals = run(scorer.score("My salary is too low.", threshold=0.70))
+    assert set(systemone.calls[0][1]["questions"]) == {
+        "personal_sensitive", "credentials", "business_confidential"}
+    assert ("classifier", "systemone/llm@0.93(personal_sensitive)", 0.80) in signals
+    assert "classifier.systemone.questions ignored" in capsys.readouterr().out
 
 
 def test_systemone_skipped_outside_gray_zone(make_scorer, classifier_policy, systemone):

@@ -49,6 +49,8 @@ previous behaviour, so an old policy works with a new release.
 | `ner.context_entities` | v0.4.0 | `[]` | These entity types (for example `NRP`, `LOCATION`) count only when the text also has an identifier: structured personal data (card, IBAN, email, phone...) or another entity that counts. "European banks in Italy" names nobody |
 | `ner.timeout_per_1k_chars` / `classifier.timeout_per_1k_chars` | v0.8.0 | `0` | Seconds of timeout per 1,000 characters of text, for Presidio and for each C2 call. `0` = the fixed `timeout_seconds`, as before. See "Large requests" |
 | `ner.timeout_max_seconds` / `classifier.timeout_max_seconds` | v0.8.0 | `timeout_seconds` | Upper bound of the timeout that grows with the text |
+| `classifier.systemone.questions` | v0.9.0 | the built-in questions | Backend `systemone`: the yes/no questions, `{id: {instructions: <text>, ignored: <bool>}}`. Positive questions add the C2 signal; `ignored: true` questions only show in the log. An invalid set (no positive question, an empty or missing `instructions`) is logged and the built-in questions are used. Keep the ids short: the answer template must fit the canvas of the decision server (64 tokens: about ten questions with one-token ids) |
+| `classifier.systemone.show_all` | v0.9.0 | `false` | Backend `systemone`: every positive question below the threshold also shows in the log with weight 0, for example `systemone/health@0.03(shown):0.00`. For evaluations |
 
 One key is in `chain.yaml`: `efficiency.sota_max_prompt_chars` (since v0.8.0, default `0` = no cap), the
 SOTA size cap of "Large requests".
@@ -108,11 +110,15 @@ The C2 classifier runs only in the gray zone of the privacy score, and it can on
 | Backend | Call | Signal when sensitive |
 |---|---|---|
 | `chat` (default) | `POST $CLASSIFIER_BASE_URL/chat/completions`: one JSON verdict `{"sensitive", "confidence"}` | `llm@0.90` |
-| `systemone` | `POST $CLASSIFIER_BASE_URL/systemone` (the example decision server of vLLM): three yes/no questions with the text as state, one probability each from one forward pass | `systemone/llm@0.93` |
+| `systemone` | `POST $CLASSIFIER_BASE_URL/systemone` (the example decision server of vLLM): yes/no questions with the text as state, one probability each from one forward pass | `systemone/llm@0.93(legal)` |
 
-The `systemone` questions keep the criteria of the chat prompt: `personal_sensitive` and `credentials`
-add the signal (weight 0.80, as the chat backend) when the higher of the two is at or above
-`classifier.decision_threshold`. `business_confidential` never adds weight; it stays in the log with
+The built-in `systemone` questions keep the criteria of the chat prompt: `personal_sensitive` and
+`credentials` add the signal (weight 0.80, as the chat backend) when the higher of the two is at or above
+`classifier.decision_threshold`. Since v0.9.0 the policy can replace them
+(`classifier.systemone.questions`), and the label names the positive question with the highest
+probability: `systemone/llm@0.93(legal)`. The label still contains `llm@<p>`, as before. See
+[`docs/c2-questions-eval-2026-10-03.md`](docs/c2-questions-eval-2026-10-03.md) for an evaluation of
+split questions. `business_confidential` never adds weight; it stays in the log with
 weight 0, for example `systemone/business_confidential@0.99(ignored):0.00`, so the log shows why a
 confidential business text may still go to SOTA.
 

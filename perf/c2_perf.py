@@ -10,6 +10,8 @@ Scenarios:
   concurrency  C2 calls with 1..N parallel clients, short unique prompts
   size         C2 latency by prompt size (about 400 to 40,000 tokens)
   busy         C2 latency while the chat model generates long answers (the agents' load)
+  parallel-context  1..N agents at the same time: parallel Presidio and C2 calls with one
+               agent context each (Presidio needs --presidio-url, as for context)
   context      agents' large contexts: Presidio /analyze and C2 latency by context size, with
                log-like text (needs --presidio-url, so it runs in a LiteLLM pod: only LiteLLM may
                reach Presidio)
@@ -93,10 +95,18 @@ def post(url, body, timeout):
 class Backends:
     def __init__(self, args):
         self.args = args
-        self.questions = {
-            q: {"type": "noul", "instructions": t}
-            for q, t in {**S._SYSTEMONE_POSITIVE, **S._SYSTEMONE_IGNORED}.items()
-        }
+        # --questions: a JSON file {id: {"instructions": ..., "ignored": bool}}, the
+        # classifier.systemone.questions of a policy; default: the built-in questions.
+        if getattr(args, "questions", ""):
+            with open(args.questions) as fh:
+                spec = json.load(fh)
+        else:
+            spec = {**{q: {"instructions": t} for q, t in S._SYSTEMONE_POSITIVE.items()},
+                    **{q: {"instructions": t, "ignored": True}
+                       for q, t in S._SYSTEMONE_IGNORED.items()}}
+        self.questions = {q: {"type": "noul", "instructions": v["instructions"]}
+                          for q, v in spec.items()}
+        self.positive = [q for q, v in spec.items() if not v.get("ignored")]
 
     # systemone-auto: no "samples" key, the server default ("auto": 1 to 4 noise draws, more when
     # the answer is uncertain). systemone-s1: "samples": 1.
@@ -107,7 +117,7 @@ class Backends:
         url = self.args.decision_url.rstrip("/") + "/systemone"
         data, secs = post(url, body, self.args.timeout)
         a = data["answers"]
-        p = max(a["personal_sensitive"]["noul"], a["credentials"]["noul"])
+        p = max(a[q]["noul"] for q in self.positive)
         return secs, data.get("usage", {}).get("input_tokens"), p
 
     def chat(self, text):
@@ -139,8 +149,11 @@ def summarize(lat):
             "max": round(lat[-1] * 1000)}
 
 
+QUESTIONS_LABEL = "built-in"
+
+
 def emit(rec):
-    print(json.dumps(rec), flush=True)
+    print(json.dumps({**rec, "questions": QUESTIONS_LABEL}), flush=True)
 
 
 def run_batch(b, backend, n, conc, tokens, sensitive=False):
@@ -257,6 +270,40 @@ def scenario_context(b, args):
                   "sensitive": [p if isinstance(p, bool) else round(p, 2) for p in probs]})
 
 
+def scenario_parallel_context(b, args):
+    """Agents at the same time: `conc` parallel calls with one agent context of
+    `--parallel-size` tokens each, to Presidio (one worker: the calls queue) and to each C2
+    backend. Two rounds per level."""
+    entities = [e for e in args.presidio_entities.split(",") if e]
+    size = args.parallel_size
+    targets = (["presidio"] if args.presidio_url else []) + args.backends.split(",")
+    for target in targets:
+        for conc in [int(x) for x in args.parallel_levels.split(",")]:
+            lat, errors = [], []
+
+            def one(_, target=target, lat=lat, errors=errors):
+                text = agent_text(size, SENSITIVE.strip())
+                try:
+                    if target == "presidio":
+                        body = {"text": text, "language": "en"}
+                        if entities:
+                            body["entities"] = entities
+                        _data, secs = post(args.presidio_url, body, args.presidio_timeout)
+                    else:
+                        secs, _t, _p = b.call(target, text)
+                    lat.append(secs)
+                except Exception as exc:
+                    errors.append(type(exc).__name__)
+
+            t0 = time.perf_counter()
+            with ThreadPoolExecutor(max_workers=conc) as ex:
+                list(ex.map(one, range(conc * 2)))
+            wall = time.perf_counter() - t0
+            emit({"scenario": "parallel-context", "backend": target, "size": size,
+                  "concurrency": conc, **summarize(lat), "errors": len(errors),
+                  "error_types": sorted(set(errors)), "rps": round(len(lat) / wall, 2)})
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--decision-url", required=True)
@@ -280,7 +327,17 @@ def main():
     ap.add_argument("--presidio-entities", default="PERSON,LOCATION,NRP,MEDICAL_LICENSE,IBAN_CODE,"
                     "CREDIT_CARD,US_SSN,PHONE_NUMBER,IP_ADDRESS")
     ap.add_argument("--context-sizes", default="4000,16000,32000,64000,100000,128000")
+    ap.add_argument("--parallel-size", type=int, default=16000,
+                    help="tokens of each context of the parallel-context scenario")
+    ap.add_argument("--parallel-levels", default="1,4,8")
+    ap.add_argument("--questions", default="",
+                    help="JSON file with the systemone questions (default: the built-in ones)")
+    ap.add_argument("--questions-label", default="",
+                    help="name of the question set in the output (default: the file name)")
     args = ap.parse_args()
+    global QUESTIONS_LABEL
+    if args.questions:
+        QUESTIONS_LABEL = args.questions_label or args.questions.rsplit("/", 1)[-1]
     b = Backends(args)
     backends = args.backends.split(",")
     for backend in backends:  # warm-up: the first call after a start is slow
@@ -294,6 +351,8 @@ def main():
         scenario_busy(b, backends, [int(x) for x in args.streams.split(",")], args)
     if "context" in scen:
         scenario_context(b, args)
+    if "parallel-context" in scen:
+        scenario_parallel_context(b, args)
 
 
 if __name__ == "__main__":

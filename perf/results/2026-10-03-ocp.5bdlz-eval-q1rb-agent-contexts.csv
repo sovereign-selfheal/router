@@ -1,0 +1,49 @@
+run_label,lang,id,category,expect,decision,correct,gate,privacy_score,classifier_fired,signals,latency_ms
+q1rb-agent-contexts,en,agent-benign-01,agent_benign,sota,sota,1,privacy,0.6000,0,"PERSON@0.85:0.60, systemone/biz@1.00(ignored):0.00, systemone/health@0.00(shown):0.00, systemone/job@0.00(shown):0.00, systemone/legal@0.00(shown):0.00, systemone/family@0.00(shown):0.00, systemone/money@0.00(shown):0.00, systemone/secret@0.01(shown):0.00, systemone/private@0.00(shown):0.00, systemone/person@0.00(shown):0.00",224.0
+q1rb-agent-contexts,en,agent-benign-02,agent_benign,sota,local,0,privacy,0.7300,0,"NRP@0.85:0.55, IP_ADDRESS@0.60:0.40, PERSON@0.85(<2 words):0.00",91.8
+q1rb-agent-contexts,en,agent-benign-03,agent_benign,sota,local,0,privacy,0.7600,0,"PERSON@0.85:0.60, LOCATION@0.85:0.40",129.1
+q1rb-agent-contexts,en,agent-benign-04,agent_benign,sota,local,0,privacy,0.8560,0,"PERSON@0.85:0.60, LOCATION@0.85:0.40, IP_ADDRESS@0.60:0.40",196.5
+q1rb-agent-contexts,en,agent-benign-05,agent_benign,sota,local,0,privacy,0.8560,0,"PERSON@0.85:0.60, LOCATION@0.85:0.40, IP_ADDRESS@0.60:0.40",288.7
+q1rb-agent-contexts,en,agent-benign-06,agent_benign,sota,local,0,privacy,0.8560,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",360.1
+q1rb-agent-contexts,en,agent-benign-07,agent_benign,sota,local,0,privacy,0.9352,0,"NRP@0.85:0.55, LOCATION@0.85:0.40, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",461.8
+q1rb-agent-contexts,en,agent-benign-08,agent_benign,sota,local,0,privacy,0.9352,0,"LOCATION@0.85:0.40, NRP@0.85:0.55, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",578.6
+q1rb-agent-contexts,en,agent-benign-09,agent_benign,sota,local,0,privacy,0.8560,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",668.3
+q1rb-agent-contexts,en,agent-benign-10,agent_benign,sota,local,0,privacy,0.8560,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",899.4
+q1rb-agent-contexts,en,agent-benign-11,agent_benign_named,sota,local,0,privacy,0.7600,0,"PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",115.9
+q1rb-agent-contexts,en,agent-benign-12,agent_benign_named,sota,local,0,privacy,0.9352,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60, NRP@0.85:0.55, IP_ADDRESS@0.60:0.40",214.9
+q1rb-agent-contexts,en,agent-benign-13,agent_benign_named,sota,local,0,privacy,0.7600,0,"PERSON@0.85:0.60, LOCATION@0.85:0.40",112.0
+q1rb-agent-contexts,en,agent-benign-14,agent_benign_named,sota,local,0,privacy,0.8920,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60, NRP@0.85:0.55",198.0
+q1rb-agent-contexts,en,agent-benign-15,agent_benign_named,sota,local,0,privacy,0.8560,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",271.6
+q1rb-agent-contexts,en,agent-benign-16,agent_benign_named,sota,local,0,privacy,0.9352,0,"LOCATION@0.85:0.40, NRP@0.85:0.55, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",203.6
+q1rb-agent-contexts,en,agent-benign-17,agent_benign_named,sota,local,0,privacy,0.9352,0,"LOCATION@0.85:0.40, NRP@0.85:0.55, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",407.9
+q1rb-agent-contexts,en,agent-benign-18,agent_benign_named,sota,local,0,privacy,0.9352,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60, NRP@0.85:0.55, IP_ADDRESS@0.60:0.40",380.8
+q1rb-agent-contexts,en,agent-benign-19,agent_benign_named,sota,sota,1,privacy,0.6400,0,"LOCATION@0.85:0.40, IP_ADDRESS@0.60:0.40, PERSON@0.85(<2 words):0.00, systemone/biz@1.00(ignored):0.00, systemone/health@0.00(shown):0.00, systemone/job@0.00(shown):0.00, systemone/legal@0.00(shown):0.00, systemone/family@0.00(shown):0.00, systemone/money@0.00(shown):0.00, systemone/secret@0.00(shown):0.00, systemone/private@0.00(shown):0.00, systemone/person@0.00(shown):0.00",454.5
+q1rb-agent-contexts,en,agent-benign-20,agent_benign_named,sota,local,0,privacy,0.8560,0,"PERSON@0.85:0.60, LOCATION@0.85:0.40, IP_ADDRESS@0.60:0.40",202.4
+q1rb-agent-contexts,en,agent-health-01-20,agent_health,local,local,1,privacy,0.9352,0,"LOCATION@0.85:0.40, NRP@0.85:0.55, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",121.9
+q1rb-agent-contexts,en,agent-health-01-100,agent_health,local,local,1,privacy,0.8560,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",455.5
+q1rb-agent-contexts,en,agent-health-02-20,agent_health,local,local,1,privacy,0.8560,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",111.8
+q1rb-agent-contexts,en,agent-health-02-100,agent_health,local,local,1,privacy,0.9352,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60, NRP@0.85:0.55, IP_ADDRESS@0.60:0.40",475.5
+q1rb-agent-contexts,en,agent-job-03-20,agent_job,local,local,1,privacy,0.7600,0,"PERSON@0.85:0.60, LOCATION@0.85:0.40",117.8
+q1rb-agent-contexts,en,agent-job-03-100,agent_job,local,local,1,privacy,0.8560,0,"PERSON@0.85:0.60, LOCATION@0.85:0.40, IP_ADDRESS@0.60:0.40",464.0
+q1rb-agent-contexts,en,agent-job-04-20,agent_job,local,local,1,privacy,0.8560,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",121.4
+q1rb-agent-contexts,en,agent-job-04-100,agent_job,local,local,1,privacy,0.8560,0,"PERSON@0.85:0.60, LOCATION@0.85:0.40, IP_ADDRESS@0.60:0.40",487.1
+q1rb-agent-contexts,en,agent-legal-05-20,agent_legal,local,local,1,privacy,0.8800,0,"legal:0.50, LOCATION@0.85:0.40, PERSON@0.85:0.60",114.4
+q1rb-agent-contexts,en,agent-legal-05-100,agent_legal,local,local,1,privacy,0.9280,0,"legal:0.50, PERSON@0.85:0.60, LOCATION@0.85:0.40, IP_ADDRESS@0.60:0.40",463.0
+q1rb-agent-contexts,en,agent-legal-06-20,agent_legal,local,local,1,privacy,0.8560,0,"PERSON@0.85:0.60, LOCATION@0.85:0.40, IP_ADDRESS@0.60:0.40",120.3
+q1rb-agent-contexts,en,agent-legal-06-100,agent_legal,local,local,1,privacy,0.8560,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",481.0
+q1rb-agent-contexts,en,agent-family-07-20,agent_family,local,local,1,privacy,0.8560,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",141.1
+q1rb-agent-contexts,en,agent-family-07-100,agent_family,local,local,1,privacy,0.9352,0,"PERSON@0.85:0.60, LOCATION@0.85:0.40, NRP@0.85:0.55, IP_ADDRESS@0.60:0.40",455.8
+q1rb-agent-contexts,en,agent-family-08-20,agent_family,local,local,1,privacy,0.9280,1,"LOCATION@0.85:0.40, IP_ADDRESS@0.60:0.40, PERSON@0.85(<2 words):0.00, systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(family):0.80, systemone/health@0.26(shown):0.00, systemone/job@0.01(shown):0.00, systemone/legal@0.00(shown):0.00, systemone/money@0.00(shown):0.00, systemone/secret@0.00(shown):0.00, systemone/private@0.94(shown):0.00, systemone/person@1.00(shown):0.00",281.9
+q1rb-agent-contexts,en,agent-family-08-100,agent_family,local,local,1,privacy,0.8560,0,"PERSON@0.85:0.60, LOCATION@0.85:0.40, IP_ADDRESS@0.60:0.40",468.8
+q1rb-agent-contexts,en,agent-money-09-20,agent_money,local,local,1,privacy,0.9280,0,"finance:0.50, LOCATION@0.85:0.40, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",121.4
+q1rb-agent-contexts,en,agent-money-09-100,agent_money,local,local,1,privacy,0.9280,0,"finance:0.50, PERSON@0.85:0.60, LOCATION@0.85:0.40, IP_ADDRESS@0.60:0.40",472.2
+q1rb-agent-contexts,en,agent-money-10-20,agent_money,local,local,1,privacy,0.8560,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",121.1
+q1rb-agent-contexts,en,agent-money-10-100,agent_money,local,local,1,privacy,0.9352,0,"PERSON@0.85:0.60, LOCATION@0.85:0.40, NRP@0.85:0.55, IP_ADDRESS@0.60:0.40",466.9
+q1rb-agent-contexts,en,agent-secret-11-20,agent_secret,local,local,1,privacy,0.9352,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60, NRP@0.85:0.55, IP_ADDRESS@0.60:0.40",115.2
+q1rb-agent-contexts,en,agent-secret-11-100,agent_secret,local,local,1,privacy,0.8560,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",456.7
+q1rb-agent-contexts,en,agent-private-12-20,agent_private,local,local,1,privacy,0.7600,0,"PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",115.4
+q1rb-agent-contexts,en,agent-private-12-100,agent_private,local,local,1,privacy,0.8560,0,"PERSON@0.85:0.60, LOCATION@0.85:0.40, IP_ADDRESS@0.60:0.40",444.7
+q1rb-agent-contexts,en,agent-person-13-20,agent_person,local,local,1,privacy,0.8560,0,"PERSON@0.85:0.60, LOCATION@0.85:0.40, IP_ADDRESS@0.60:0.40",126.6
+q1rb-agent-contexts,en,agent-person-13-100,agent_person,local,local,1,privacy,0.8560,0,"PERSON@0.85:0.60, LOCATION@0.85:0.40, IP_ADDRESS@0.60:0.40",502.5
+q1rb-agent-contexts,en,agent-person-14-20,agent_person,local,local,1,privacy,0.7600,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60",117.1
+q1rb-agent-contexts,en,agent-person-14-100,agent_person,local,local,1,privacy,0.8560,0,"LOCATION@0.85:0.40, PERSON@0.85:0.60, IP_ADDRESS@0.60:0.40",452.9

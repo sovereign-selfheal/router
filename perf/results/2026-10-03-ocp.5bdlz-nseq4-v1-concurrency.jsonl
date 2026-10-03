@@ -1,0 +1,7 @@
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 1, "n": 20, "p50": 141, "p95": 149, "max": 149, "errors": 0, "error_types": [], "rps": 7.04, "tokens": 902, "questions": "split-v1"}
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 2, "n": 20, "p50": 217, "p95": 228, "max": 228, "errors": 0, "error_types": [], "rps": 9.14, "tokens": 902, "questions": "split-v1"}
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 4, "n": 20, "p50": 242, "p95": 248, "max": 248, "errors": 0, "error_types": [], "rps": 16.38, "tokens": 902, "questions": "split-v1"}
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 8, "n": 32, "p50": 420, "p95": 521, "max": 523, "errors": 0, "error_types": [], "rps": 18.54, "tokens": 902, "questions": "split-v1"}
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 16, "n": 64, "p50": 843, "p95": 873, "max": 944, "errors": 0, "error_types": [], "rps": 18.69, "tokens": 902, "questions": "split-v1"}
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 32, "n": 128, "p50": 1682, "p95": 1734, "max": 2661, "errors": 0, "error_types": [], "rps": 18.67, "tokens": 902, "questions": "split-v1"}
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 64, "n": 255, "p50": 3372, "p95": 3542, "max": 4502, "errors": 1, "error_types": ["ConnectionResetError"], "rps": 18.55, "tokens": 902, "questions": "split-v1"}

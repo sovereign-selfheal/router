@@ -59,11 +59,14 @@ litellm/                 # hook code, copied by gitops into the LiteLLM ConfigMa
   policy_hook_chain.py   # LiteLLM async_pre_call_hook: efficiency gate, privacy gate, tiering
   privacy_scoring.py     # privacy engine; no LiteLLM import, so it is testable alone
 tests/                   # unit tests (fake Presidio, fake LiteLLM); tests/policy/ = copy of the gitops policies
-eval/                    # labelled prompt sets, run_eval.py, check_baseline.py, baseline.json
+eval/                    # labelled prompt sets, run_eval.py, check_baseline.py, baseline.json,
+                         # build_agent_contexts.py (writes agent-contexts.yaml)
 scripts/                 # fetch-lid-model.sh
-docs/                    # evaluations and measurements (C2 backends, large contexts, SOTA size cap, Qwen prefix cache); img/ = charts
+docs/                    # evaluations and measurements (C2 backends, large contexts, SOTA size cap, Qwen prefix cache,
+                         # C2 questions); img/ = charts
 perf/                    # c2_perf.py (C2 and Presidio performance, in a cluster pod), agent_growth.py,
-                         # shared_prefix.py, vllm_metrics.py, qwen_cache_run.sh, plot_context_cap.py; results/
+                         # shared_prefix.py, vllm_metrics.py, qwen_cache_run.sh, plot_context_cap.py,
+                         # plot_c2_questions.py; results/
 Containerfile            # LiteLLM + fastText + lid.176.ftz
 ```
 

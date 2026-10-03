@@ -1,0 +1,12 @@
+{"scenario": "context", "backend": "presidio", "size": 4000, "chars": 18007, "n": 3, "p50": 640, "p95": 712, "max": 712, "errors": 0, "error_types": [], "entities_found": 13, "questions": "split-v3"}
+{"scenario": "context", "backend": "systemone-s1", "size": 4000, "n": 3, "p50": 746, "p95": 748, "max": 748, "errors": 0, "error_types": [], "tokens": 8950, "sensitive": [1.0, 1.0, 1.0], "questions": "split-v3"}
+{"scenario": "context", "backend": "presidio", "size": 16000, "chars": 71043, "n": 3, "p50": 2482, "p95": 2490, "max": 2490, "errors": 0, "error_types": [], "entities_found": 62, "questions": "split-v3"}
+{"scenario": "context", "backend": "systemone-s1", "size": 16000, "n": 3, "p50": 3839, "p95": 3892, "max": 3892, "errors": 0, "error_types": [], "tokens": 32606, "sensitive": [1.0, 1.0, 1.0], "questions": "split-v3"}
+{"scenario": "context", "backend": "presidio", "size": 32000, "chars": 142466, "n": 3, "p50": 4985, "p95": 5001, "max": 5001, "errors": 0, "error_types": [], "entities_found": 108, "questions": "split-v3"}
+{"scenario": "context", "backend": "systemone-s1", "size": 32000, "n": 3, "p50": 10517, "p95": 10545, "max": 10545, "errors": 0, "error_types": [], "tokens": 64115, "sensitive": [1.0, 1.0, 1.0], "questions": "split-v3"}
+{"scenario": "context", "backend": "presidio", "size": 64000, "chars": 283229, "n": 3, "p50": 10045, "p95": 10077, "max": 10077, "errors": 0, "error_types": [], "entities_found": 205, "questions": "split-v3"}
+{"scenario": "context", "backend": "systemone-s1", "size": 64000, "n": 3, "p50": 34326, "p95": 34497, "max": 34497, "errors": 0, "error_types": [], "tokens": 128174, "sensitive": [1.0, 1.0, 1.0], "questions": "split-v3"}
+{"scenario": "context", "backend": "presidio", "size": 100000, "skipped": "a smaller size took more than 10 s", "questions": "split-v3"}
+{"scenario": "context", "backend": "systemone-s1", "size": 100000, "n": 3, "p50": 79270, "p95": 80752, "max": 80752, "errors": 0, "error_types": [], "tokens": 200122, "sensitive": [1.0, 1.0, 1.0], "questions": "split-v3"}
+{"scenario": "context", "backend": "presidio", "size": 128000, "skipped": "a smaller size took more than 10 s", "questions": "split-v3"}
+{"scenario": "context", "backend": "systemone-s1", "size": 128000, "n": 0, "errors": 3, "error_types": ["TimeoutError"], "tokens": null, "sensitive": [], "questions": "split-v3"}
