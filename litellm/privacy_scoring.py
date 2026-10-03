@@ -299,6 +299,13 @@ class PrivacyScorer:
             )
             _be = "chat"
         self._classifier["backend"] = _be
+        # Questions of the systemone backend (router v0.9.0): classifier.systemone.questions
+        # in the policy, {id: {instructions, ignored}}; without the key, the built-in set
+        # (_SYSTEMONE_POSITIVE / _SYSTEMONE_IGNORED). An invalid set is logged and the
+        # built-in set is used, so a policy typo cannot stop the proxy.
+        self._systemone_positive, self._systemone_ignored = self._systemone_questions(
+            self._classifier.get("systemone") or {}
+        )
         # Default decision threshold used for the C2 gray-zone bounds when the caller
         # (the hook) does not pass a per-team threshold to score().
         self._threshold = float(self.policy.get("threshold", 0.5))
@@ -547,6 +554,33 @@ class PrivacyScorer:
         ),
     }
 
+    @classmethod
+    def _systemone_questions(cls, cfg):
+        """(positive, ignored) instruction maps of the systemone backend, from
+        classifier.systemone.questions, or the built-in set when the key is missing or
+        invalid. A valid set has at least one positive question and an instructions
+        string for every question."""
+        questions = cfg.get("questions")
+        if questions is None:
+            return dict(cls._SYSTEMONE_POSITIVE), dict(cls._SYSTEMONE_IGNORED)
+        positive, ignored = {}, {}
+        valid = isinstance(questions, dict)
+        for qid, q in (questions.items() if valid else ()):
+            instr = q.get("instructions") if isinstance(q, dict) else None
+            if not (isinstance(qid, str) and qid and isinstance(instr, str) and instr.strip()):
+                valid = False
+                break
+            (ignored if q.get("ignored") else positive)[qid] = instr.strip()
+        if not (valid and positive):
+            print(
+                "[policy-router] classifier.systemone.questions ignored: it needs "
+                "{id: {instructions: <text>, ignored: <bool>}} with at least one positive "
+                "question; using the built-in questions",
+                flush=True,
+            )
+            return dict(cls._SYSTEMONE_POSITIVE), dict(cls._SYSTEMONE_IGNORED)
+        return positive, ignored
+
     async def _signals_classifier(self, text, rules_score, threshold):
         """Advisory LLM verdict, ONLY in the gray zone. Can only ADD a signal (raise
         the score via noisy-OR), never lower it. Fail-closed: on any error/timeout/
@@ -631,7 +665,7 @@ class PrivacyScorer:
             return None
         questions = {
             qid: {"type": "noul", "instructions": instr}
-            for qid, instr in {**self._SYSTEMONE_POSITIVE, **self._SYSTEMONE_IGNORED}.items()
+            for qid, instr in {**self._systemone_positive, **self._systemone_ignored}.items()
         }
         payload = {"model": model or "", "state": {"text": text}, "questions": questions}
         if cfg.get("samples") is not None:
@@ -653,11 +687,21 @@ class PrivacyScorer:
         cut = float(cfg.get("decision_threshold", 0.5))
         signals = [
             ("classifier", f"systemone/{qid}@{probs[qid]:.2f}(ignored)", 0.0)
-            for qid in self._SYSTEMONE_IGNORED
+            for qid in self._systemone_ignored
         ]
-        positive = max(probs[qid] for qid in self._SYSTEMONE_POSITIVE)
-        if positive >= cut:
-            signals.append(("classifier", f"systemone/llm@{positive:.2f}", weight))
+        # The label keeps `llm@<p>` (validation and docs match it) and names the positive
+        # question with the highest probability: systemone/llm@0.93(legal).
+        top = max(self._systemone_positive, key=lambda qid: probs[qid])
+        if probs[top] >= cut:
+            signals.append(("classifier", f"systemone/llm@{probs[top]:.2f}({top})", weight))
+        # classifier.systemone.show_all (default false): every other positive question is
+        # shown too, at weight 0, so an evaluation can read each probability.
+        if (cfg.get("systemone") or {}).get("show_all"):
+            signals += [
+                ("classifier", f"systemone/{qid}@{probs[qid]:.2f}(shown)", 0.0)
+                for qid in self._systemone_positive
+                if not (qid == top and probs[top] >= cut)
+            ]
         return signals
 
     @staticmethod

@@ -1,0 +1,4 @@
+{"scenario": "size", "backend": "systemone-s1", "size": 400, "n": 5, "p50": 143, "p95": 145, "max": 145, "errors": 0, "error_types": [], "rps": 6.96, "tokens": 923, "questions": "split-v1"}
+{"scenario": "size", "backend": "systemone-s1", "size": 4000, "n": 5, "p50": 280, "p95": 281, "max": 281, "errors": 0, "error_types": [], "rps": 3.55, "tokens": 3692, "questions": "split-v1"}
+{"scenario": "size", "backend": "systemone-s1", "size": 16000, "n": 5, "p50": 1096, "p95": 1097, "max": 1097, "errors": 0, "error_types": [], "rps": 0.91, "tokens": 12923, "questions": "split-v1"}
+{"scenario": "size", "backend": "systemone-s1", "size": 40000, "n": 5, "p50": 3554, "p95": 3575, "max": 3575, "errors": 0, "error_types": [], "rps": 0.28, "tokens": 31385, "questions": "split-v1"}

@@ -1,0 +1,13 @@
+{"backend": "systemone-s1", "kind": "cold", "size": 32000, "chars": 143591, "secs": 10.88, "tokens": 64216, "p": 0.0}
+{"backend": "systemone-s1", "kind": "first", "turn": 0, "chars": 143591, "secs": 11.07, "tokens": 64955, "p": 0.0}
+{"backend": "systemone-s1", "kind": "repeat", "turn": 0, "chars": 143591, "secs": 0.27, "tokens": 64955, "p": 0.0}
+{"backend": "systemone-s1", "kind": "grow", "turn": 1, "chars": 161266, "secs": 2.48, "tokens": 72840, "p": 0.0}
+{"backend": "systemone-s1", "kind": "grow", "turn": 2, "chars": 179110, "secs": 2.75, "tokens": 80784, "p": 0.0}
+{"backend": "systemone-s1", "kind": "grow", "turn": 3, "chars": 196951, "secs": 2.98, "tokens": 88788, "p": 0.0}
+{"backend": "systemone-s1", "kind": "grow", "turn": 4, "chars": 214659, "secs": 3.17, "tokens": 96639, "p": 0.0}
+{"backend": "systemone-s1", "kind": "grow", "turn": 5, "chars": 232363, "secs": 3.35, "tokens": 104357, "p": 0.0}
+{"backend": "systemone-s1", "kind": "grow", "turn": 6, "chars": 250045, "secs": 6.76, "tokens": 112377, "p": 0.0}
+{"backend": "systemone-s1", "kind": "grow", "turn": 7, "chars": 267751, "secs": 3.88, "tokens": 120228, "p": 0.0}
+{"backend": "systemone-s1", "kind": "grow", "turn": 8, "chars": 285504, "secs": 7.77, "tokens": 128231, "p": 0.0}
+{"backend": "systemone-s1", "kind": "cold", "size": 64000, "chars": 284576, "secs": 35.22, "tokens": 127460, "p": 0.0}
+{"done": true}

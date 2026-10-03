@@ -1,0 +1,6 @@
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 1, "n": 20, "p50": 147, "p95": 159, "max": 159, "errors": 0, "error_types": [], "rps": 6.79, "tokens": 902, "questions": "split-v1"}
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 2, "n": 20, "p50": 220, "p95": 227, "max": 227, "errors": 0, "error_types": [], "rps": 9.07, "tokens": 902, "questions": "split-v1"}
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 4, "n": 20, "p50": 247, "p95": 251, "max": 251, "errors": 0, "error_types": [], "rps": 16.2, "tokens": 902, "questions": "split-v1"}
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 8, "n": 32, "p50": 327, "p95": 341, "max": 342, "errors": 0, "error_types": [], "rps": 24.18, "tokens": 902, "questions": "split-v1"}
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 16, "n": 64, "p50": 444, "p95": 586, "max": 682, "errors": 0, "error_types": [], "rps": 33.41, "tokens": 902, "questions": "split-v1"}
+{"scenario": "concurrency", "backend": "systemone-s1", "concurrency": 32, "n": 128, "p50": 725, "p95": 1015, "max": 1799, "errors": 0, "error_types": [], "rps": 40.62, "tokens": 902, "questions": "split-v1"}

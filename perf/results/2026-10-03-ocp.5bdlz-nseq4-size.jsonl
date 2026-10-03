@@ -1,0 +1,8 @@
+{"scenario": "size", "backend": "systemone-s1", "size": 400, "n": 5, "p50": 140, "p95": 149, "max": 149, "errors": 0, "error_types": [], "rps": 7.08, "tokens": 660, "questions": "built-in"}
+{"scenario": "size", "backend": "systemone-s1", "size": 4000, "n": 5, "p50": 271, "p95": 272, "max": 272, "errors": 0, "error_types": [], "rps": 3.66, "tokens": 3429, "questions": "built-in"}
+{"scenario": "size", "backend": "systemone-s1", "size": 16000, "n": 5, "p50": 1090, "p95": 1096, "max": 1096, "errors": 0, "error_types": [], "rps": 0.91, "tokens": 12660, "questions": "built-in"}
+{"scenario": "size", "backend": "systemone-s1", "size": 40000, "n": 5, "p50": 3541, "p95": 3543, "max": 3543, "errors": 0, "error_types": [], "rps": 0.28, "tokens": 31122, "questions": "built-in"}
+{"scenario": "size", "backend": "systemone-s1", "size": 400, "n": 5, "p50": 145, "p95": 145, "max": 145, "errors": 0, "error_types": [], "rps": 6.92, "tokens": 1024, "questions": "split-v3"}
+{"scenario": "size", "backend": "systemone-s1", "size": 4000, "n": 5, "p50": 284, "p95": 286, "max": 286, "errors": 0, "error_types": [], "rps": 3.49, "tokens": 3793, "questions": "split-v3"}
+{"scenario": "size", "backend": "systemone-s1", "size": 16000, "n": 5, "p50": 1116, "p95": 1120, "max": 1120, "errors": 0, "error_types": [], "rps": 0.89, "tokens": 13024, "questions": "split-v3"}
+{"scenario": "size", "backend": "systemone-s1", "size": 40000, "n": 5, "p50": 3630, "p95": 3637, "max": 3637, "errors": 0, "error_types": [], "rps": 0.27, "tokens": 31486, "questions": "split-v3"}
