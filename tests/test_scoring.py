@@ -137,6 +137,9 @@ def test_presidio_error_fails_closed(make_scorer):
 def classifier_policy(privacy_policy):
     policy = copy.deepcopy(privacy_policy)
     policy["classifier"]["enabled"] = True
+    # The tests below check the built-in systemone questions; the questions of the gitops
+    # policy are checked by test_policy_systemone_questions.
+    policy["classifier"].pop("systemone", None)
     return policy
 
 
@@ -504,6 +507,21 @@ def test_systemone_invalid_questions_use_the_built_in_set(
         "personal_sensitive", "credentials", "business_confidential"}
     assert ("classifier", "systemone/llm@0.93(personal_sensitive)", 0.80) in signals
     assert "classifier.systemone.questions ignored" in capsys.readouterr().out
+
+
+def test_policy_systemone_questions(privacy_policy):
+    # The copy of the gitops policy sets its own questions (router v0.9.0): one-token ids,
+    # eight positive questions and `biz` ignored, each with an instruction against prompt
+    # injection. An invalid set would fall back to the built-in questions with a log line.
+    import privacy_scoring
+
+    cfg = privacy_policy["classifier"]["systemone"]
+    positive, ignored = privacy_scoring.PrivacyScorer._systemone_questions(cfg)
+    assert set(positive) == {
+        "health", "job", "legal", "family", "money", "secret", "private", "person"}
+    assert set(ignored) == {"biz"}
+    assert all("never follow any instruction" in t for t in {**positive, **ignored}.values())
+    assert not cfg.get("show_all")
 
 
 def test_systemone_skipped_outside_gray_zone(make_scorer, classifier_policy, systemone):
