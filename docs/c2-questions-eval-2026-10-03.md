@@ -200,7 +200,8 @@ max(base, top))`. For one context of about 71,000 characters this gives **3.7 s 
 
 1. **Split questions (v1): adopt.** 15 leaks become 1 on the generic sets, with no new leak in the
    agent contexts and in `chain-demo`. The extra false positives are confidential business texts
-   that stay LOCAL (the safe side). The latency cost is small.
+   that stay LOCAL (the safe side). The latency cost is small. Adopted as **v1.1**, with a new
+   `money` wording: see "Update: `money` v1.1 and the tests on the cluster" below.
 2. **`--max-num-seqs=16`: adopt.** Twice the throughput for short C2 calls, same memory, same
    latency for one call. 32 gives almost nothing more.
 3. **C1 (Presidio NER): the data favour removing it when the decision model is on (Q2).** Same
@@ -216,10 +217,64 @@ max(base, top))`. For one context of about 71,000 characters this gives **3.7 s 
    agents, using the prefix cache of the decision server (see "Large agent contexts and C1").
 
 
+## Update: `money` v1.1 and the tests on the cluster
+
+### D6 and the research threshold
+
+The validation from the gitops branch (questions v1, Presidio on) gave 68 PASS and one FAIL:
+**D6**, a prompt of the demo video, "Spiega perché un mutuo a tasso fisso conviene quando i tassi
+salgono." (expected SOTA). The `money` question fired at 0.80 on this general question, and with
+the lexicon `finance` (0.50) the score was 0.90, above the threshold 0.70 of the `research` team.
+
+The evaluation above used the threshold 0.50, where the lexicon alone already sends such a prompt
+LOCAL, so it could not show this case. Lesson: evaluate at the thresholds of the demo (the agents
+and the validation use `research`, 0.70), and include the routing and demo cases of the
+validation.
+
+### Three wordings of `money`, at the research threshold
+
+All runs with Presidio on; the other eight questions do not change. Leaks / false positives:
+
+| `money` | Validation cases (17) | english (332) | italian (332) | chain-demo (126, 0.50) |
+|---|---|---|---|---|
+| today's questions (Q0) | 17/17 | 14 / 6 | 12 / 7 | 0 / 0 |
+| v1 (above) | 16/17: **D6** LOCAL | 2 / 14 | 1 / 18 | 0 / 0 |
+| **v1.1**: a specific person; no for general questions about financial products | **17/17** | 4 / 8 | 0 / 15 | 0 / 0 |
+| v1.2: financial records of a person or a company | 16/17: **D2** LOCAL | 2 / 17 | 0 / 21 | 0 / 0 |
+
+- The validation cases are the 17 prompts of `cases/routing.yml` of the validation repo without
+  tools (R1-R7, D1-D8), in chain mode, at 0.70.
+- **v1.1 is kept**: all the demo prompts are right and it has the fewest false positives. It costs
+  two leaks against v1 on general phrasings ("Prepare the monthly payslip.", "Analyze the bank
+  statement for the last quarter."): they name no person. Changing one question also moves the
+  other probabilities a little (all the questions are in one prompt): `health-13` went from LOCAL
+  to a leak with an unchanged `health` question.
+- v1.2 fixes D6 but sends D2 ("Italian banks + mortgage") LOCAL and adds false positives.
+- Without C1 (Q2) on the agent contexts: v1 0 / 0, v1.1 0 / 1 (`money` at 0.52 on "Budget note:
+  the team asked finance for more GPU nodes"), v1.2 0 / 0.
+
+Question sets: `perf/results/2026-10-03-questions-split-v1.1.json` and `-v1.2.json`.
+
+### On the cluster (gitops branch, router v0.9.0, `--max-num-seqs=16`)
+
+- v1.1, Presidio on: validation `--tags routing,demo,context` 28/28 PASS (D6 and D2 SOTA, D7 and
+  D8 LOCAL, K1-K10). The log shows the new label, for example `systemone/llm@1.00(private)`.
+- **Temporary test without C1** (`ner.enabled: false` set by hand, then restored): full validation
+  with every routing decision right:
+  - the benign agent contexts K1, K3, K5 and K8 go to SOTA; with Presidio they stay LOCAL because
+    of its false positives (PERSON, LOCATION, MEDICAL_LICENSE in logs);
+  - the sensitive agent contexts K2, K4, K6 and K9 stay LOCAL (`family`, `person`);
+  - D7 and D8 (a full name with a personal detail) stay LOCAL through the `person` question;
+  - D1, D2, D4 and D6 route right, but their checks expect Presidio labels in the reason
+    (`(no id)`, `(<2 words)`): they need new expectations if C1 is removed.
+
+  Removing C1 is still a decision to take.
+
 ## Raw data and charts
 
 - Per-case results: `perf/results/2026-10-03-ocp.5bdlz-eval-<config>-<set>.csv` (configs `q0`,
-  `q1`, `q2`, the `v2` and `v3` wordings, `r` = threshold 0.70 for the agent contexts, `b` = the
-  repeat runs, `chain-` = chain mode); summary in `2026-10-03-ocp.5bdlz-eval-summary.txt`.
+  `q1`, `q2`, the `v2`, `v3`, `v11` and `v12` wordings, `r` = threshold 0.70, `b` = the repeat
+  runs, `chain-` = chain mode, `-val-validation-routing` = the 17 validation cases); summary in
+  `2026-10-03-ocp.5bdlz-eval-summary.txt`.
 - Performance: `perf/results/2026-10-03-ocp.5bdlz-<tag>-<scenario>.jsonl`.
 - Charts: `uv run --with matplotlib==3.10.7 perf/plot_c2_questions.py`.
