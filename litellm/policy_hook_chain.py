@@ -32,6 +32,12 @@ keep working — and the demo can show *why* a request went where it went.
 
 Decision stays BINARY LOCAL/SOTA (no redaction).
 
+NAMESPACE POLICY (v0.11.0, off by default): before the gates, a request about a namespace
+labelled `sovereign-selfheal.io/data-class=restricted` goes LOCAL and no gate runs
+(decided_by "namespace"). The names come from the agent's hint (`selfheal_namespaces` in
+the body) and/or from a scan of the request text; see namespace_policy.py. The hint field
+is removed from every request, also when the policy is off.
+
 OBSERVABILITY (never on the decision path): with LiteLLM's `otel` callback on, the hook
 opens a `router.chain` span under the proxy request span, one `gate.<name>` span per gate
 and, through privacy_scoring, one `presidio.analyze` span per Presidio call. The router
@@ -49,6 +55,7 @@ import threading
 import yaml
 from litellm.integrations.custom_logger import CustomLogger
 
+from namespace_policy import KNOWN_VALUES, RESTRICTED, NamespacePolicy, pop_hint
 from privacy_scoring import PrivacyScorer, annotate_current_span, safe_span
 
 try:  # prometheus_client is in the LiteLLM image; optional so import never breaks the proxy
@@ -102,6 +109,16 @@ PRIVACY_SCORE = _metric("Histogram", "router_privacy_score",
                         buckets=(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0))
 SOTA_BUDGET_USED = _metric("Gauge", "router_sota_budget_used_tokens",
                            "SOTA tokens counted by the efficiency gate budget (this pod only).")
+# Namespace policy (v0.11.0). The `namespace` label is a restricted namespace or "none":
+# a bounded set, decided by the platform team that sets the labels.
+NS_DECISIONS = _metric("Counter", "router_namespace_decisions",
+                       "Routing decisions with the namespace policy on, per restricted namespace.",
+                       ("namespace", "routed_to", "source"))
+NS_LABELS_LOADED = _metric("Gauge", "router_namespace_labels_loaded",
+                           "1 when the namespace labels were read at least once (this pod).")
+NS_LABELS = _metric("Gauge", "router_namespace_labels",
+                    "Labelled namespaces by state: restricted, public or unknown (another value).",
+                    ("state",))
 
 
 def _start_metrics_server():
@@ -179,6 +196,13 @@ class ChainRouter(CustomLogger):
         self._known_teams = {
             t for t in list(self.thresholds) + list(self.tiering) if not str(t).startswith("_")
         }
+
+        # -- namespace policy (v0.11.0; default off) ------------------------------
+        # Off: no Kubernetes API call, no thread; the hint field is still removed.
+        self.namespaces = NamespacePolicy(self.policy.get("namespace_policy"),
+                                          on_change=self._observe_namespace_labels)
+        if self.namespaces.enabled:
+            self._observe_namespace_labels(self.namespaces.labels)
 
     # -- text/context helpers --------------------------------------------------
     @staticmethod
@@ -339,6 +363,30 @@ class ChainRouter(CustomLogger):
         except Exception as exc:
             _metrics_error(exc)
 
+    @staticmethod
+    def _observe_namespace_labels(labels):
+        try:
+            if NS_LABELS_LOADED is not None:
+                NS_LABELS_LOADED.set(1 if labels.loaded else 0)
+            if NS_LABELS is not None:
+                values = list(labels.labels().values())
+                NS_LABELS.labels(state="restricted").set(values.count(RESTRICTED))
+                NS_LABELS.labels(state="public").set(values.count("public"))
+                NS_LABELS.labels(state="unknown").set(
+                    sum(1 for v in values if v not in KNOWN_VALUES))
+        except Exception as exc:
+            _metrics_error(exc)
+
+    @staticmethod
+    def _count_namespace(ns, routed_to):
+        try:
+            if NS_DECISIONS is not None and ns is not None:
+                for name in ns["restricted"] or ["none"]:
+                    NS_DECISIONS.labels(namespace=name, routed_to=routed_to or "unknown",
+                                        source=ns["source"]).inc()
+        except Exception as exc:
+            _metrics_error(exc)
+
     def _count_decision(self, decision, team):
         try:
             if REQUESTS is not None:
@@ -364,7 +412,10 @@ class ChainRouter(CustomLogger):
     # -- LiteLLM hooks ---------------------------------------------------------
     async def async_pre_call_hook(self, user_api_key_dict, cache, data, call_type):
         team = None
+        ns = None
         try:
+            # Always: LiteLLM must never forward the hint to a model (v0.11.0).
+            hint_value = pop_hint(data, self.namespaces.hint_field)
             if call_type not in ("completion", "acompletion", "text_completion"):
                 return data
             requested = data.get("model")
@@ -377,7 +428,26 @@ class ChainRouter(CustomLogger):
                 deciding = "all-sota"
                 trace = []
                 extra = {}
-                for gate in self.gate_order:
+                gates = self.gate_order
+                if self.namespaces.enabled:
+                    # Namespace policy first: a restricted namespace skips every gate.
+                    with safe_span("gate.namespace") as gate_span:
+                        ns = self.namespaces.evaluate(hint_value, lambda: self._whole_payload(data))
+                        if ns["restricted"]:
+                            verdict = "local"
+                            reason = (f"namespace: restricted {', '.join(ns['restricted'])} "
+                                      f"(found by {ns['source']})")
+                        else:
+                            verdict = "pass"
+                            reason = "namespace: no restricted namespace" + (
+                                "" if ns["loaded"] else " (labels not read yet)")
+                        gate_span.set("gate.verdict", verdict)
+                        gate_span.set("gate.reason", reason)
+                    if verdict == "local":
+                        trace.append(f"{reason} -> LOCAL")
+                        target, deciding = self.local_model, "namespace"
+                        gates = ()
+                for gate in gates:
                     if gate not in ("efficiency", "privacy"):
                         continue  # unknown gate name in config -> skip, don't crash
                     with safe_span(f"gate.{gate}") as gate_span:
@@ -406,6 +476,11 @@ class ChainRouter(CustomLogger):
                 }
                 decision.update(self._size_fields(data))  # additive (v0.8.0)
                 decision.update(extra)
+                if ns is not None:  # additive (v0.11.0), only with the namespace policy on
+                    decision["ns_restricted"] = ns["restricted"]
+                    decision["ns_source"] = ns["source"]
+                    decision["namespaces"] = ns["namespaces"]
+                    decision["ns_labels_loaded"] = ns["loaded"]
                 trace_id = chain_span.trace_id()
                 if trace_id:
                     decision["trace_id"] = trace_id  # additive: find the trace from the log line
@@ -428,6 +503,7 @@ class ChainRouter(CustomLogger):
             print(f"[policy-router] {decision}", flush=True)
             decision = dict(decision, decided_by="fail-closed")
         self._count_decision(decision, team)
+        self._count_namespace(ns, decision.get("routed_to"))
         return data
 
     async def async_log_success_event(self, kwargs, response_obj, start_time, end_time):

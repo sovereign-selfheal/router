@@ -15,7 +15,7 @@ This repo delivers two things with the **same version** (git tag `vX.Y.Z`):
 
 | Item | Where it runs | How it reaches the cluster |
 |---|---|---|
-| Hook code: `litellm/policy_hook_chain.py`, `litellm/privacy_scoring.py` | LiteLLM pod, `/app/litellm` | The `gitops` repo copies the files at the tag into a ConfigMap (`scripts/sync-router-code.sh` there) |
+| Hook code: `litellm/policy_hook_chain.py`, `litellm/privacy_scoring.py`, `litellm/namespace_policy.py` (since v0.11.0) | LiteLLM pod, `/app/litellm` | The `gitops` repo copies the files at the tag into a ConfigMap (`scripts/sync-router-code.sh` there) |
 | Image `quay.io/sovereign-selfheal/router:vX.Y.Z`: LiteLLM v1.102.0 + fastText + `lid.176.ftz` | LiteLLM pod | The `gitops` repo pins it by digest |
 
 The policies (`chain.yaml`, `privacy-plus.yaml`) are **not** here: the `gitops` repo is their source of
@@ -23,7 +23,9 @@ truth. `tests/policy/` holds a copy for the tests and the evaluation.
 
 ## How the hook decides
 
-`policy_hook_chain.py` runs two gates in order. The first gate that says LOCAL wins:
+`policy_hook_chain.py` runs two gates in order. The first gate that says LOCAL wins. Since v0.11.0 an
+optional **namespace policy** runs before them (off by default; see "Namespace policy"): a request
+about a restricted namespace stays local and no gate runs.
 
 1. **Efficiency**: short and simple questions stay local; long questions, or questions with a
    complexity keyword, can go to SOTA. A request larger than the SOTA size cap stays local (since
@@ -52,8 +54,9 @@ previous behaviour, so an old policy works with a new release.
 | `classifier.systemone.questions` | v0.9.0 | the built-in questions | Backend `systemone`: the yes/no questions, `{id: {instructions: <text>, ignored: <bool>}}`. Positive questions add the C2 signal; `ignored: true` questions only show in the log. An invalid set (no positive question, an empty or missing `instructions`) is logged and the built-in questions are used. Keep the ids short: the answer template must fit the canvas of the decision server (64 tokens: about ten questions with one-token ids) |
 | `classifier.systemone.show_all` | v0.9.0 | `false` | Backend `systemone`: every positive question below the threshold also shows in the log with weight 0, for example `systemone/health@0.03(shown):0.00`. For evaluations |
 
-One key is in `chain.yaml`: `efficiency.sota_max_prompt_chars` (since v0.8.0, default `0` = no cap), the
-SOTA size cap of "Large requests".
+Keys in `chain.yaml`: `efficiency.sota_max_prompt_chars` (since v0.8.0, default `0` = no cap), the
+SOTA size cap of "Large requests"; the block `namespace_policy` (since v0.11.0, default off), see
+"Namespace policy".
 
 The key `classifier.chat_template_kwargs` (since v0.6.0, default: none) is a mapping of chat template
 arguments sent with the call of the C2 classifier. The env var `CLASSIFIER_CHAT_TEMPLATE_KWARGS` (a JSON
@@ -70,6 +73,55 @@ Quality and gate time with C1 on and off: [`docs/c1-off-eval-2026-10-05.md`](doc
 
 Ignored entities stay in the log with weight 0, for example `NRP@0.85(no id):0.00` or
 `PERSON@0.85(<2 words):0.00`, so the log shows what the engine saw and why it did not count it.
+
+## Namespace policy (since v0.11.0)
+
+The same agent can investigate a sensitive application and an ordinary one. A platform team marks the
+namespace of a sensitive application with a label, and every request about that namespace stays on the
+local model:
+
+```bash
+oc label namespace payments sovereign-selfheal.io/data-class=restricted --overwrite
+```
+
+**Only `restricted` changes the routing.** A request about a restricted namespace goes to `local-fast`
+before the gates (`decided_by: namespace`): no detector runs, so the decision is also faster. No label,
+`public` or any other value keeps the normal routing (efficiency and privacy gates). `public` only says
+that someone classified the namespace. An unknown value, for example a typo, keeps the normal routing
+and shows in the metric `router_namespace_labels{state="unknown"}`.
+
+**How the router knows the namespaces of a request.** Two ways, each with its own switch. One
+restricted namespace from either way is enough.
+
+| Switch | Way | Notes |
+|---|---|---|
+| `hint` | The agent sends the names in the request body: `"selfheal_namespaces": ["payments"]` | Precise. Contract for agents: [`docs/namespace-policy.md`](docs/namespace-policy.md) |
+| `scan` | The router finds names in the text of the request: PromQL label matchers (`namespace="payments"`), JSON and YAML `namespace` keys, `payments.svc`, `-n payments`, `/namespaces/payments` | Needs no change in the agent. A name that never appears in the text is not seen. It also catches a tool that reads a restricted namespace during an investigation of another one. About 8 ms for 400,000 characters |
+
+The hint field is removed from **every** request, also when the switch is off, so LiteLLM never sends
+it to a model.
+
+**Labels.** The router lists the namespaces that have the label key, with the ServiceAccount of the pod
+(`get`/`list`/`watch` on namespaces, given by the gitops repo). The first read happens when the hook
+loads, then a thread reads again every `refresh_s` seconds. A failed read keeps the last list. When the
+list was never read, nothing counts as restricted: the normal routing applies, the log line shows
+`ns_labels_loaded: False` and `router_namespace_labels_loaded` is 0.
+
+| Key (in `chain.yaml`, block `namespace_policy`) | Default | Meaning |
+|---|---|---|
+| `scan` | `false` | Find namespace names in the request text. Env override: `NAMESPACE_SCAN_ENABLED` |
+| `hint` | `false` | Read the names that the agent sends. Env override: `NAMESPACE_HINT_ENABLED` |
+| `label` | `sovereign-selfheal.io/data-class` | Label key on the namespaces |
+| `hint_field` | `selfheal_namespaces` | Field of the request body with the names |
+| `refresh_s` | `5` | Seconds between two reads of the labels (minimum 1) |
+
+The env overrides accept `1`, `true`, `yes` or `on` (on) and any other value (off); unset or empty, the
+policy decides. With both switches off the hook makes no Kubernetes API call and starts no thread.
+
+With the policy on, the log line has four more keys: `ns_restricted` (the restricted names found),
+`ns_source` (`hint`, `scan`, `hint+scan` or `none`), `namespaces` (the hint names and the labelled names
+that the scan found) and `ns_labels_loaded`. The trace has one more span, `gate.namespace` (verdict
+`local` or `pass`).
 
 ## Large requests (since v0.8.0)
 
@@ -164,6 +216,7 @@ passes it to the hook (`metadata.litellm_parent_otel_span`). The hook adds:
 <proxy request span>                      (LiteLLM)
 ├── router.chain                          route.requested, route.target, route.decided_by,
 │   │                                     route.team, route.reason
+│   ├── gate.namespace                    gate.verdict (local|pass), gate.reason (v0.11.0, policy on)
 │   ├── gate.efficiency                   gate.verdict, gate.reason
 │   └── gate.privacy                      gate.verdict, gate.reason, privacy.score,
 │       │                                 privacy.threshold, privacy.team_key, privacy.signals
@@ -182,9 +235,12 @@ its own metrics, and the ones of LiteLLM's `prometheus` callback when that is on
 
 | Metric | Type | Labels | Meaning |
 |---|---|---|---|
-| `router_requests_total` | counter | `routed_to`, `decided_by`, `team` | One per decision. `decided_by`: `efficiency`, `privacy`, `tiering`, `all-sota`, `fail-closed`. `team` is a team named in the policies, `none` or `other` |
+| `router_requests_total` | counter | `routed_to`, `decided_by`, `team` | One per decision. `decided_by`: `namespace` (v0.11.0), `efficiency`, `privacy`, `tiering`, `all-sota`, `fail-closed`. `team` is a team named in the policies, `none` or `other` |
 | `router_privacy_score` | histogram | `team` (threshold key) | Privacy score of the requests that reached the privacy gate |
 | `router_sota_budget_used_tokens` | gauge | | SOTA tokens counted by the budget of the efficiency gate, **per pod** |
+| `router_namespace_decisions_total` | counter | `namespace`, `routed_to`, `source` | v0.11.0, namespace policy on: one per decision and restricted namespace. `namespace` is a restricted namespace or `none` (a bounded set: the platform team sets the labels) |
+| `router_namespace_labels_loaded` | gauge | | v0.11.0: 1 when this pod read the namespace labels at least once |
+| `router_namespace_labels` | gauge | `state` | v0.11.0: labelled namespaces, `restricted`, `public` or `unknown` (another value) |
 
 Tokens and fallbacks per model come from LiteLLM's `prometheus` callback
 (`litellm_total_tokens_metric_total{requested_model=...}`,

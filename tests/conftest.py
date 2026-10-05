@@ -27,6 +27,8 @@ for _var in (
     "CLASSIFIER_FALLBACK_MODEL",
     "SOTA_SERVED_MATCH",
     "NER_ENABLED",
+    "NAMESPACE_SCAN_ENABLED",
+    "NAMESPACE_HINT_ENABLED",
 ):
     os.environ.pop(_var, None)
 

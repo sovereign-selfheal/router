@@ -96,6 +96,26 @@ efficiency:
 # privacy tuning, the engine loads its detectors/threshold from this file:
 privacy_policy_file: privacy-plus   # -> policy/privacy-plus.yaml (mounted alongside)
 
+# --- Namespace policy (router >= v0.11.0; default off) ----------------------
+# Checked BEFORE the gates. A request about a namespace with the label
+# `<label>=restricted` stays LOCAL and no gate runs (decided_by "namespace"). No label,
+# `public` or another value keeps the normal routing. The router finds the namespaces of a
+# request in two ways, each with its own switch:
+#   hint: the agent sends the names in the request body, field `<hint_field>` (a list).
+#   scan: the router finds names in the request text (PromQL `namespace="x"`, JSON/YAML
+#         `namespace` keys, `x.svc`, `-n x`, `/namespaces/x`).
+# Either one naming a restricted namespace is enough. The hint field is removed from every
+# request, also when the hint is off. The labels come from the Kubernetes API (list of
+# namespaces with the label key, every `refresh_s` seconds); the ServiceAccount of LiteLLM
+# needs get/list/watch on namespaces. Env overrides: NAMESPACE_SCAN_ENABLED,
+# NAMESPACE_HINT_ENABLED (unset or empty = this file decides).
+namespace_policy:
+  scan: false
+  hint: false
+  label: sovereign-selfheal.io/data-class
+  hint_field: selfheal_namespaces
+  refresh_s: 5
+
 # --- Per-team guardrail (applied AFTER the chain) ----------------------------
 # A team capped to LOCAL never reaches SOTA regardless of the gate outcome. Can
 # only pull toward LOCAL, never toward SOTA (same semantics as cost/complexity).

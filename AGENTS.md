@@ -43,10 +43,17 @@ Rules. The same rules are in `gitops/AGENTS.md`: keep both in sync.
    - the env vars `POLICY_DIR`, `SOTA_SERVED_MATCH`, `CLASSIFIER_ENABLED`, `CLASSIFIER_GRAY_LOW`,
      `CLASSIFIER_BASE_URL`, `CLASSIFIER_MODEL`, `CLASSIFIER_API_KEY`, `ROUTER_METRICS_PORT` (v0.5.0),
      `CLASSIFIER_CHAT_TEMPLATE_KWARGS` (v0.6.0), `CLASSIFIER_BACKEND`, `CLASSIFIER_FALLBACK_BASE_URL`,
-     `CLASSIFIER_FALLBACK_MODEL` (v0.7.0), `NER_ENABLED` (v0.10.0);
+     `CLASSIFIER_FALLBACK_MODEL` (v0.7.0), `NER_ENABLED` (v0.10.0), `NAMESPACE_SCAN_ENABLED`,
+     `NAMESPACE_HINT_ENABLED` (v0.11.0);
+   - the request body field `selfheal_namespaces` (v0.11.0, the agents send it; always removed
+     before the model call) and the label key `sovereign-selfheal.io/data-class` (defaults,
+     overridable in `chain.yaml`);
    - the span names `router.chain`, `gate.<name>`, `presidio.analyze` and their attributes, and the
      metric names `router_requests_total`, `router_privacy_score`, `router_sota_budget_used_tokens`
-     (v0.5.0; the demo video and `gitops/docs/observability.md` use them);
+     (v0.5.0; the demo video and `gitops/docs/observability.md` use them), the span `gate.namespace`
+     and the metrics `router_namespace_decisions_total`, `router_namespace_labels_loaded`,
+     `router_namespace_labels` (v0.11.0; the gitops dashboards and the `routing-live-view` page use
+     them, and the page reads the log line);
    - in the image: the model at `/opt/models/lid.176.ftz`, the `litellm` command, a non-root user.
 5. **Presidio interface.** The code calls `POST /analyze` with `text`, `language` (`en` or `it`) and the
    `entities` it scores. The entity types come from `ner.entity_weights` in the policy. A change of the
@@ -58,12 +65,13 @@ Rules. The same rules are in `gitops/AGENTS.md`: keep both in sync.
 litellm/                 # hook code, copied by gitops into the LiteLLM ConfigMap
   policy_hook_chain.py   # LiteLLM async_pre_call_hook: efficiency gate, privacy gate, tiering
   privacy_scoring.py     # privacy engine; no LiteLLM import, so it is testable alone
+  namespace_policy.py    # namespace labels, hint and scan (v0.11.0); no LiteLLM import
 tests/                   # unit tests (fake Presidio, fake LiteLLM); tests/policy/ = copy of the gitops policies
 eval/                    # labelled prompt sets, run_eval.py, check_baseline.py, baseline.json,
                          # build_agent_contexts.py (writes agent-contexts.yaml)
 scripts/                 # fetch-lid-model.sh
 docs/                    # evaluations and measurements (C2 backends, large contexts, SOTA size cap, Qwen prefix cache,
-                         # C2 questions, C1 off); img/ = charts
+                         # C2 questions, C1 off); img/ = charts; namespace-policy.md = contract for agents
 perf/                    # c2_perf.py (C2, Presidio and whole-gate performance, in a cluster pod), agent_growth.py,
                          # shared_prefix.py, vllm_metrics.py, qwen_cache_run.sh, plot_context_cap.py,
                          # plot_c2_questions.py, plot_c1_off.py; results/
