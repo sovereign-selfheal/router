@@ -52,7 +52,10 @@ pii_patterns:
     validator: iban_mod97
     weight: 0.80
   - name: credit_card
-    regex: '\b(?:\d[ -]?){13,19}\b'
+    # Not the decimals of a number: Prometheus values in agent contexts such as
+    # 0.024836864197530867 often pass Luhn (seen on 2026-10-05). A card at the end of a sentence
+    # ("... 4111111111111111.") still counts.
+    regex: '(?<!\d[.,])\b(?:\d[ -]?){13,19}\b(?!\.?\d)'
     validator: luhn
     weight: 0.85
   - name: email
@@ -92,9 +95,13 @@ lexicons:
     terms: [diagnosi, referto, patologia, terapia, "cartella clinica", anamnesi,
             oncologo, disabilità, "salute mentale", paziente, prescrizione, farmaco,
             "intervento chirurgico", "condizione cronica", "post-operatorio", ricovero,
-            malattia, sintomi, diagnosed, diagnosis,
+            malattia, sintomi,
             "chronic condition", oncologist, prescription, disease, illness,
-            disability, "mental health", medical]
+            disability, "mental health", medical,
+            diabetes, psychiatric, oncological,
+            "patient record", "medical record", "drug therapy", "treatment plan"]
+    # No "diagnosis"/"diagnosed": the SRE agents write a "Diagnosis Summary" in every request
+    # (2026-10-05). The specific terms above keep the medical cases of the evaluation LOCAL.
   finance:
     weight: 0.50
     terms: [stipendio, retribuzione, "estratto conto", saldo, mutuo, pignoramento,

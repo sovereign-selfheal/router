@@ -35,6 +35,35 @@ def test_card_needs_luhn(make_scorer):
     assert "credit_card" not in labels(bad)
 
 
+def test_card_ignores_the_decimals_of_a_number(make_scorer):
+    # Prometheus answers: the digits after the point can pass Luhn (2026-10-05, agent contexts).
+    _score, signals = run(make_scorer().score(
+        'rate{status="503"} -> 0.024836864197530867 and 12.4111111111111111'))
+    assert "credit_card" not in labels(signals)
+
+
+def test_card_at_the_end_of_a_sentence_is_detected(make_scorer):
+    for text in ("My card is 4111111111111111.", "carta: 4111 1111 1111 1111, grazie",
+                 "(4111-1111-1111-1111)"):
+        _score, signals = run(make_scorer().score(text))
+        assert "credit_card" in labels(signals), text
+
+
+def test_sre_diagnosis_is_not_health(make_scorer):
+    # The triage agent writes a "Diagnosis Summary": not personal health data.
+    _score, signals = run(make_scorer().score(
+        "Synthesize a diagnosis from the data you collected. ## Diagnosis Summary"))
+    assert "health" not in labels(signals)
+
+
+def test_specific_medical_terms_are_health(make_scorer):
+    for text in ("The patient received a diabetes diagnosis; prepare the treatment plan.",
+                 "Write the confidential note about the employee's psychiatric diagnosis.",
+                 "Summarize the patient record: oncological diagnosis and drug therapy."):
+        _score, signals = run(make_scorer().score(text))
+        assert "health" in labels(signals), text
+
+
 def test_secret_key_is_detected(make_scorer):
     score, signals = run(make_scorer().score("use sk-" + "a1" * 15 + " for the call"))
     assert ("secret", "openai_key", 0.95) in signals
@@ -43,8 +72,8 @@ def test_secret_key_is_detected(make_scorer):
 
 # ---------------------------------------------------------------- detector B
 def test_lexicon_matches_whole_words_only(make_scorer):
-    _score, hit = run(make_scorer().score("The diagnosis came back yesterday."))
-    _score, miss = run(make_scorer().score("The diagnosticsX tool is fast."))
+    _score, hit = run(make_scorer().score("The disease came back yesterday."))
+    _score, miss = run(make_scorer().score("The diseasesX tool is fast."))
     assert "health" in labels(hit)
     assert "health" not in labels(miss)
 

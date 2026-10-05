@@ -1,7 +1,7 @@
 {
   "english": {
     "cases": 332,
-    "correct": 228,
+    "correct": 229,
     "leaks": [
       "finance-02",
       "finance-04",
@@ -21,7 +21,6 @@
       "health-14",
       "health-17",
       "health-18",
-      "health-20",
       "health-22",
       "hr-07",
       "hr-08",
