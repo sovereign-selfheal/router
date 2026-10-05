@@ -63,10 +63,10 @@ eval/                    # labelled prompt sets, run_eval.py, check_baseline.py,
                          # build_agent_contexts.py (writes agent-contexts.yaml)
 scripts/                 # fetch-lid-model.sh
 docs/                    # evaluations and measurements (C2 backends, large contexts, SOTA size cap, Qwen prefix cache,
-                         # C2 questions); img/ = charts
-perf/                    # c2_perf.py (C2 and Presidio performance, in a cluster pod), agent_growth.py,
+                         # C2 questions, C1 off); img/ = charts
+perf/                    # c2_perf.py (C2, Presidio and whole-gate performance, in a cluster pod), agent_growth.py,
                          # shared_prefix.py, vllm_metrics.py, qwen_cache_run.sh, plot_context_cap.py,
-                         # plot_c2_questions.py; results/
+                         # plot_c2_questions.py, plot_c1_off.py; results/
 Containerfile            # LiteLLM + fastText + lid.176.ftz
 ```
 

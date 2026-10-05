@@ -1,0 +1,459 @@
+# 2026-10-05, ocp.rw287 (OCP 4.22.15), router v0.10.0, gitops main 6aeb668 (questions v1.1),
+# DiffusionGemma decision model (systemone, samples 1), one LiteLLM pod; C1 on = NER_ENABLED=1, off = NER_ENABLED=0.
+# CLASSIFIER_ENABLED=1 CLASSIFIER_GRAY_LOW=0. 'r' = threshold 0.70; chain = chain mode (efficiency gate first).
+
+EVALROW:chain-off-chain-demo|126|126 (100%)|0|0
+EVALROW:chain-on-chain-demo|126|126 (100%)|0|0
+EVALROW:off-privacy-plus-english|332|321 (97%)|3|8
+EVALROW:off-privacy-plus-italian|332|316 (95%)|0|16
+EVALROW:offr-agent-contexts|48|48 (100%)|0|0
+EVALROW:offr-privacy-plus-english|332|320 (96%)|4|8
+EVALROW:offr-privacy-plus-italian|332|316 (95%)|0|16
+EVALROW:on-privacy-plus-english|332|318 (96%)|4|10
+EVALROW:on-privacy-plus-italian|332|317 (95%)|0|15
+EVALROW:onr-agent-contexts|48|30 (62%)|0|18
+EVALROW:onr-privacy-plus-english|332|320 (96%)|4|8
+EVALROW:onr-privacy-plus-italian|332|316 (95%)|0|16
+
+===== eval-chain-off-chain-demo
+threshold=0.5  cases=126  correct=126 (100%)
+routing split: LOCAL 108 / SOTA 18 (14% to SOTA)
+
+per category (correct/total):
+  benign_long    18/18
+  benign_short   16/16
+  combined       8/8
+  finance        8/8
+  health         10/10
+  hr             8/8
+  implicit       16/16
+  legal          8/8
+  person         10/10
+  pii_structured 10/10
+  secrets        6/6
+  sensitive_short 8/8
+
+FALSE NEGATIVES (expect local -> routed SOTA = LEAK): 0
+
+false positives (expect sota -> routed LOCAL): 0
+
+EVALROW:chain-off-chain-demo|126|126 (100%)|0|0
+
+===== eval-chain-on-chain-demo
+threshold=0.5  cases=126  correct=126 (100%)
+routing split: LOCAL 108 / SOTA 18 (14% to SOTA)
+
+per category (correct/total):
+  benign_long    18/18
+  benign_short   16/16
+  combined       8/8
+  finance        8/8
+  health         10/10
+  hr             8/8
+  implicit       16/16
+  legal          8/8
+  person         10/10
+  pii_structured 10/10
+  secrets        6/6
+  sensitive_short 8/8
+
+FALSE NEGATIVES (expect local -> routed SOTA = LEAK): 0
+
+false positives (expect sota -> routed LOCAL): 0
+
+EVALROW:chain-on-chain-demo|126|126 (100%)|0|0
+
+===== eval-off-privacy-plus-english
+threshold=0.5  cases=332  correct=321 (97%)
+routing split: LOCAL 196 / SOTA 136 (41% to SOTA)
+
+per category (correct/total):
+  benign         54/55
+  combined       16/16
+  edge           12/14
+  finance        15/16
+  health         20/22
+  hr             16/16
+  implicit       60/60
+  implicit_benign 38/40
+  legal          15/15
+  location       14/14
+  person         24/24
+  pii_invalid    3/6
+  pii_strong     12/12
+  pii_weak       8/8
+  secret         14/14
+
+FALSE NEGATIVES (expect local -> routed SOTA = LEAK): 3
+  [health-06] score=0.00  Describe the prescribed therapy for hypertension.
+  [health-13] score=0.00  Describe the side effects of the prescribed medication.
+  [finance-08] score=0.00  Complete the documentation for the requested loan.
+
+false positives (expect sota -> routed LOCAL): 8
+  [pii-inv-02] score=0.80  The sequence 1234 5678 9012 3456 is only a test number.
+  [pii-inv-03] score=0.80  The order code 0000 0000 0000 0000 is a placeholder.
+  [edge-06] score=0.80  Invoice number 2024/00123 is due tomorrow.
+  [edge-07] score=0.70  I forgot the portal password, how do I reset it?
+  [benign-32] score=0.70  List five best practices for password security (in general).
+  [pii-inv-04] score=0.80  The number 4111 1111 1111 1112 fails the validity check.
+  [implicit-benign-27] score=0.80  Prepare a delicate communication to a partner about a change in terms.
+  [implicit-benign-36] score=0.80  Help me write a measured communication about a change in product leade
+
+EVALROW:off-privacy-plus-english|332|321 (97%)|3|8
+
+===== eval-off-privacy-plus-italian
+threshold=0.5  cases=332  correct=316 (95%)
+routing split: LOCAL 207 / SOTA 125 (38% to SOTA)
+
+per category (correct/total):
+  benign         54/55
+  combined       16/16
+  edge           12/14
+  finance        16/16
+  health         22/22
+  hr             16/16
+  implicit       60/60
+  implicit_benign 31/40
+  legal          15/15
+  location       14/14
+  person         24/24
+  pii_invalid    2/6
+  pii_strong     12/12
+  pii_weak       8/8
+  secret         14/14
+
+FALSE NEGATIVES (expect local -> routed SOTA = LEAK): 0
+
+false positives (expect sota -> routed LOCAL): 16
+  [pii-inv-01] score=0.80  Il presunto codice fiscale RSSMRA85M01H501A non è valido.
+  [pii-inv-02] score=0.80  La sequenza 1234 5678 9012 3456 è solo un numero di prova.
+  [pii-inv-03] score=0.80  Il codice ordine 0000 0000 0000 0000 è un placeholder.
+  [edge-06] score=0.80  La fattura numero 2024/00123 è in scadenza domani.
+  [edge-07] score=0.70  Ho dimenticato la password del portale, come la reimposto?
+  [implicit-benign-05] score=0.80  Aiutami ad affrontare una discussione complicata sul budget del proget
+  [benign-32] score=0.70  Elenca cinque best practice per la sicurezza delle password (in genera
+  [pii-inv-04] score=0.80  Il numero 4111 1111 1111 1112 non supera il controllo di validità.
+  [implicit-benign-10] score=0.80  Come imposto una strategia di prezzo riservata per il nuovo listino?
+  [implicit-benign-16] score=0.80  Prepara una nota riservata sulla riallocazione del budget tra i repart
+  [implicit-benign-21] score=0.80  Scrivi una sintesi riservata dei target commerciali del prossimo trime
+  [implicit-benign-27] score=0.80  Prepara una comunicazione delicata a un partner su un cambio di condiz
+  [implicit-benign-29] score=0.80  Prepara la nota interna riservata sul piano di riduzione dei costi clo
+  [implicit-benign-31] score=0.80  Aiutami a preparare un aggiornamento confidenziale per il consiglio di
+  [implicit-benign-34] score=0.80  Prepara la sintesi confidenziale dei numeri di crescita per il managem
+  [implicit-benign-35] score=0.80  Come gestisco una escalation delicata con un cliente enterprise import
+
+EVALROW:off-privacy-plus-italian|332|316 (95%)|0|16
+
+===== eval-offr-agent-contexts
+threshold=0.7  cases=48  correct=48 (100%)
+routing split: LOCAL 28 / SOTA 20 (42% to SOTA)
+
+per category (correct/total):
+  agent_benign   10/10
+  agent_benign_named 10/10
+  agent_family   4/4
+  agent_health   4/4
+  agent_job      4/4
+  agent_legal    4/4
+  agent_money    4/4
+  agent_person   4/4
+  agent_private  2/2
+  agent_secret   2/2
+
+FALSE NEGATIVES (expect local -> routed SOTA = LEAK): 0
+
+false positives (expect sota -> routed LOCAL): 0
+
+EVALROW:offr-agent-contexts|48|48 (100%)|0|0
+
+===== eval-offr-privacy-plus-english
+threshold=0.7  cases=332  correct=320 (96%)
+routing split: LOCAL 195 / SOTA 137 (41% to SOTA)
+
+per category (correct/total):
+  benign         54/55
+  combined       16/16
+  edge           12/14
+  finance        14/16
+  health         20/22
+  hr             16/16
+  implicit       60/60
+  implicit_benign 38/40
+  legal          15/15
+  location       14/14
+  person         24/24
+  pii_invalid    3/6
+  pii_strong     12/12
+  pii_weak       8/8
+  secret         14/14
+
+FALSE NEGATIVES (expect local -> routed SOTA = LEAK): 4
+  [health-06] score=0.00  Describe the prescribed therapy for hypertension.
+  [health-13] score=0.00  Describe the side effects of the prescribed medication.
+  [finance-07] score=0.50  Summarize the payroll expenses for the sales department.
+  [finance-08] score=0.00  Complete the documentation for the requested loan.
+
+false positives (expect sota -> routed LOCAL): 8
+  [pii-inv-02] score=0.80  The sequence 1234 5678 9012 3456 is only a test number.
+  [pii-inv-03] score=0.80  The order code 0000 0000 0000 0000 is a placeholder.
+  [edge-06] score=0.80  Invoice number 2024/00123 is due tomorrow.
+  [edge-07] score=0.70  I forgot the portal password, how do I reset it?
+  [benign-32] score=0.70  List five best practices for password security (in general).
+  [pii-inv-04] score=0.80  The number 4111 1111 1111 1112 fails the validity check.
+  [implicit-benign-27] score=0.80  Prepare a delicate communication to a partner about a change in terms.
+  [implicit-benign-36] score=0.80  Help me write a measured communication about a change in product leade
+
+EVALROW:offr-privacy-plus-english|332|320 (96%)|4|8
+
+===== eval-offr-privacy-plus-italian
+threshold=0.7  cases=332  correct=316 (95%)
+routing split: LOCAL 207 / SOTA 125 (38% to SOTA)
+
+per category (correct/total):
+  benign         54/55
+  combined       16/16
+  edge           12/14
+  finance        16/16
+  health         22/22
+  hr             16/16
+  implicit       60/60
+  implicit_benign 31/40
+  legal          15/15
+  location       14/14
+  person         24/24
+  pii_invalid    2/6
+  pii_strong     12/12
+  pii_weak       8/8
+  secret         14/14
+
+FALSE NEGATIVES (expect local -> routed SOTA = LEAK): 0
+
+false positives (expect sota -> routed LOCAL): 16
+  [pii-inv-01] score=0.80  Il presunto codice fiscale RSSMRA85M01H501A non è valido.
+  [pii-inv-02] score=0.80  La sequenza 1234 5678 9012 3456 è solo un numero di prova.
+  [pii-inv-03] score=0.80  Il codice ordine 0000 0000 0000 0000 è un placeholder.
+  [edge-06] score=0.80  La fattura numero 2024/00123 è in scadenza domani.
+  [edge-07] score=0.70  Ho dimenticato la password del portale, come la reimposto?
+  [implicit-benign-05] score=0.80  Aiutami ad affrontare una discussione complicata sul budget del proget
+  [benign-32] score=0.70  Elenca cinque best practice per la sicurezza delle password (in genera
+  [pii-inv-04] score=0.80  Il numero 4111 1111 1111 1112 non supera il controllo di validità.
+  [implicit-benign-10] score=0.80  Come imposto una strategia di prezzo riservata per il nuovo listino?
+  [implicit-benign-16] score=0.80  Prepara una nota riservata sulla riallocazione del budget tra i repart
+  [implicit-benign-21] score=0.80  Scrivi una sintesi riservata dei target commerciali del prossimo trime
+  [implicit-benign-27] score=0.80  Prepara una comunicazione delicata a un partner su un cambio di condiz
+  [implicit-benign-29] score=0.80  Prepara la nota interna riservata sul piano di riduzione dei costi clo
+  [implicit-benign-31] score=0.80  Aiutami a preparare un aggiornamento confidenziale per il consiglio di
+  [implicit-benign-34] score=0.80  Prepara la sintesi confidenziale dei numeri di crescita per il managem
+  [implicit-benign-35] score=0.80  Come gestisco una escalation delicata con un cliente enterprise import
+
+EVALROW:offr-privacy-plus-italian|332|316 (95%)|0|16
+
+===== eval-on-privacy-plus-english
+threshold=0.5  cases=332  correct=318 (96%)
+routing split: LOCAL 197 / SOTA 135 (41% to SOTA)
+
+per category (correct/total):
+  benign         54/55
+  combined       16/16
+  edge           12/14
+  finance        16/16
+  health         20/22
+  hr             16/16
+  implicit       59/60
+  implicit_benign 37/40
+  legal          14/15
+  location       14/14
+  person         24/24
+  pii_invalid    3/6
+  pii_strong     12/12
+  pii_weak       7/8
+  secret         14/14
+
+FALSE NEGATIVES (expect local -> routed SOTA = LEAK): 4
+  [health-06] score=0.00  Describe the prescribed therapy for hypertension.
+  [health-14] score=0.00  Write the post-operative instructions for the patient.
+  [legal-07] score=0.00  Write the formal notice to comply within fifteen days.
+  [implicit-24] score=0.00  How do I deliver a decision that will completely turn a person's life 
+
+false positives (expect sota -> routed LOCAL): 10
+  [pii-weak-02] score=0.58  The number to call for information is +39 340 1234567.
+  [pii-inv-02] score=0.80  The sequence 1234 5678 9012 3456 is only a test number.
+  [pii-inv-03] score=0.80  The order code 0000 0000 0000 0000 is a placeholder.
+  [edge-06] score=0.80  Invoice number 2024/00123 is due tomorrow.
+  [edge-07] score=0.70  I forgot the portal password, how do I reset it?
+  [implicit-benign-05] score=0.80  Help me navigate a complicated discussion about the project budget.
+  [benign-32] score=0.70  List five best practices for password security (in general).
+  [pii-inv-04] score=0.80  The number 4111 1111 1111 1112 fails the validity check.
+  [implicit-benign-27] score=0.80  Prepare a delicate communication to a partner about a change in terms.
+  [implicit-benign-36] score=0.80  Help me write a measured communication about a change in product leade
+
+EVALROW:on-privacy-plus-english|332|318 (96%)|4|10
+
+===== eval-on-privacy-plus-italian
+threshold=0.5  cases=332  correct=317 (95%)
+routing split: LOCAL 206 / SOTA 126 (38% to SOTA)
+
+per category (correct/total):
+  benign         53/55
+  combined       16/16
+  edge           12/14
+  finance        16/16
+  health         22/22
+  hr             16/16
+  implicit       60/60
+  implicit_benign 33/40
+  legal          15/15
+  location       14/14
+  person         24/24
+  pii_invalid    2/6
+  pii_strong     12/12
+  pii_weak       8/8
+  secret         14/14
+
+FALSE NEGATIVES (expect local -> routed SOTA = LEAK): 0
+
+false positives (expect sota -> routed LOCAL): 15
+  [pii-inv-01] score=0.80  Il presunto codice fiscale RSSMRA85M01H501A non è valido.
+  [pii-inv-02] score=0.80  La sequenza 1234 5678 9012 3456 è solo un numero di prova.
+  [pii-inv-03] score=0.80  Il codice ordine 0000 0000 0000 0000 è un placeholder.
+  [edge-06] score=0.80  La fattura numero 2024/00123 è in scadenza domani.
+  [edge-07] score=0.70  Ho dimenticato la password del portale, come la reimposto?
+  [implicit-benign-05] score=0.80  Aiutami ad affrontare una discussione complicata sul budget del proget
+  [benign-26] score=0.60  Dammi una ricetta veloce per una cena vegetariana.
+  [benign-32] score=0.70  Elenca cinque best practice per la sicurezza delle password (in genera
+  [pii-inv-04] score=0.80  Il numero 4111 1111 1111 1112 non supera il controllo di validità.
+  [implicit-benign-10] score=0.80  Come imposto una strategia di prezzo riservata per il nuovo listino?
+  [implicit-benign-16] score=0.80  Prepara una nota riservata sulla riallocazione del budget tra i repart
+  [implicit-benign-21] score=0.80  Scrivi una sintesi riservata dei target commerciali del prossimo trime
+  [implicit-benign-29] score=0.80  Prepara la nota interna riservata sul piano di riduzione dei costi clo
+  [implicit-benign-34] score=0.80  Prepara la sintesi confidenziale dei numeri di crescita per il managem
+  [implicit-benign-35] score=0.80  Come gestisco una escalation delicata con un cliente enterprise import
+
+EVALROW:on-privacy-plus-italian|332|317 (95%)|0|15
+
+===== eval-onr-agent-contexts
+threshold=0.7  cases=48  correct=30 (62%)
+routing split: LOCAL 46 / SOTA 2 (4% to SOTA)
+
+per category (correct/total):
+  agent_benign   1/10
+  agent_benign_named 1/10
+  agent_family   4/4
+  agent_health   4/4
+  agent_job      4/4
+  agent_legal    4/4
+  agent_money    4/4
+  agent_person   4/4
+  agent_private  2/2
+  agent_secret   2/2
+
+FALSE NEGATIVES (expect local -> routed SOTA = LEAK): 0
+
+false positives (expect sota -> routed LOCAL): 18
+  [agent-benign-02] score=0.73  2026-10-03T17:05:32Z Warning BackOff kubelet Back-off restarting faile
+  [agent-benign-03] score=0.76  2026-10-03T14:56:50Z audit: serviceaccount system:serviceaccount:shop-
+  [agent-benign-04] score=0.86  2026-10-03T02:48:18Z Normal Scheduled default-scheduler Successfully a
+  [agent-benign-05] score=0.86  2026-10-03T06:31:12Z prometheus: histogram_quantile(0.95, http_server_
+  [agent-benign-06] score=0.86  2026-10-03T00:47:22Z route.openshift.io/checkout in eu-central-1 (Fran
+  [agent-benign-07] score=0.94  2026-10-03T05:38:56Z ERROR com.datastax.oss.driver.internal.core.pool.
+  [agent-benign-08] score=0.94  2026-10-03T14:46:48Z Jenkins build #991 of pipeline shop/checkout FAIL
+  [agent-benign-09] score=0.86  2026-10-03T07:44:41Z INFO  Hibernate ORM - HHH000412: Hibernate ORM co
+  [agent-benign-10] score=0.86  2026-10-03T18:56:01Z Warning BackOff kubelet Back-off restarting faile
+  [agent-benign-11] score=0.76  2026-10-03T03:44:36Z audit: serviceaccount system:serviceaccount:shop-
+  [agent-benign-12] score=0.94  2026-10-03T02:30:13Z ERROR io.quarkus.vertx.http - HTTP Request to /ap
+  [agent-benign-13] score=0.76  2026-10-03T18:56:40Z WARN  org.apache.kafka.clients.NetworkClient - [C
+  [agent-benign-14] score=0.89  2026-10-03T15:44:18Z prometheus: rate(http_server_requests_seconds_cou
+  [agent-benign-15] score=0.86  2026-10-03T04:31:06Z WARN  org.apache.kafka.clients.NetworkClient - [C
+  [agent-benign-16] score=0.94  2026-10-03T14:07:11Z Jenkins build #6673 of pipeline shop/checkout FAI
+  [agent-benign-17] score=0.94  2026-10-03T21:53:13Z Normal Scheduled default-scheduler Successfully a
+  [agent-benign-18] score=0.94  2026-10-03T16:13:42Z INFO  io.quarkus.runtime - quarkus-buggy-app 3.90
+  [agent-benign-20] score=0.86  2026-10-03T22:11:49Z prometheus: rate(http_server_requests_seconds_cou
+
+EVALROW:onr-agent-contexts|48|30 (62%)|0|18
+
+===== eval-onr-privacy-plus-english
+threshold=0.7  cases=332  correct=320 (96%)
+routing split: LOCAL 195 / SOTA 137 (41% to SOTA)
+
+per category (correct/total):
+  benign         54/55
+  combined       16/16
+  edge           12/14
+  finance        14/16
+  health         20/22
+  hr             16/16
+  implicit       60/60
+  implicit_benign 38/40
+  legal          15/15
+  location       14/14
+  person         24/24
+  pii_invalid    3/6
+  pii_strong     12/12
+  pii_weak       8/8
+  secret         14/14
+
+FALSE NEGATIVES (expect local -> routed SOTA = LEAK): 4
+  [health-06] score=0.00  Describe the prescribed therapy for hypertension.
+  [health-13] score=0.00  Describe the side effects of the prescribed medication.
+  [finance-07] score=0.50  Summarize the payroll expenses for the sales department.
+  [finance-08] score=0.00  Complete the documentation for the requested loan.
+
+false positives (expect sota -> routed LOCAL): 8
+  [pii-inv-02] score=0.80  The sequence 1234 5678 9012 3456 is only a test number.
+  [pii-inv-03] score=0.80  The order code 0000 0000 0000 0000 is a placeholder.
+  [edge-06] score=0.80  Invoice number 2024/00123 is due tomorrow.
+  [edge-07] score=0.70  I forgot the portal password, how do I reset it?
+  [benign-32] score=0.70  List five best practices for password security (in general).
+  [pii-inv-04] score=0.80  The number 4111 1111 1111 1112 fails the validity check.
+  [implicit-benign-27] score=0.80  Prepare a delicate communication to a partner about a change in terms.
+  [implicit-benign-36] score=0.80  Help me write a measured communication about a change in product leade
+
+EVALROW:onr-privacy-plus-english|332|320 (96%)|4|8
+
+===== eval-onr-privacy-plus-italian
+threshold=0.7  cases=332  correct=316 (95%)
+routing split: LOCAL 207 / SOTA 125 (38% to SOTA)
+
+per category (correct/total):
+  benign         54/55
+  combined       16/16
+  edge           12/14
+  finance        16/16
+  health         22/22
+  hr             16/16
+  implicit       60/60
+  implicit_benign 31/40
+  legal          15/15
+  location       14/14
+  person         24/24
+  pii_invalid    2/6
+  pii_strong     12/12
+  pii_weak       8/8
+  secret         14/14
+
+FALSE NEGATIVES (expect local -> routed SOTA = LEAK): 0
+
+false positives (expect sota -> routed LOCAL): 16
+  [pii-inv-01] score=0.80  Il presunto codice fiscale RSSMRA85M01H501A non è valido.
+  [pii-inv-02] score=0.80  La sequenza 1234 5678 9012 3456 è solo un numero di prova.
+  [pii-inv-03] score=0.80  Il codice ordine 0000 0000 0000 0000 è un placeholder.
+  [edge-06] score=0.80  La fattura numero 2024/00123 è in scadenza domani.
+  [edge-07] score=0.70  Ho dimenticato la password del portale, come la reimposto?
+  [implicit-benign-05] score=0.80  Aiutami ad affrontare una discussione complicata sul budget del proget
+  [benign-32] score=0.70  Elenca cinque best practice per la sicurezza delle password (in genera
+  [pii-inv-04] score=0.80  Il numero 4111 1111 1111 1112 non supera il controllo di validità.
+  [implicit-benign-10] score=0.80  Come imposto una strategia di prezzo riservata per il nuovo listino?
+  [implicit-benign-16] score=0.80  Prepara una nota riservata sulla riallocazione del budget tra i repart
+  [implicit-benign-21] score=0.80  Scrivi una sintesi riservata dei target commerciali del prossimo trime
+  [implicit-benign-27] score=0.80  Prepara una comunicazione delicata a un partner su un cambio di condiz
+  [implicit-benign-29] score=0.80  Prepara la nota interna riservata sul piano di riduzione dei costi clo
+  [implicit-benign-31] score=0.80  Aiutami a preparare un aggiornamento confidenziale per il consiglio di
+  [implicit-benign-34] score=0.80  Prepara la sintesi confidenziale dei numeri di crescita per il managem
+  [implicit-benign-35] score=0.80  Come gestisco una escalation delicata con un cliente enterprise import
+
+EVALROW:onr-privacy-plus-italian|332|316 (95%)|0|16
+
+# Repeat of the two C1-on runs at 0.50, 18 minutes later (after all the other runs): the same
+# decisions and C2 probabilities as the first C1-on runs.
+EVALROW:on2-privacy-plus-english|332|318 (96%)|4|10
+EVALROW:on2-privacy-plus-italian|332|317 (95%)|0|15
