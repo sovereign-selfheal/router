@@ -1,0 +1,53 @@
+# Order and times (UTC) of the runs of 2026-10-05 in pod litellm-5458fcd99b-7bl7g (ocp.rw287).
+# eval: eval/run_eval.py (on = NER_ENABLED=1, off = 0; r = threshold 0.70); gate: perf/c2_perf.py --scenarios gate.
+10:23:08 start on-privacy-plus-english
+10:23:51 end on-privacy-plus-english exit=1 threshold=0.5  cases=332  correct=318 (96%)
+10:23:51 start on-privacy-plus-italian
+10:24:30 end on-privacy-plus-italian exit=0 threshold=0.5  cases=332  correct=317 (95%)
+10:24:30 start onr-privacy-plus-english
+10:25:20 end onr-privacy-plus-english exit=1 threshold=0.7  cases=332  correct=320 (96%)
+10:25:20 start onr-privacy-plus-italian
+10:26:06 end onr-privacy-plus-italian exit=0 threshold=0.7  cases=332  correct=316 (95%)
+10:26:06 start onr-agent-contexts
+10:26:23 end onr-agent-contexts exit=0 threshold=0.7  cases=48  correct=30 (62%)
+10:26:23 start chain-on-chain-demo
+10:26:31 end chain-on-chain-demo exit=0 threshold=0.5  cases=126  correct=126 (100%)
+10:26:31 start off-privacy-plus-english
+10:27:10 end off-privacy-plus-english exit=1 threshold=0.5  cases=332  correct=321 (97%)
+10:27:10 start off-privacy-plus-italian
+10:27:46 end off-privacy-plus-italian exit=0 threshold=0.5  cases=332  correct=316 (95%)
+10:27:46 start offr-privacy-plus-english
+10:28:28 end offr-privacy-plus-english exit=1 threshold=0.7  cases=332  correct=320 (96%)
+10:28:28 start offr-privacy-plus-italian
+10:29:09 end offr-privacy-plus-italian exit=0 threshold=0.7  cases=332  correct=316 (95%)
+10:29:09 start offr-agent-contexts
+10:29:25 end offr-agent-contexts exit=0 threshold=0.7  cases=48  correct=48 (100%)
+10:29:25 start chain-off-chain-demo
+10:29:32 end chain-off-chain-demo exit=0 threshold=0.5  cases=126  correct=126 (100%)
+10:29:32 start gate-on size 4000 levels 1
+10:29:35 end gate-on size 4000 exit=0
+10:29:35 start gate-off size 4000 levels 1
+10:29:38 end gate-off size 4000 exit=0
+10:29:38 start gate-on size 16000 levels 1
+10:29:46 end gate-on size 16000 exit=0
+10:29:46 start gate-off size 16000 levels 1
+10:29:58 end gate-off size 16000 exit=0
+10:29:58 start gate-on size 33000 levels 1
+10:30:15 end gate-on size 33000 exit=0
+10:30:15 start gate-off size 33000 levels 1
+10:30:50 end gate-off size 33000 exit=0
+10:30:50 start gate-on size 64000 levels 1
+10:31:21 end gate-on size 64000 exit=0
+10:31:21 start gate-off size 64000 levels 1
+10:32:52 end gate-off size 64000 exit=0
+10:32:52 start gate-on size 33000 levels 4,8
+10:33:44 end gate-on size 33000 exit=0
+10:33:44 start gate-off size 33000 levels 4,8
+10:35:46 end gate-off size 33000 exit=0
+10:35:46 DONE
+10:37:53 start gate-on size 16000 levels 4,8
+10:38:25 end gate-on size 16000 exit=0
+10:38:25 start gate-off size 16000 levels 4,8
+10:39:29 end gate-off size 16000 exit=0
+10:39:29 DONE2
+10:41:xx start/end on2-privacy-plus-english and on2-privacy-plus-italian (repeat of the C1-on runs at 0.50, via oc exec)
