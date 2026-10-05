@@ -62,6 +62,11 @@ Qwen3 model, which reasons by default: with reasoning, the classifier would spen
 return no JSON verdict. Do not set it for a provider that does not accept this parameter. An invalid
 value (not a mapping, or an env var that is not a JSON object) is ignored with a `[policy-router]` log line.
 
+The env var `NER_ENABLED` (since v0.10.0) overrides `ner.enabled` of the policy: `1`, `true`, `yes` or
+`on` turn C1 (Presidio NER) on, any other value turns it off. Unset or empty, the policy decides. With
+C1 off, Presidio gets no calls and the log has no `ner` signals; the log line still shows
+`ner_timeout_s`. The gitops repo turns C1 off when the decision model answers C2 (see its README).
+
 Ignored entities stay in the log with weight 0, for example `NRP@0.85(no id):0.00` or
 `PERSON@0.85(<2 words):0.00`, so the log shows what the engine saw and why it did not count it.
 

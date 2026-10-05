@@ -223,7 +223,14 @@ class PrivacyScorer:
             rx = re.compile(r"(?<!\w)(?:%s)(?!\w)" % alt, re.IGNORECASE)
             self._lexicons.append((cat, rx, float(cfg.get("weight", 0.5))))
 
-        self._ner = self.policy.get("ner") or {}
+        # A copy: the env override below must not change the caller's policy dict.
+        self._ner = dict(self.policy.get("ner") or {})
+        # Runtime env override of `ner.enabled` (router v0.10.0), like CLASSIFIER_ENABLED:
+        # a deployment can turn C1 on or off without re-templating the policy (gitops turns
+        # it off when the decision model answers C2). Unset or empty: the policy decides.
+        _ner_en = os.environ.get("NER_ENABLED")
+        if _ner_en not in (None, ""):
+            self._ner["enabled"] = _ner_en.strip().lower() in ("1", "true", "yes", "on")
         # Language handling (Option 2): only call Presidio for languages it actually
         # has a model for; otherwise skip C1 (rely on A+B) or force LOCAL, per config.
         # Back-compat: fall back to the legacy single `language` key, else English.

@@ -26,6 +26,7 @@ for _var in (
     "CLASSIFIER_FALLBACK_BASE_URL",
     "CLASSIFIER_FALLBACK_MODEL",
     "SOTA_SERVED_MATCH",
+    "NER_ENABLED",
 ):
     os.environ.pop(_var, None)
 
