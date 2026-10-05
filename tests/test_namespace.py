@@ -62,6 +62,13 @@ def test_scan_finds_structured_mentions():
         "kube-system", "yaml-ns", "excluded", "regex-a"}
 
 
+def test_scan_reads_the_alert_labels_of_the_translator_prompt():
+    # Format of ogx-alert-translator (app/prompt_builder.py): one bullet per label.
+    text = "**Labels:**\n- `alertname`: QuarkusBuggyAppHighErrorRate\n- `namespace`: payments\n"
+    assert scan_names(text) == {"payments"}
+    assert scan_names("- `namespace`: `payments`") == {"payments"}
+
+
 def test_scan_ignores_prose_and_other_keys():
     text = 'the payments team; subnamespace="nope"; mynamespace: nope2; payments-svc is up'
     assert scan_names(text) == set()

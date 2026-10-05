@@ -47,11 +47,12 @@ MAX_LOG_NAMES = 20
 _NAME = r"[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?"
 _NAME_RE = re.compile(rf"^{_NAME}$")
 # Structured mentions of a namespace in agent text. Each alternative captures one name:
-#   namespace="x" / namespace=~"x|y" / namespace!="x" / "namespace": "x" / namespace: x
+#   namespace="x" / namespace=~"x|y" / namespace!="x" / "namespace": "x" / namespace: x /
+#   - `namespace`: x (the alert labels in the prompt of ogx-alert-translator)
 #   (also exported_namespace=... of the GPU metrics)
 #   x.svc (service DNS names), -n x / --namespace x / --namespace=x, /namespaces/x
 _SCAN_RE = re.compile(
-    r"(?<![a-z0-9])namespace[\"']?\s*(?:=~|!~|!=|==|=|:)\s*[\"']?(" + _NAME + r")"
+    r"(?<![a-z0-9])namespace[\"'`]?\s*(?:=~|!~|!=|==|=|:)\s*[\"'`]?(" + _NAME + r")"
     r"|(?<![-a-z0-9])(" + _NAME + r")\.svc(?![-a-z0-9])"
     r"|(?:^|\s)(?:-n|--namespace)(?:\s+|=)[\"']?(" + _NAME + r")"
     r"|/namespaces/(" + _NAME + r")",
