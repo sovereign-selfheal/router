@@ -238,7 +238,7 @@ its own metrics, and the ones of LiteLLM's `prometheus` callback when that is on
 | `router_requests_total` | counter | `routed_to`, `decided_by`, `team` | One per decision. `decided_by`: `namespace` (v0.11.0), `efficiency`, `privacy`, `tiering`, `all-sota`, `fail-closed`. `team` is a team named in the policies, `none` or `other` |
 | `router_privacy_score` | histogram | `team` (threshold key) | Privacy score of the requests that reached the privacy gate |
 | `router_sota_budget_used_tokens` | gauge | | SOTA tokens counted by the budget of the efficiency gate, **per pod** |
-| `router_namespace_decisions_total` | counter | `namespace`, `routed_to`, `source` | v0.11.0, namespace policy on: one per decision and restricted namespace. `namespace` is a restricted namespace or `none` (a bounded set: the platform team sets the labels) |
+| `router_namespace_decisions_total` | counter | `target_namespace`, `routed_to`, `source` | v0.11.0, namespace policy on: one per decision and restricted namespace. `target_namespace` is a restricted namespace or `none` (a bounded set: the platform team sets the labels; not `namespace`, which Prometheus sets to the scrape namespace) |
 | `router_namespace_labels_loaded` | gauge | | v0.11.0: 1 when this pod read the namespace labels at least once |
 | `router_namespace_labels` | gauge | `state` | v0.11.0: labelled namespaces, `restricted`, `public` or `unknown` (another value) |
 

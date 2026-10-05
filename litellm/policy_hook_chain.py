@@ -109,11 +109,12 @@ PRIVACY_SCORE = _metric("Histogram", "router_privacy_score",
                         buckets=(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0))
 SOTA_BUDGET_USED = _metric("Gauge", "router_sota_budget_used_tokens",
                            "SOTA tokens counted by the efficiency gate budget (this pod only).")
-# Namespace policy (v0.11.0). The `namespace` label is a restricted namespace or "none":
-# a bounded set, decided by the platform team that sets the labels.
+# Namespace policy (v0.11.0). The `target_namespace` label is a restricted namespace or "none":
+# a bounded set, decided by the platform team that sets the labels. Not `namespace`: Prometheus
+# adds that label (the scrape namespace) and would rename this one to exported_namespace.
 NS_DECISIONS = _metric("Counter", "router_namespace_decisions",
                        "Routing decisions with the namespace policy on, per restricted namespace.",
-                       ("namespace", "routed_to", "source"))
+                       ("target_namespace", "routed_to", "source"))
 NS_LABELS_LOADED = _metric("Gauge", "router_namespace_labels_loaded",
                            "1 when the namespace labels were read at least once (this pod).")
 NS_LABELS = _metric("Gauge", "router_namespace_labels",
@@ -382,7 +383,7 @@ class ChainRouter(CustomLogger):
         try:
             if NS_DECISIONS is not None and ns is not None:
                 for name in ns["restricted"] or ["none"]:
-                    NS_DECISIONS.labels(namespace=name, routed_to=routed_to or "unknown",
+                    NS_DECISIONS.labels(target_namespace=name, routed_to=routed_to or "unknown",
                                         source=ns["source"]).inc()
         except Exception as exc:
             _metrics_error(exc)

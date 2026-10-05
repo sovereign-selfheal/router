@@ -285,7 +285,7 @@ def test_namespace_decisions_metric():
     def count(ns, routed_to, source):
         return REGISTRY.get_sample_value(
             "router_namespace_decisions_total",
-            {"namespace": ns, "routed_to": routed_to, "source": source}) or 0.0
+            {"target_namespace": ns, "routed_to": routed_to, "source": source}) or 0.0
 
     r = make_router()
     before_r = count("payments", "local-fast", "hint")
