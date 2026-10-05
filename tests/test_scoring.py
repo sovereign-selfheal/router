@@ -90,6 +90,36 @@ def test_legacy_nationality_plus_place_routes_local(make_scorer, legacy_policy):
     assert score == pytest.approx(1 - 0.45 * 0.60)          # 0.73 >= 0.70 (research)
 
 
+# ---------------------------------------------------------------- C1 env override (v0.10.0)
+def test_ner_env_off_skips_presidio(make_scorer, monkeypatch):
+    monkeypatch.setenv("NER_ENABLED", "0")
+    scorer = make_scorer([("Mario Rossi", "PERSON", 0.85)])
+    _score, signals = run(scorer.score("Mario Rossi met Anna Verdi."))
+    assert scorer.fake_presidio.calls == []
+    assert "ner" not in [s[0] for s in signals]
+
+
+def test_ner_env_on_overrides_the_policy(make_scorer, privacy_policy, monkeypatch):
+    privacy_policy["ner"]["enabled"] = False
+    monkeypatch.setenv("NER_ENABLED", "true")
+    scorer = make_scorer([("Mario Rossi", "PERSON", 0.85)], policy=privacy_policy)
+    _score, signals = run(scorer.score("Mario Rossi met Anna Verdi."))
+    assert ("ner", "PERSON@0.85", 0.60) in signals
+
+
+def test_ner_env_empty_keeps_the_policy(make_scorer, monkeypatch):
+    monkeypatch.setenv("NER_ENABLED", "")
+    scorer = make_scorer([("Mario Rossi", "PERSON", 0.85)])
+    _score, signals = run(scorer.score("Mario Rossi met Anna Verdi."))
+    assert ("ner", "PERSON@0.85", 0.60) in signals
+
+
+def test_ner_env_does_not_change_the_policy(make_scorer, privacy_policy, monkeypatch):
+    monkeypatch.setenv("NER_ENABLED", "0")
+    make_scorer(policy=privacy_policy)
+    assert privacy_policy["ner"]["enabled"] is True
+
+
 # ---------------------------------------------------------------- language selection
 def test_confident_supported_language_queries_one_model(make_scorer):
     scorer = make_scorer(lang=("it", 0.95))
