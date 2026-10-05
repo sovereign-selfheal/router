@@ -1,0 +1,333 @@
+run_label,lang,id,category,expect,decision,correct,gate,privacy_score,classifier_fired,signals,latency_ms
+offr-privacy-plus-italian,it,benign-01,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.38(ignored):0.00,279.0
+offr-privacy-plus-italian,it,benign-02,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.04(ignored):0.00,142.8
+offr-privacy-plus-italian,it,benign-03,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,141.1
+offr-privacy-plus-italian,it,benign-04,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,140.1
+offr-privacy-plus-italian,it,benign-05,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.01(ignored):0.00,146.1
+offr-privacy-plus-italian,it,benign-06,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.16(ignored):0.00,139.4
+offr-privacy-plus-italian,it,benign-07,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.96(ignored):0.00,142.5
+offr-privacy-plus-italian,it,benign-08,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.31(ignored):0.00,146.4
+offr-privacy-plus-italian,it,benign-09,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,160.4
+offr-privacy-plus-italian,it,benign-10,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.01(ignored):0.00,169.8
+offr-privacy-plus-italian,it,benign-11,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.01(ignored):0.00,142.2
+offr-privacy-plus-italian,it,benign-12,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.25(ignored):0.00,142.2
+offr-privacy-plus-italian,it,benign-13,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,144.1
+offr-privacy-plus-italian,it,benign-14,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.95(ignored):0.00,140.7
+offr-privacy-plus-italian,it,benign-15,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.03(ignored):0.00,149.8
+offr-privacy-plus-italian,it,benign-16,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,140.2
+offr-privacy-plus-italian,it,benign-17,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,142.5
+offr-privacy-plus-italian,it,benign-18,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.01(ignored):0.00,142.3
+offr-privacy-plus-italian,it,benign-19,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.30(ignored):0.00,141.2
+offr-privacy-plus-italian,it,benign-20,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.01(ignored):0.00,142.0
+offr-privacy-plus-italian,it,benign-21,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,141.0
+offr-privacy-plus-italian,it,benign-22,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,139.6
+offr-privacy-plus-italian,it,person-01,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@1.00(person):0.80",141.2
+offr-privacy-plus-italian,it,person-02,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.97(ignored):0.00, systemone/llm@1.00(person):0.80",147.6
+offr-privacy-plus-italian,it,person-03,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.07(ignored):0.00, systemone/llm@1.00(person):0.80",145.5
+offr-privacy-plus-italian,it,person-04,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.62(ignored):0.00, systemone/llm@1.00(person):0.80",144.9
+offr-privacy-plus-italian,it,person-05,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.04(ignored):0.00, systemone/llm@0.96(person):0.80",250.3
+offr-privacy-plus-italian,it,person-06,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.11(ignored):0.00, systemone/llm@1.00(person):0.80",143.8
+offr-privacy-plus-italian,it,person-07,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.26(ignored):0.00, systemone/llm@1.00(person):0.80",141.9
+offr-privacy-plus-italian,it,person-08,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.61(ignored):0.00, systemone/llm@1.00(person):0.80",141.9
+offr-privacy-plus-italian,it,person-09,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.16(ignored):0.00, systemone/llm@1.00(person):0.80",143.4
+offr-privacy-plus-italian,it,person-10,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.03(ignored):0.00, systemone/llm@1.00(person):0.80",141.1
+offr-privacy-plus-italian,it,person-11,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.63(ignored):0.00, systemone/llm@1.00(person):0.80",144.8
+offr-privacy-plus-italian,it,person-12,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.87(ignored):0.00, systemone/llm@1.00(person):0.80",146.6
+offr-privacy-plus-italian,it,person-13,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.11(ignored):0.00, systemone/llm@1.00(person):0.80",143.1
+offr-privacy-plus-italian,it,person-14,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.98(ignored):0.00, systemone/llm@1.00(person):0.80",144.8
+offr-privacy-plus-italian,it,person-15,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.05(ignored):0.00, systemone/llm@1.00(person):0.80",155.9
+offr-privacy-plus-italian,it,location-01,location,sota,sota,1,privacy,0.0000,0,systemone/biz@0.74(ignored):0.00,141.5
+offr-privacy-plus-italian,it,location-02,location,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,143.3
+offr-privacy-plus-italian,it,location-03,location,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,145.4
+offr-privacy-plus-italian,it,location-04,location,sota,sota,1,privacy,0.0000,0,systemone/biz@0.92(ignored):0.00,140.5
+offr-privacy-plus-italian,it,location-05,location,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,140.9
+offr-privacy-plus-italian,it,location-06,location,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,140.8
+offr-privacy-plus-italian,it,location-07,location,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,140.2
+offr-privacy-plus-italian,it,location-08,location,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,142.5
+offr-privacy-plus-italian,it,health-01,health,local,local,1,privacy,0.8000,0,health:0.80,0.3
+offr-privacy-plus-italian,it,health-02,health,local,local,1,privacy,0.8000,0,health:0.80,0.2
+offr-privacy-plus-italian,it,health-03,health,local,local,1,privacy,0.8000,0,health:0.80,0.2
+offr-privacy-plus-italian,it,health-04,health,local,local,1,privacy,0.8000,0,health:0.80,0.2
+offr-privacy-plus-italian,it,health-05,health,local,local,1,privacy,0.8000,0,health:0.80,0.2
+offr-privacy-plus-italian,it,health-06,health,local,local,1,privacy,0.8000,0,health:0.80,0.2
+offr-privacy-plus-italian,it,health-07,health,local,local,1,privacy,0.8000,0,health:0.80,0.3
+offr-privacy-plus-italian,it,health-08,health,local,local,1,privacy,0.8000,0,health:0.80,0.2
+offr-privacy-plus-italian,it,health-09,health,local,local,1,privacy,0.8000,0,health:0.80,0.2
+offr-privacy-plus-italian,it,health-10,health,local,local,1,privacy,0.8000,0,health:0.80,0.2
+offr-privacy-plus-italian,it,health-11,health,local,local,1,privacy,0.8000,0,health:0.80,0.2
+offr-privacy-plus-italian,it,health-12,health,local,local,1,privacy,0.8000,0,health:0.80,0.2
+offr-privacy-plus-italian,it,health-13,health,local,local,1,privacy,0.8000,0,health:0.80,0.2
+offr-privacy-plus-italian,it,health-14,health,local,local,1,privacy,0.8000,0,health:0.80,0.2
+offr-privacy-plus-italian,it,health-15,health,local,local,1,privacy,0.8000,0,health:0.80,0.2
+offr-privacy-plus-italian,it,finance-01,finance,local,local,1,privacy,0.9000,1,"finance:0.50, systemone/biz@0.99(ignored):0.00, systemone/llm@0.99(money):0.80",140.3
+offr-privacy-plus-italian,it,finance-02,finance,local,local,1,privacy,0.9000,1,"finance:0.50, systemone/biz@0.70(ignored):0.00, systemone/llm@0.82(money):0.80",142.3
+offr-privacy-plus-italian,it,finance-03,finance,local,local,1,privacy,0.9000,1,"finance:0.50, systemone/biz@0.95(ignored):0.00, systemone/llm@0.88(money):0.80",142.6
+offr-privacy-plus-italian,it,finance-04,finance,local,local,1,privacy,0.9000,1,"finance:0.50, systemone/biz@0.95(ignored):0.00, systemone/llm@0.81(money):0.80",141.4
+offr-privacy-plus-italian,it,finance-05,finance,local,local,1,privacy,0.9000,1,"finance:0.50, systemone/biz@0.91(ignored):0.00, systemone/llm@1.00(legal):0.80",142.9
+offr-privacy-plus-italian,it,finance-06,finance,local,local,1,privacy,0.9000,1,"finance:0.50, systemone/biz@0.96(ignored):0.00, systemone/llm@0.87(money):0.80",141.8
+offr-privacy-plus-italian,it,finance-07,finance,local,local,1,privacy,0.9000,1,"finance:0.50, systemone/biz@1.00(ignored):0.00, systemone/llm@0.93(money):0.80",141.8
+offr-privacy-plus-italian,it,finance-08,finance,local,local,1,privacy,0.9000,1,"finance:0.50, systemone/biz@0.94(ignored):0.00, systemone/llm@0.61(money):0.80",141.4
+offr-privacy-plus-italian,it,finance-09,finance,local,local,1,privacy,0.9000,1,"finance:0.50, systemone/biz@0.22(ignored):0.00, systemone/llm@1.00(money):0.80",141.6
+offr-privacy-plus-italian,it,finance-10,finance,local,local,1,privacy,0.9000,1,"finance:0.50, systemone/biz@1.00(ignored):0.00, systemone/llm@0.92(money):0.80",140.7
+offr-privacy-plus-italian,it,legal-01,legal,local,local,1,privacy,0.9000,1,"legal:0.50, systemone/biz@0.82(ignored):0.00, systemone/llm@0.98(job):0.80",140.8
+offr-privacy-plus-italian,it,legal-02,legal,local,local,1,privacy,0.9000,1,"legal:0.50, systemone/biz@0.81(ignored):0.00, systemone/llm@0.97(legal):0.80",140.7
+offr-privacy-plus-italian,it,legal-03,legal,local,local,1,privacy,0.9000,1,"legal:0.50, systemone/biz@0.83(ignored):0.00, systemone/llm@0.94(money):0.80",140.7
+offr-privacy-plus-italian,it,legal-04,legal,local,local,1,privacy,0.9000,1,"legal:0.50, systemone/biz@0.99(ignored):0.00, systemone/llm@1.00(legal):0.80",141.7
+offr-privacy-plus-italian,it,legal-05,legal,local,local,1,privacy,0.9000,1,"legal:0.50, systemone/biz@0.52(ignored):0.00, systemone/llm@0.99(legal):0.80",159.2
+offr-privacy-plus-italian,it,legal-06,legal,local,local,1,privacy,0.9000,1,"legal:0.50, systemone/biz@0.93(ignored):0.00, systemone/llm@1.00(legal):0.80",141.4
+offr-privacy-plus-italian,it,legal-07,legal,local,local,1,privacy,0.9000,1,"legal:0.50, systemone/biz@0.35(ignored):0.00, systemone/llm@0.94(legal):0.80",144.0
+offr-privacy-plus-italian,it,legal-08,legal,local,local,1,privacy,0.9000,1,"legal:0.50, systemone/biz@0.52(ignored):0.00, systemone/llm@1.00(legal):0.80",142.6
+offr-privacy-plus-italian,it,legal-09,legal,local,local,1,privacy,0.9000,1,"legal:0.50, systemone/biz@0.99(ignored):0.00, systemone/llm@0.93(job):0.80",143.1
+offr-privacy-plus-italian,it,hr-01,hr,sota,sota,1,privacy,0.0000,0,systemone/biz@0.97(ignored):0.00,143.2
+offr-privacy-plus-italian,it,hr-02,hr,sota,sota,1,privacy,0.0000,0,systemone/biz@0.99(ignored):0.00,141.8
+offr-privacy-plus-italian,it,hr-03,hr,sota,sota,1,privacy,0.0000,0,systemone/biz@0.92(ignored):0.00,141.8
+offr-privacy-plus-italian,it,hr-04,hr,local,local,1,privacy,0.9100,1,"hr:0.55, systemone/biz@0.87(ignored):0.00, systemone/llm@1.00(job):0.80",141.6
+offr-privacy-plus-italian,it,hr-05,hr,local,local,1,privacy,0.9100,1,"hr:0.55, systemone/biz@0.64(ignored):0.00, systemone/llm@0.97(job):0.80",141.4
+offr-privacy-plus-italian,it,hr-06,hr,local,local,1,privacy,0.9100,1,"hr:0.55, systemone/biz@0.97(ignored):0.00, systemone/llm@1.00(job):0.80",141.6
+offr-privacy-plus-italian,it,hr-07,hr,local,local,1,privacy,0.9100,1,"hr:0.55, systemone/biz@0.87(ignored):0.00, systemone/llm@1.00(job):0.80",142.4
+offr-privacy-plus-italian,it,hr-08,hr,local,local,1,privacy,0.9100,1,"hr:0.55, systemone/biz@0.88(ignored):0.00, systemone/llm@0.79(job):0.80",140.3
+offr-privacy-plus-italian,it,pii-01,pii_strong,local,local,1,privacy,0.8500,0,codice_fiscale:0.85,0.3
+offr-privacy-plus-italian,it,pii-02,pii_strong,local,local,1,privacy,0.8000,0,iban:0.80,0.3
+offr-privacy-plus-italian,it,pii-03,pii_strong,local,local,1,privacy,0.8500,0,credit_card:0.85,0.2
+offr-privacy-plus-italian,it,pii-04,pii_strong,local,local,1,privacy,0.8500,0,credit_card:0.85,0.2
+offr-privacy-plus-italian,it,pii-05,pii_strong,local,local,1,privacy,0.9700,0,"codice_fiscale:0.85, iban:0.80",0.3
+offr-privacy-plus-italian,it,pii-06,pii_strong,local,local,1,privacy,0.8500,0,codice_fiscale:0.85,0.2
+offr-privacy-plus-italian,it,pii-weak-01,pii_weak,sota,sota,1,privacy,0.4000,0,"email:0.40, systemone/biz@0.45(ignored):0.00",142.1
+offr-privacy-plus-italian,it,pii-weak-02,pii_weak,sota,sota,1,privacy,0.3500,0,"italian_mobile:0.35, systemone/biz@0.01(ignored):0.00",146.1
+offr-privacy-plus-italian,it,pii-weak-03,pii_weak,sota,sota,1,privacy,0.4000,0,"email:0.40, systemone/biz@0.33(ignored):0.00",142.1
+offr-privacy-plus-italian,it,pii-weak-04,pii_weak,sota,sota,1,privacy,0.3500,0,"italian_mobile:0.35, systemone/biz@0.14(ignored):0.00",159.5
+offr-privacy-plus-italian,it,pii-inv-01,pii_invalid,sota,local,0,privacy,0.8000,1,"systemone/biz@0.11(ignored):0.00, systemone/llm@0.73(secret):0.80",148.6
+offr-privacy-plus-italian,it,pii-inv-02,pii_invalid,sota,local,0,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@0.90(secret):0.80",147.4
+offr-privacy-plus-italian,it,pii-inv-03,pii_invalid,sota,local,0,privacy,0.8000,1,"systemone/biz@0.47(ignored):0.00, systemone/llm@0.86(secret):0.80",142.2
+offr-privacy-plus-italian,it,secret-01,secret,local,local,1,privacy,0.7000,0,credentials:0.70,0.3
+offr-privacy-plus-italian,it,secret-02,secret,local,local,1,privacy,0.9500,0,openai_key:0.95,0.2
+offr-privacy-plus-italian,it,secret-03,secret,local,local,1,privacy,0.9700,0,"jwt:0.90, credentials:0.70",0.2
+offr-privacy-plus-italian,it,secret-04,secret,local,local,1,privacy,0.9500,0,aws_access_key:0.95,0.2
+offr-privacy-plus-italian,it,secret-05,secret,local,local,1,privacy,0.7000,0,credentials:0.70,0.2
+offr-privacy-plus-italian,it,secret-06,secret,local,local,1,privacy,0.7000,0,credentials:0.70,0.2
+offr-privacy-plus-italian,it,secret-07,secret,local,local,1,privacy,0.7000,0,password_assignment:0.70,0.2
+offr-privacy-plus-italian,it,secret-08,secret,local,local,1,privacy,0.7000,0,credentials:0.70,0.2
+offr-privacy-plus-italian,it,combo-01,combined,local,local,1,privacy,0.8000,0,health:0.80,0.2
+offr-privacy-plus-italian,it,combo-02,combined,local,local,1,privacy,0.9000,1,"finance:0.50, systemone/biz@0.97(ignored):0.00, systemone/llm@1.00(money):0.80",141.8
+offr-privacy-plus-italian,it,combo-03,combined,local,local,1,privacy,0.9000,1,"legal:0.50, systemone/biz@0.81(ignored):0.00, systemone/llm@1.00(job):0.80",142.0
+offr-privacy-plus-italian,it,combo-04,combined,local,local,1,privacy,0.8000,0,health:0.80,0.3
+offr-privacy-plus-italian,it,combo-05,combined,local,local,1,privacy,0.9700,0,"codice_fiscale:0.85, health:0.80",0.2
+offr-privacy-plus-italian,it,combo-06,combined,local,local,1,privacy,0.9100,1,"hr:0.55, systemone/biz@0.07(ignored):0.00, systemone/llm@1.00(person):0.80",144.0
+offr-privacy-plus-italian,it,combo-07,combined,local,local,1,privacy,0.9000,1,"finance:0.50, systemone/biz@0.06(ignored):0.00, systemone/llm@1.00(money):0.80",154.5
+offr-privacy-plus-italian,it,combo-08,combined,local,local,1,privacy,0.9000,1,"legal:0.50, systemone/biz@0.04(ignored):0.00, systemone/llm@1.00(job):0.80",140.8
+offr-privacy-plus-italian,it,combo-09,combined,local,local,1,privacy,0.8000,0,health:0.80,0.3
+offr-privacy-plus-italian,it,combo-10,combined,local,local,1,privacy,0.9000,0,"iban:0.80, finance:0.50",0.2
+offr-privacy-plus-italian,it,edge-01,edge,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,140.8
+offr-privacy-plus-italian,it,edge-02,edge,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,140.7
+offr-privacy-plus-italian,it,edge-03,edge,sota,sota,1,privacy,0.0000,0,systemone/biz@0.98(ignored):0.00,142.4
+offr-privacy-plus-italian,it,edge-04,edge,local,local,1,privacy,0.8000,1,"systemone/biz@0.05(ignored):0.00, systemone/llm@1.00(person):0.80",143.6
+offr-privacy-plus-italian,it,edge-05,edge,sota,sota,1,privacy,0.0000,0,systemone/biz@0.96(ignored):0.00,142.8
+offr-privacy-plus-italian,it,edge-06,edge,sota,local,0,privacy,0.8000,1,"systemone/biz@0.86(ignored):0.00, systemone/llm@0.97(money):0.80",150.9
+offr-privacy-plus-italian,it,edge-07,edge,sota,local,0,privacy,0.7000,0,credentials:0.70,0.3
+offr-privacy-plus-italian,it,edge-08,edge,sota,sota,1,privacy,0.0000,0,systemone/biz@0.72(ignored):0.00,143.1
+offr-privacy-plus-italian,it,edge-09,edge,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@1.00(person):0.80",140.7
+offr-privacy-plus-italian,it,edge-10,edge,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,163.6
+offr-privacy-plus-italian,it,implicit-01,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.17(ignored):0.00, systemone/llm@1.00(private):0.80",149.1
+offr-privacy-plus-italian,it,implicit-02,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@0.99(family):0.80",144.0
+offr-privacy-plus-italian,it,implicit-03,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@1.00(family):0.80",142.1
+offr-privacy-plus-italian,it,implicit-04,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.41(ignored):0.00, systemone/llm@0.83(job):0.80",142.2
+offr-privacy-plus-italian,it,implicit-05,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.31(ignored):0.00, systemone/llm@0.98(job):0.80",142.8
+offr-privacy-plus-italian,it,implicit-06,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.08(ignored):0.00, systemone/llm@1.00(job):0.80",144.7
+offr-privacy-plus-italian,it,implicit-07,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@0.93(family):0.80",142.0
+offr-privacy-plus-italian,it,implicit-08,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.11(ignored):0.00, systemone/llm@0.93(private):0.80",141.3
+offr-privacy-plus-italian,it,implicit-09,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.94(ignored):0.00, systemone/llm@0.99(private):0.80",141.4
+offr-privacy-plus-italian,it,implicit-10,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@1.00(private):0.80",140.9
+offr-privacy-plus-italian,it,implicit-11,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@1.00(private):0.80",142.8
+offr-privacy-plus-italian,it,implicit-12,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@0.95(private):0.80",141.6
+offr-privacy-plus-italian,it,implicit-13,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.02(ignored):0.00, systemone/llm@1.00(job):0.80",155.8
+offr-privacy-plus-italian,it,implicit-14,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@0.97(private):0.80",142.4
+offr-privacy-plus-italian,it,implicit-15,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@1.00(private):0.80",142.5
+offr-privacy-plus-italian,it,implicit-benign-01,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,148.2
+offr-privacy-plus-italian,it,implicit-benign-02,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.58(ignored):0.00,140.6
+offr-privacy-plus-italian,it,implicit-benign-03,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.33(ignored):0.00,141.4
+offr-privacy-plus-italian,it,implicit-benign-04,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,142.2
+offr-privacy-plus-italian,it,implicit-benign-05,implicit_benign,sota,local,0,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@0.77(money):0.80",142.4
+offr-privacy-plus-italian,it,benign-23,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.08(ignored):0.00,142.2
+offr-privacy-plus-italian,it,benign-24,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.02(ignored):0.00,143.1
+offr-privacy-plus-italian,it,benign-25,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.02(ignored):0.00,142.8
+offr-privacy-plus-italian,it,benign-26,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,141.6
+offr-privacy-plus-italian,it,benign-27,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,142.0
+offr-privacy-plus-italian,it,benign-28,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,142.7
+offr-privacy-plus-italian,it,benign-29,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,141.0
+offr-privacy-plus-italian,it,benign-30,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,141.7
+offr-privacy-plus-italian,it,benign-31,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.62(ignored):0.00,140.8
+offr-privacy-plus-italian,it,benign-32,benign,sota,local,0,privacy,0.7000,0,credentials:0.70,0.3
+offr-privacy-plus-italian,it,benign-33,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,140.4
+offr-privacy-plus-italian,it,benign-34,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.88(ignored):0.00,140.7
+offr-privacy-plus-italian,it,benign-35,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.22(ignored):0.00,141.3
+offr-privacy-plus-italian,it,benign-36,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.20(ignored):0.00,142.8
+offr-privacy-plus-italian,it,benign-37,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.04(ignored):0.00,141.4
+offr-privacy-plus-italian,it,benign-38,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,141.3
+offr-privacy-plus-italian,it,benign-39,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,159.5
+offr-privacy-plus-italian,it,benign-40,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,141.6
+offr-privacy-plus-italian,it,benign-41,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,139.8
+offr-privacy-plus-italian,it,benign-42,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,148.5
+offr-privacy-plus-italian,it,benign-43,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,143.1
+offr-privacy-plus-italian,it,benign-44,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,143.7
+offr-privacy-plus-italian,it,benign-45,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.05(ignored):0.00,141.6
+offr-privacy-plus-italian,it,benign-46,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.31(ignored):0.00,142.9
+offr-privacy-plus-italian,it,benign-47,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,142.9
+offr-privacy-plus-italian,it,benign-48,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.83(ignored):0.00,141.7
+offr-privacy-plus-italian,it,benign-49,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.52(ignored):0.00,141.3
+offr-privacy-plus-italian,it,benign-50,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.93(ignored):0.00,140.5
+offr-privacy-plus-italian,it,benign-51,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.44(ignored):0.00,141.4
+offr-privacy-plus-italian,it,benign-52,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.01(ignored):0.00,143.9
+offr-privacy-plus-italian,it,benign-53,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.31(ignored):0.00,146.3
+offr-privacy-plus-italian,it,benign-54,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,144.6
+offr-privacy-plus-italian,it,benign-55,benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,142.9
+offr-privacy-plus-italian,it,person-16,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.25(ignored):0.00, systemone/llm@1.00(person):0.80",145.8
+offr-privacy-plus-italian,it,person-17,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.99(ignored):0.00, systemone/llm@1.00(person):0.80",144.9
+offr-privacy-plus-italian,it,person-18,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.05(ignored):0.00, systemone/llm@1.00(person):0.80",141.6
+offr-privacy-plus-italian,it,person-19,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.08(ignored):0.00, systemone/llm@1.00(person):0.80",142.1
+offr-privacy-plus-italian,it,person-20,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@1.00(family):0.80",144.4
+offr-privacy-plus-italian,it,person-21,person,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(person):0.80",142.8
+offr-privacy-plus-italian,it,person-22,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.22(ignored):0.00, systemone/llm@0.98(person):0.80",156.7
+offr-privacy-plus-italian,it,person-23,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.06(ignored):0.00, systemone/llm@1.00(person):0.80",143.2
+offr-privacy-plus-italian,it,person-24,person,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@1.00(person):0.80",142.7
+offr-privacy-plus-italian,it,location-09,location,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,141.9
+offr-privacy-plus-italian,it,location-10,location,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,142.7
+offr-privacy-plus-italian,it,location-11,location,sota,sota,1,privacy,0.0000,0,systemone/biz@0.01(ignored):0.00,143.6
+offr-privacy-plus-italian,it,location-12,location,sota,sota,1,privacy,0.0000,0,systemone/biz@0.99(ignored):0.00,144.4
+offr-privacy-plus-italian,it,location-13,location,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,144.5
+offr-privacy-plus-italian,it,location-14,location,sota,sota,1,privacy,0.0000,0,systemone/biz@0.04(ignored):0.00,144.7
+offr-privacy-plus-italian,it,health-16,health,local,local,1,privacy,0.8000,0,health:0.80,0.3
+offr-privacy-plus-italian,it,health-17,health,local,local,1,privacy,0.8000,0,health:0.80,0.2
+offr-privacy-plus-italian,it,health-18,health,local,local,1,privacy,0.8000,1,"systemone/biz@0.09(ignored):0.00, systemone/llm@0.71(health):0.80",141.8
+offr-privacy-plus-italian,it,health-19,health,local,local,1,privacy,0.8000,0,health:0.80,0.3
+offr-privacy-plus-italian,it,health-20,health,local,local,1,privacy,0.8000,0,health:0.80,0.2
+offr-privacy-plus-italian,it,health-21,health,local,local,1,privacy,0.8000,1,"systemone/biz@0.03(ignored):0.00, systemone/llm@0.98(health):0.80",143.4
+offr-privacy-plus-italian,it,health-22,health,local,local,1,privacy,0.8000,0,health:0.80,0.3
+offr-privacy-plus-italian,it,finance-11,finance,local,local,1,privacy,0.9000,1,"finance:0.50, systemone/biz@0.98(ignored):0.00, systemone/llm@0.95(money):0.80",149.3
+offr-privacy-plus-italian,it,finance-12,finance,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@0.92(money):0.80",144.6
+offr-privacy-plus-italian,it,finance-13,finance,local,local,1,privacy,0.9000,1,"finance:0.50, systemone/biz@0.95(ignored):0.00, systemone/llm@1.00(money):0.80",144.1
+offr-privacy-plus-italian,it,finance-14,finance,local,local,1,privacy,0.8000,1,"systemone/biz@0.27(ignored):0.00, systemone/llm@0.85(money):0.80",140.9
+offr-privacy-plus-italian,it,finance-15,finance,local,local,1,privacy,0.9000,1,"finance:0.50, systemone/biz@0.33(ignored):0.00, systemone/llm@1.00(money):0.80",141.7
+offr-privacy-plus-italian,it,finance-16,finance,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@0.99(money):0.80",142.9
+offr-privacy-plus-italian,it,legal-10,legal,local,local,1,privacy,0.8000,1,"systemone/biz@0.20(ignored):0.00, systemone/llm@1.00(legal):0.80",145.1
+offr-privacy-plus-italian,it,legal-11,legal,local,local,1,privacy,0.8000,1,"systemone/biz@0.52(ignored):0.00, systemone/llm@1.00(legal):0.80",143.0
+offr-privacy-plus-italian,it,legal-12,legal,local,local,1,privacy,0.9000,1,"legal:0.50, systemone/biz@0.89(ignored):0.00, systemone/llm@1.00(legal):0.80",146.0
+offr-privacy-plus-italian,it,legal-13,legal,local,local,1,privacy,0.8000,1,"systemone/biz@0.92(ignored):0.00, systemone/llm@1.00(job):0.80",144.6
+offr-privacy-plus-italian,it,legal-14,legal,local,local,1,privacy,0.8000,1,"systemone/biz@0.35(ignored):0.00, systemone/llm@0.93(legal):0.80",143.2
+offr-privacy-plus-italian,it,legal-15,legal,local,local,1,privacy,0.8000,1,"systemone/biz@0.44(ignored):0.00, systemone/llm@1.00(legal):0.80",146.0
+offr-privacy-plus-italian,it,hr-09,hr,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,158.1
+offr-privacy-plus-italian,it,hr-10,hr,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,143.1
+offr-privacy-plus-italian,it,hr-11,hr,sota,sota,1,privacy,0.0000,0,systemone/biz@0.74(ignored):0.00,144.5
+offr-privacy-plus-italian,it,hr-12,hr,sota,sota,1,privacy,0.0000,0,systemone/biz@0.98(ignored):0.00,143.0
+offr-privacy-plus-italian,it,hr-13,hr,local,local,1,privacy,0.8000,1,"systemone/biz@0.97(ignored):0.00, systemone/llm@1.00(job):0.80",148.3
+offr-privacy-plus-italian,it,hr-14,hr,local,local,1,privacy,0.8000,1,"systemone/biz@0.84(ignored):0.00, systemone/llm@0.84(job):0.80",142.8
+offr-privacy-plus-italian,it,hr-15,hr,local,local,1,privacy,0.8000,1,"systemone/biz@0.98(ignored):0.00, systemone/llm@1.00(job):0.80",141.1
+offr-privacy-plus-italian,it,hr-16,hr,local,local,1,privacy,0.8000,1,"systemone/biz@0.94(ignored):0.00, systemone/llm@1.00(job):0.80",149.2
+offr-privacy-plus-italian,it,pii-07,pii_strong,local,local,1,privacy,0.8500,0,codice_fiscale:0.85,0.5
+offr-privacy-plus-italian,it,pii-08,pii_strong,local,local,1,privacy,0.8000,0,iban:0.80,0.4
+offr-privacy-plus-italian,it,pii-09,pii_strong,local,local,1,privacy,0.8500,0,credit_card:0.85,0.3
+offr-privacy-plus-italian,it,pii-10,pii_strong,local,local,1,privacy,0.8500,0,codice_fiscale:0.85,0.3
+offr-privacy-plus-italian,it,pii-11,pii_strong,local,local,1,privacy,0.8000,0,iban:0.80,0.3
+offr-privacy-plus-italian,it,pii-12,pii_strong,local,local,1,privacy,0.8500,0,credit_card:0.85,0.3
+offr-privacy-plus-italian,it,pii-weak-05,pii_weak,sota,sota,1,privacy,0.4000,0,"email:0.40, systemone/biz@0.21(ignored):0.00",169.8
+offr-privacy-plus-italian,it,pii-weak-06,pii_weak,sota,sota,1,privacy,0.0000,0,systemone/biz@0.03(ignored):0.00,142.2
+offr-privacy-plus-italian,it,pii-weak-07,pii_weak,sota,sota,1,privacy,0.4000,0,"email:0.40, systemone/biz@0.63(ignored):0.00",144.7
+offr-privacy-plus-italian,it,pii-weak-08,pii_weak,sota,sota,1,privacy,0.0000,0,systemone/biz@0.88(ignored):0.00,144.7
+offr-privacy-plus-italian,it,pii-inv-04,pii_invalid,sota,local,0,privacy,0.8000,1,"systemone/biz@0.16(ignored):0.00, systemone/llm@0.65(secret):0.80",142.5
+offr-privacy-plus-italian,it,pii-inv-05,pii_invalid,sota,sota,1,privacy,0.0000,0,systemone/biz@0.03(ignored):0.00,141.4
+offr-privacy-plus-italian,it,pii-inv-06,pii_invalid,sota,sota,1,privacy,0.0000,0,systemone/biz@0.02(ignored):0.00,141.7
+offr-privacy-plus-italian,it,secret-09,secret,local,local,1,privacy,0.8000,1,"systemone/biz@0.70(ignored):0.00, systemone/llm@1.00(secret):0.80",145.8
+offr-privacy-plus-italian,it,secret-10,secret,local,local,1,privacy,0.7000,0,credentials:0.70,0.3
+offr-privacy-plus-italian,it,secret-11,secret,local,local,1,privacy,0.8000,1,"systemone/biz@0.35(ignored):0.00, systemone/llm@1.00(secret):0.80",145.3
+offr-privacy-plus-italian,it,secret-12,secret,local,local,1,privacy,0.8000,1,"systemone/biz@0.80(ignored):0.00, systemone/llm@1.00(secret):0.80",142.5
+offr-privacy-plus-italian,it,secret-13,secret,local,local,1,privacy,0.9850,0,"private_key_header:0.95, credentials:0.70",0.4
+offr-privacy-plus-italian,it,secret-14,secret,local,local,1,privacy,0.7000,0,credentials:0.70,0.2
+offr-privacy-plus-italian,it,combo-11,combined,local,local,1,privacy,0.8000,1,"systemone/biz@0.74(ignored):0.00, systemone/llm@1.00(job):0.80",142.3
+offr-privacy-plus-italian,it,combo-12,combined,local,local,1,privacy,0.8000,0,health:0.80,0.3
+offr-privacy-plus-italian,it,combo-13,combined,local,local,1,privacy,0.9000,0,"iban:0.80, finance:0.50",0.2
+offr-privacy-plus-italian,it,combo-14,combined,local,local,1,privacy,0.8000,1,"systemone/biz@0.24(ignored):0.00, systemone/llm@1.00(legal):0.80",143.2
+offr-privacy-plus-italian,it,combo-15,combined,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@1.00(health):0.80",142.1
+offr-privacy-plus-italian,it,combo-16,combined,local,local,1,privacy,0.8500,0,codice_fiscale:0.85,0.3
+offr-privacy-plus-italian,it,edge-11,edge,sota,sota,1,privacy,0.0000,0,systemone/biz@0.00(ignored):0.00,141.2
+offr-privacy-plus-italian,it,edge-12,edge,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,141.0
+offr-privacy-plus-italian,it,edge-13,edge,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@1.00(family):0.80",155.8
+offr-privacy-plus-italian,it,edge-14,edge,sota,sota,1,privacy,0.0000,0,systemone/biz@0.50(ignored):0.00,143.9
+offr-privacy-plus-italian,it,implicit-16,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@1.00(family):0.80",141.7
+offr-privacy-plus-italian,it,implicit-17,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@0.61(private):0.80",143.0
+offr-privacy-plus-italian,it,implicit-18,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@1.00(private):0.80",141.1
+offr-privacy-plus-italian,it,implicit-19,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@1.00(private):0.80",144.0
+offr-privacy-plus-italian,it,implicit-20,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@1.00(family):0.80",141.7
+offr-privacy-plus-italian,it,implicit-21,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@0.99(private):0.80",143.9
+offr-privacy-plus-italian,it,implicit-22,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@1.00(family):0.80",149.4
+offr-privacy-plus-italian,it,implicit-23,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.02(ignored):0.00, systemone/llm@1.00(job):0.80",142.7
+offr-privacy-plus-italian,it,implicit-24,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.04(ignored):0.00, systemone/llm@0.92(private):0.80",142.9
+offr-privacy-plus-italian,it,implicit-25,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@0.99(family):0.80",145.1
+offr-privacy-plus-italian,it,implicit-26,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.12(ignored):0.00, systemone/llm@1.00(private):0.80",141.2
+offr-privacy-plus-italian,it,implicit-27,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@1.00(money):0.80",144.2
+offr-privacy-plus-italian,it,implicit-28,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@0.99(private):0.80",144.2
+offr-privacy-plus-italian,it,implicit-29,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@1.00(private):0.80",143.6
+offr-privacy-plus-italian,it,implicit-30,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@1.00(private):0.80",141.6
+offr-privacy-plus-italian,it,implicit-31,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.05(ignored):0.00, systemone/llm@1.00(private):0.80",146.6
+offr-privacy-plus-italian,it,implicit-32,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@1.00(private):0.80",152.6
+offr-privacy-plus-italian,it,implicit-33,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@1.00(private):0.80",146.4
+offr-privacy-plus-italian,it,implicit-34,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@0.99(private):0.80",143.3
+offr-privacy-plus-italian,it,implicit-35,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@1.00(private):0.80",144.3
+offr-privacy-plus-italian,it,implicit-36,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.05(ignored):0.00, systemone/llm@0.97(private):0.80",142.7
+offr-privacy-plus-italian,it,implicit-37,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@1.00(family):0.80",156.6
+offr-privacy-plus-italian,it,implicit-38,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@1.00(private):0.80",145.8
+offr-privacy-plus-italian,it,implicit-39,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.03(ignored):0.00, systemone/llm@0.97(private):0.80",142.1
+offr-privacy-plus-italian,it,implicit-40,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@0.99(private):0.80",141.8
+offr-privacy-plus-italian,it,implicit-41,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.03(ignored):0.00, systemone/llm@0.92(private):0.80",143.5
+offr-privacy-plus-italian,it,implicit-42,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@1.00(private):0.80",142.9
+offr-privacy-plus-italian,it,implicit-43,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.03(ignored):0.00, systemone/llm@0.93(private):0.80",143.0
+offr-privacy-plus-italian,it,implicit-44,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@1.00(family):0.80",145.8
+offr-privacy-plus-italian,it,implicit-45,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.06(ignored):0.00, systemone/llm@0.99(private):0.80",143.4
+offr-privacy-plus-italian,it,implicit-46,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@0.91(private):0.80",142.3
+offr-privacy-plus-italian,it,implicit-47,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.02(ignored):0.00, systemone/llm@1.00(family):0.80",143.6
+offr-privacy-plus-italian,it,implicit-48,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.04(ignored):0.00, systemone/llm@0.99(private):0.80",146.6
+offr-privacy-plus-italian,it,implicit-49,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.02(ignored):0.00, systemone/llm@1.00(family):0.80",143.4
+offr-privacy-plus-italian,it,implicit-50,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@1.00(private):0.80",142.9
+offr-privacy-plus-italian,it,implicit-51,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@1.00(family):0.80",145.8
+offr-privacy-plus-italian,it,implicit-52,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@1.00(job):0.80",144.6
+offr-privacy-plus-italian,it,implicit-53,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@1.00(family):0.80",146.2
+offr-privacy-plus-italian,it,implicit-54,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.02(ignored):0.00, systemone/llm@1.00(private):0.80",143.5
+offr-privacy-plus-italian,it,implicit-55,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@1.00(job):0.80",143.4
+offr-privacy-plus-italian,it,implicit-56,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@0.99(private):0.80",142.3
+offr-privacy-plus-italian,it,implicit-57,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@1.00(family):0.80",142.3
+offr-privacy-plus-italian,it,implicit-58,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.01(ignored):0.00, systemone/llm@0.99(private):0.80",143.8
+offr-privacy-plus-italian,it,implicit-59,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@1.00(private):0.80",146.4
+offr-privacy-plus-italian,it,implicit-60,implicit,local,local,1,privacy,0.8000,1,"systemone/biz@0.00(ignored):0.00, systemone/llm@1.00(private):0.80",158.1
+offr-privacy-plus-italian,it,implicit-benign-06,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,143.6
+offr-privacy-plus-italian,it,implicit-benign-07,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.69(ignored):0.00,141.6
+offr-privacy-plus-italian,it,implicit-benign-08,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,143.7
+offr-privacy-plus-italian,it,implicit-benign-09,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,144.8
+offr-privacy-plus-italian,it,implicit-benign-10,implicit_benign,sota,local,0,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@0.74(money):0.80",142.8
+offr-privacy-plus-italian,it,implicit-benign-11,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,142.2
+offr-privacy-plus-italian,it,implicit-benign-12,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,144.8
+offr-privacy-plus-italian,it,implicit-benign-13,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,144.4
+offr-privacy-plus-italian,it,implicit-benign-14,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,142.5
+offr-privacy-plus-italian,it,implicit-benign-15,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,143.0
+offr-privacy-plus-italian,it,implicit-benign-16,implicit_benign,sota,local,0,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@0.91(money):0.80",141.5
+offr-privacy-plus-italian,it,implicit-benign-17,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.99(ignored):0.00,142.4
+offr-privacy-plus-italian,it,implicit-benign-18,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,141.4
+offr-privacy-plus-italian,it,implicit-benign-19,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,143.3
+offr-privacy-plus-italian,it,implicit-benign-20,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.98(ignored):0.00,144.0
+offr-privacy-plus-italian,it,implicit-benign-21,implicit_benign,sota,local,0,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@0.62(money):0.80",143.0
+offr-privacy-plus-italian,it,implicit-benign-22,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.98(ignored):0.00,142.0
+offr-privacy-plus-italian,it,implicit-benign-23,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,142.5
+offr-privacy-plus-italian,it,implicit-benign-24,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,142.0
+offr-privacy-plus-italian,it,implicit-benign-25,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,142.5
+offr-privacy-plus-italian,it,implicit-benign-26,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.99(ignored):0.00,142.0
+offr-privacy-plus-italian,it,implicit-benign-27,implicit_benign,sota,local,0,privacy,0.8000,1,"systemone/biz@0.98(ignored):0.00, systemone/llm@0.50(private):0.80",144.3
+offr-privacy-plus-italian,it,implicit-benign-28,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.95(ignored):0.00,157.8
+offr-privacy-plus-italian,it,implicit-benign-29,implicit_benign,sota,local,0,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@0.91(money):0.80",144.4
+offr-privacy-plus-italian,it,implicit-benign-30,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,143.5
+offr-privacy-plus-italian,it,implicit-benign-31,implicit_benign,sota,local,0,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@0.67(private):0.80",145.1
+offr-privacy-plus-italian,it,implicit-benign-32,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,142.4
+offr-privacy-plus-italian,it,implicit-benign-33,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,143.5
+offr-privacy-plus-italian,it,implicit-benign-34,implicit_benign,sota,local,0,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@0.83(money):0.80",142.5
+offr-privacy-plus-italian,it,implicit-benign-35,implicit_benign,sota,local,0,privacy,0.8000,1,"systemone/biz@0.97(ignored):0.00, systemone/llm@0.60(private):0.80",144.0
+offr-privacy-plus-italian,it,implicit-benign-36,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@0.97(ignored):0.00,144.6
+offr-privacy-plus-italian,it,implicit-benign-37,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,143.1
+offr-privacy-plus-italian,it,implicit-benign-38,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,144.7
+offr-privacy-plus-italian,it,implicit-benign-39,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,142.0
+offr-privacy-plus-italian,it,implicit-benign-40,implicit_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,144.3

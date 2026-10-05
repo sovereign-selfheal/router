@@ -66,6 +66,7 @@ The env var `NER_ENABLED` (since v0.10.0) overrides `ner.enabled` of the policy:
 `on` turn C1 (Presidio NER) on, any other value turns it off. Unset or empty, the policy decides. With
 C1 off, Presidio gets no calls and the log has no `ner` signals; the log line still shows
 `ner_timeout_s`. The gitops repo turns C1 off when the decision model answers C2 (see its README).
+Quality and gate time with C1 on and off: [`docs/c1-off-eval-2026-10-05.md`](docs/c1-off-eval-2026-10-05.md).
 
 Ignored entities stay in the log with weight 0, for example `NRP@0.85(no id):0.00` or
 `PERSON@0.85(<2 words):0.00`, so the log shows what the engine saw and why it did not count it.

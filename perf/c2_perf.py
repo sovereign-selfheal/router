@@ -15,6 +15,10 @@ Scenarios:
   context      agents' large contexts: Presidio /analyze and C2 latency by context size, with
                log-like text (needs --presidio-url, so it runs in a LiteLLM pod: only LiteLLM may
                reach Presidio)
+  gate         the whole privacy gate, PrivacyScorer.score() with the policy --policy, as the
+               router calls it: 1..N agents at the same time, each with a new agent context. The
+               environment selects the detectors, as in the router (NER_ENABLED for C1, the
+               CLASSIFIER_* variables for C2). Needs PyYAML and Presidio: run it in a LiteLLM pod
 
 Nothing is changed in the cluster: the script only sends requests.
 
@@ -304,6 +308,56 @@ def scenario_parallel_context(b, args):
                   "error_types": sorted(set(errors)), "rps": round(len(lat) / wall, 2)})
 
 
+def scenario_gate(args):
+    """The whole privacy gate: `conc` agents at the same time, each with a new agent context of
+    `--gate-size` tokens, half of them with a sensitive sentence. One PrivacyScorer per thread,
+    built from the policy file, so the gate runs as in the router: rules, Presidio when C1 is
+    on, C2 in the gray zone. `--gate-rounds` rounds per level."""
+    import asyncio
+
+    import yaml  # only this scenario: it runs in a LiteLLM pod, which has PyYAML
+
+    with open(args.policy) as fh:
+        policy = yaml.safe_load(fh)
+    threshold = args.gate_threshold
+    local = threading.local()
+
+    def scorer():
+        if not hasattr(local, "scorer"):
+            local.scorer = S(policy)
+        return local.scorer
+
+    ner = "on" if scorer()._ner.get("enabled") else "off"
+    for conc in [int(x) for x in args.gate_levels.split(",")]:
+        lat, chars, errors = [], [], []
+        outcomes = {"local": 0, "sota": 0, "ner_error": 0, "c2_error": 0, "c2_fallback": 0}
+
+        def one(i, lat=lat, chars=chars, errors=errors, outcomes=outcomes):
+            text = agent_text(args.gate_size, SENSITIVE.strip() if i % 2 else None)
+            t0 = time.perf_counter()
+            try:
+                score, signals = asyncio.run(scorer().score(text, threshold))
+            except Exception as exc:
+                errors.append(type(exc).__name__)
+                return
+            lat.append(time.perf_counter() - t0)
+            chars.append(len(text))
+            labels = [(src, label) for src, label, _w in signals]
+            outcomes["local" if score >= threshold else "sota"] += 1
+            outcomes["ner_error"] += any(s == "ner" and lb.startswith("error") for s, lb in labels)
+            outcomes["c2_error"] += any(s == "classifier" and lb == "error" for s, lb in labels)
+            outcomes["c2_fallback"] += any(lb.startswith("fallback/") for _s, lb in labels)
+
+        t0 = time.perf_counter()
+        with ThreadPoolExecutor(max_workers=conc) as ex:
+            list(ex.map(one, range(conc * args.gate_rounds)))
+        wall = time.perf_counter() - t0
+        emit({"scenario": "gate", "ner": ner, "size": args.gate_size, "threshold": threshold,
+              "chars": round(statistics.median(chars)) if chars else None,
+              "concurrency": conc, **summarize(lat), **outcomes, "errors": len(errors),
+              "error_types": sorted(set(errors)), "rps": round(len(lat) / wall, 2)})
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--decision-url", required=True)
@@ -330,6 +384,14 @@ def main():
     ap.add_argument("--parallel-size", type=int, default=16000,
                     help="tokens of each context of the parallel-context scenario")
     ap.add_argument("--parallel-levels", default="1,4,8")
+    ap.add_argument("--policy", default="/app/litellm/privacy-plus.yaml",
+                    help="privacy policy of the gate scenario (default: the LiteLLM pod's)")
+    ap.add_argument("--gate-size", type=int, default=33000,
+                    help="tokens of each agent context of the gate scenario")
+    ap.add_argument("--gate-levels", default="1,4,8")
+    ap.add_argument("--gate-rounds", type=int, default=2)
+    ap.add_argument("--gate-threshold", type=float, default=0.70,
+                    help="threshold of the gate scenario (0.70: the research tier of the agents)")
     ap.add_argument("--questions", default="",
                     help="JSON file with the systemone questions (default: the built-in ones)")
     ap.add_argument("--questions-label", default="",
@@ -353,6 +415,8 @@ def main():
         scenario_context(b, args)
     if "parallel-context" in scen:
         scenario_parallel_context(b, args)
+    if "gate" in scen:
+        scenario_gate(args)
 
 
 if __name__ == "__main__":

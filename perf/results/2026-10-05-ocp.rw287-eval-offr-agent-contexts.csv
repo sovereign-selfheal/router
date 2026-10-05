@@ -1,0 +1,49 @@
+run_label,lang,id,category,expect,decision,correct,gate,privacy_score,classifier_fired,signals,latency_ms
+offr-agent-contexts,en,agent-benign-01,agent_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,292.9
+offr-agent-contexts,en,agent-benign-02,agent_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,148.8
+offr-agent-contexts,en,agent-benign-03,agent_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,155.8
+offr-agent-contexts,en,agent-benign-04,agent_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,220.4
+offr-agent-contexts,en,agent-benign-05,agent_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,321.0
+offr-agent-contexts,en,agent-benign-06,agent_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,392.8
+offr-agent-contexts,en,agent-benign-07,agent_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,508.5
+offr-agent-contexts,en,agent-benign-08,agent_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,579.9
+offr-agent-contexts,en,agent-benign-09,agent_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,775.6
+offr-agent-contexts,en,agent-benign-10,agent_benign,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,1032.6
+offr-agent-contexts,en,agent-benign-11,agent_benign_named,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,149.8
+offr-agent-contexts,en,agent-benign-12,agent_benign_named,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,216.0
+offr-agent-contexts,en,agent-benign-13,agent_benign_named,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,154.6
+offr-agent-contexts,en,agent-benign-14,agent_benign_named,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,216.4
+offr-agent-contexts,en,agent-benign-15,agent_benign_named,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,228.6
+offr-agent-contexts,en,agent-benign-16,agent_benign_named,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,209.9
+offr-agent-contexts,en,agent-benign-17,agent_benign_named,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,404.1
+offr-agent-contexts,en,agent-benign-18,agent_benign_named,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,401.0
+offr-agent-contexts,en,agent-benign-19,agent_benign_named,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,158.1
+offr-agent-contexts,en,agent-benign-20,agent_benign_named,sota,sota,1,privacy,0.0000,0,systemone/biz@1.00(ignored):0.00,222.4
+offr-agent-contexts,en,agent-health-01-20,agent_health,local,local,1,privacy,0.8000,1,"systemone/biz@0.98(ignored):0.00, systemone/llm@1.00(health):0.80",148.1
+offr-agent-contexts,en,agent-health-01-100,agent_health,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(health):0.80",501.5
+offr-agent-contexts,en,agent-health-02-20,agent_health,local,local,1,privacy,0.8000,1,"systemone/biz@0.89(ignored):0.00, systemone/llm@1.00(health):0.80",147.2
+offr-agent-contexts,en,agent-health-02-100,agent_health,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(health):0.80",509.5
+offr-agent-contexts,en,agent-job-03-20,agent_job,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(job):0.80",149.9
+offr-agent-contexts,en,agent-job-03-100,agent_job,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(job):0.80",518.1
+offr-agent-contexts,en,agent-job-04-20,agent_job,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(job):0.80",149.1
+offr-agent-contexts,en,agent-job-04-100,agent_job,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(job):0.80",519.7
+offr-agent-contexts,en,agent-legal-05-20,agent_legal,local,local,1,privacy,0.9000,1,"legal:0.50, systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(legal):0.80",147.9
+offr-agent-contexts,en,agent-legal-05-100,agent_legal,local,local,1,privacy,0.9000,1,"legal:0.50, systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(legal):0.80",501.4
+offr-agent-contexts,en,agent-legal-06-20,agent_legal,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(person):0.80",153.2
+offr-agent-contexts,en,agent-legal-06-100,agent_legal,local,local,1,privacy,0.8000,1,"systemone/biz@0.99(ignored):0.00, systemone/llm@1.00(person):0.80",503.8
+offr-agent-contexts,en,agent-family-07-20,agent_family,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(family):0.80",152.1
+offr-agent-contexts,en,agent-family-07-100,agent_family,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(person):0.80",512.9
+offr-agent-contexts,en,agent-family-08-20,agent_family,local,local,1,privacy,0.8000,1,"systemone/biz@0.99(ignored):0.00, systemone/llm@1.00(family):0.80",146.7
+offr-agent-contexts,en,agent-family-08-100,agent_family,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(family):0.80",506.1
+offr-agent-contexts,en,agent-money-09-20,agent_money,local,local,1,privacy,0.9000,1,"finance:0.50, systemone/biz@0.99(ignored):0.00, systemone/llm@1.00(money):0.80",161.8
+offr-agent-contexts,en,agent-money-09-100,agent_money,local,local,1,privacy,0.9000,1,"finance:0.50, systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(money):0.80",512.1
+offr-agent-contexts,en,agent-money-10-20,agent_money,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(money):0.80",151.3
+offr-agent-contexts,en,agent-money-10-100,agent_money,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(money):0.80",530.4
+offr-agent-contexts,en,agent-secret-11-20,agent_secret,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(secret):0.80",148.4
+offr-agent-contexts,en,agent-secret-11-100,agent_secret,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(secret):0.80",508.8
+offr-agent-contexts,en,agent-private-12-20,agent_private,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(person):0.80",149.4
+offr-agent-contexts,en,agent-private-12-100,agent_private,local,local,1,privacy,0.8000,1,"systemone/biz@0.91(ignored):0.00, systemone/llm@1.00(person):0.80",511.7
+offr-agent-contexts,en,agent-person-13-20,agent_person,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(person):0.80",154.0
+offr-agent-contexts,en,agent-person-13-100,agent_person,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(person):0.80",512.9
+offr-agent-contexts,en,agent-person-14-20,agent_person,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(person):0.80",148.3
+offr-agent-contexts,en,agent-person-14-100,agent_person,local,local,1,privacy,0.8000,1,"systemone/biz@1.00(ignored):0.00, systemone/llm@1.00(person):0.80",516.8
