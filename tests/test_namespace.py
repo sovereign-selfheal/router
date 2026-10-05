@@ -281,6 +281,15 @@ def test_log_line_has_the_namespace_fields(capsys):
     assert decision["ns_labels_loaded"] is True
 
 
+def test_restricted_series_start_at_zero():
+    labels = {"zero-ns": "restricted"}
+    make_router(labels=labels)
+    value = REGISTRY.get_sample_value(
+        "router_namespace_decisions_total",
+        {"target_namespace": "zero-ns", "routed_to": "local-fast", "source": "hint"})
+    assert value == 0.0
+
+
 def test_namespace_decisions_metric():
     def count(ns, routed_to, source):
         return REGISTRY.get_sample_value(

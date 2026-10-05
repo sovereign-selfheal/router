@@ -364,9 +364,16 @@ class ChainRouter(CustomLogger):
         except Exception as exc:
             _metrics_error(exc)
 
-    @staticmethod
-    def _observe_namespace_labels(labels):
+    def _observe_namespace_labels(self, labels):
         try:
+            # Create the decision series of every restricted namespace at 0: increase() in
+            # the dashboards then counts the first request after a pod start, too.
+            if NS_DECISIONS is not None:
+                for name in sorted(labels.restricted()) + ["none"]:
+                    for routed_to in (self.local_model, self.sota_model):
+                        for source in ("hint", "scan", "hint+scan"):
+                            NS_DECISIONS.labels(target_namespace=name, routed_to=routed_to,
+                                                source=source)
             if NS_LABELS_LOADED is not None:
                 NS_LABELS_LOADED.set(1 if labels.loaded else 0)
             if NS_LABELS is not None:
