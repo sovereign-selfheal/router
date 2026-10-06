@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 500" width="960" height="500" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+<title id="t">Routing chain of the router</title>
+<desc id="d">A request passes four steps in order: namespace gate, efficiency gate, privacy gate, tiering. The first step that says LOCAL sends it to the local GPU model in the cluster; only a request that passes every step goes to the external SOTA model.</desc>
+<style>.static{display:none}@media (prefers-reduced-motion: reduce){.anim{display:none}.static{display:inline}}</style>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5b6e92"/></marker><marker id="arrow-local" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#34d3b8"/></marker><filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<rect width="960" height="500" rx="18" fill="#0c1320"/>
+<text x="28" y="40" font-size="19" fill="#e7edf6" font-weight="600" text-anchor="start">How the router decides, request by request</text>
+<text x="28" y="62" font-size="12.5" fill="#8d9ab0" font-weight="normal" text-anchor="start">router v0.11.1 · the first step that says LOCAL wins · SOTA only when every step lets the request pass</text>
+<rect x="20" y="84" width="730" height="362" rx="16" fill="none" stroke="#2a3750" stroke-width="1.5" stroke-dasharray="6 6"/>
+<text x="36" y="106" font-size="11" fill="#8d9ab0" font-weight="600" text-anchor="start" letter-spacing="1.2">OPENSHIFT CLUSTER</text>
+<text x="790" y="106" font-size="11" fill="#8d9ab0" font-weight="600" text-anchor="start" letter-spacing="1.2">OUTSIDE THE CLUSTER</text>
+<rect x="40" y="150" width="128" height="68" rx="12" fill="#131c2b" stroke="#2a3750" stroke-width="1.5"/>
+<text x="104" y="180" font-size="15" fill="#e7edf6" font-weight="600" text-anchor="middle">Request</text>
+<text x="104" y="200" font-size="11.5" fill="#8d9ab0" font-weight="normal" text-anchor="middle">agent or app</text>
+<rect x="188" y="122" width="548" height="124" rx="14" fill="#101a2b" stroke="#7ea6ff" stroke-opacity="0.55" stroke-width="1.5"/>
+<text x="204" y="141" font-size="11" fill="#7ea6ff" font-weight="600" text-anchor="start" letter-spacing="1.2">LITELLM ROUTER · POLICY HOOK</text>
+<rect x="746" y="174" width="8" height="20" fill="#0c1320"/>
+<line x1="168" y1="184" x2="199" y2="184" stroke="#5b6e92" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="318" y1="184" x2="331" y2="184" stroke="#5b6e92" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="450" y1="184" x2="463" y2="184" stroke="#5b6e92" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="582" y1="184" x2="595" y2="184" stroke="#5b6e92" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="714" y1="184" x2="789" y2="184" stroke="#5b6e92" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M259,216 C259,300 360,300 380,356" fill="none" stroke="#34d3b8" stroke-opacity="0.5" stroke-width="2" marker-end="url(#arrow-local)"/>
+<path d="M391,216 C391,290 410,320 415,356" fill="none" stroke="#34d3b8" stroke-opacity="0.5" stroke-width="2" marker-end="url(#arrow-local)"/>
+<path d="M523,216 C523,290 470,320 465,356" fill="none" stroke="#34d3b8" stroke-opacity="0.5" stroke-width="2" marker-end="url(#arrow-local)"/>
+<path d="M655,216 C655,300 520,300 500,356" fill="none" stroke="#34d3b8" stroke-opacity="0.5" stroke-width="2" marker-end="url(#arrow-local)"/>
+<text x="267" y="234" font-size="11.5" fill="#34d3b8" font-weight="normal" text-anchor="start">restricted</text>
+<text x="399" y="234" font-size="11.5" fill="#34d3b8" font-weight="normal" text-anchor="start">short / simple</text>
+<text x="531" y="234" font-size="11.5" fill="#34d3b8" font-weight="normal" text-anchor="start">sensitive</text>
+<text x="663" y="234" font-size="11.5" fill="#34d3b8" font-weight="normal" text-anchor="start">team capped</text>
+<rect x="200" y="152" width="118" height="64" rx="10" fill="#131c2b" stroke="#2a3750" stroke-width="1.5"/>
+<text x="259" y="178" font-size="13.5" fill="#e7edf6" font-weight="600" text-anchor="middle">1 · Namespace</text>
+<text x="259" y="198" font-size="11" fill="#8d9ab0" font-weight="normal" text-anchor="middle">restricted label?</text>
+<rect x="332" y="152" width="118" height="64" rx="10" fill="#131c2b" stroke="#2a3750" stroke-width="1.5"/>
+<text x="391" y="178" font-size="13.5" fill="#e7edf6" font-weight="600" text-anchor="middle">2 · Efficiency</text>
+<text x="391" y="198" font-size="11" fill="#8d9ab0" font-weight="normal" text-anchor="middle">short or simple?</text>
+<rect x="464" y="152" width="118" height="64" rx="10" fill="#131c2b" stroke="#2a3750" stroke-width="1.5"/>
+<text x="523" y="178" font-size="13.5" fill="#e7edf6" font-weight="600" text-anchor="middle">3 · Privacy</text>
+<text x="523" y="198" font-size="11" fill="#8d9ab0" font-weight="normal" text-anchor="middle">PII, rules, C2</text>
+<rect x="596" y="152" width="118" height="64" rx="10" fill="#131c2b" stroke="#2a3750" stroke-width="1.5"/>
+<text x="655" y="178" font-size="13.5" fill="#e7edf6" font-weight="600" text-anchor="middle">4 · Tiering</text>
+<text x="655" y="198" font-size="11" fill="#8d9ab0" font-weight="normal" text-anchor="middle">team may use SOTA?</text>
+<rect x="790" y="150" width="150" height="68" rx="12" fill="#131c2b" stroke="#f4b04a" stroke-width="1.5"/>
+<text x="865" y="180" font-size="15" fill="#e7edf6" font-weight="600" text-anchor="middle">SOTA model</text>
+<text x="865" y="200" font-size="11.5" fill="#8d9ab0" font-weight="normal" text-anchor="middle">external · Gemini</text>
+<rect x="300" y="356" width="260" height="64" rx="12" fill="#131c2b" stroke="#34d3b8" stroke-width="1.5"/>
+<text x="430" y="383" font-size="15" fill="#e7edf6" font-weight="600" text-anchor="middle">Local GPU model</text>
+<text x="430" y="403" font-size="11.5" fill="#8d9ab0" font-weight="normal" text-anchor="middle">Qwen3.8 on vLLM · the data stays here</text>
+<text x="36" y="434" font-size="11" fill="#8d9ab0" font-weight="normal" text-anchor="start">public or no label: the namespace gate lets the request pass</text>
+<g class="anim">
+<rect x="200" y="152" width="118" height="64" rx="10" fill="none" stroke="#ff6670" stroke-width="3" opacity="0" filter="url(#glow)"><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.04;0.045;0.175;0.18;1" values="0;0;1;1;0;0"/></rect>
+<rect x="300" y="356" width="260" height="64" rx="12" fill="none" stroke="#34d3b8" stroke-width="3" opacity="0" filter="url(#glow)"><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.12;0.125;0.175;0.18;1" values="0;0;1;1;0;0"/></rect>
+<circle r="7" fill="#e7edf6" stroke="#34d3b8" stroke-width="3" opacity="0"><animateMotion dur="20s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.008;0.12;1" path="M104,184 L259,184 L259,216 C259,300 360,300 380,356"/><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.004;0.009;0.175;0.18;1" values="0;0;1;1;0;0"/></circle>
+<g opacity="0"><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.1925;0.1975;1" values="1;1;0;0"/><text x="480" y="476" font-size="13.5" fill="#e7edf6" font-weight="normal" text-anchor="middle">1/5  Alert from payments (label restricted): the namespace gate keeps it local, no other gate runs</text></g>
+<rect x="332" y="152" width="118" height="64" rx="10" fill="none" stroke="#34d3b8" stroke-width="3" opacity="0" filter="url(#glow)"><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.24;0.245;0.375;0.38;1" values="0;0;1;1;0;0"/></rect>
+<rect x="300" y="356" width="260" height="64" rx="12" fill="none" stroke="#34d3b8" stroke-width="3" opacity="0" filter="url(#glow)"><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.32;0.325;0.375;0.38;1" values="0;0;1;1;0;0"/></rect>
+<circle r="7" fill="#e7edf6" stroke="#34d3b8" stroke-width="3" opacity="0"><animateMotion dur="20s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.208;0.32;1" path="M104,184 L391,184 L391,216 C391,290 410,320 415,356"/><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.204;0.209;0.375;0.38;1" values="0;0;1;1;0;0"/></circle>
+<g opacity="0"><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.2;0.205;0.3925;0.3975;1" values="0;0;1;1;0;0"/><text x="480" y="476" font-size="13.5" fill="#e7edf6" font-weight="normal" text-anchor="middle">2/5  “What is the capital of France?”: short and simple, the efficiency gate keeps it local</text></g>
+<rect x="464" y="152" width="118" height="64" rx="10" fill="none" stroke="#34d3b8" stroke-width="3" opacity="0" filter="url(#glow)"><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.44;0.445;0.575;0.58;1" values="0;0;1;1;0;0"/></rect>
+<rect x="300" y="356" width="260" height="64" rx="12" fill="none" stroke="#34d3b8" stroke-width="3" opacity="0" filter="url(#glow)"><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.52;0.525;0.575;0.58;1" values="0;0;1;1;0;0"/></rect>
+<circle r="7" fill="#e7edf6" stroke="#34d3b8" stroke-width="3" opacity="0"><animateMotion dur="20s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.408;0.52;1" path="M104,184 L523,184 L523,216 C523,290 470,320 465,356"/><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.404;0.409;0.575;0.58;1" values="0;0;1;1;0;0"/></circle>
+<g opacity="0"><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.4;0.405;0.5925;0.5975;1" values="0;0;1;1;0;0"/><text x="480" y="476" font-size="13.5" fill="#e7edf6" font-weight="normal" text-anchor="middle">3/5  A customer record with an IBAN: the privacy gate finds personal data and keeps it local</text></g>
+<rect x="596" y="152" width="118" height="64" rx="10" fill="none" stroke="#34d3b8" stroke-width="3" opacity="0" filter="url(#glow)"><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.64;0.645;0.775;0.78;1" values="0;0;1;1;0;0"/></rect>
+<rect x="300" y="356" width="260" height="64" rx="12" fill="none" stroke="#34d3b8" stroke-width="3" opacity="0" filter="url(#glow)"><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.72;0.725;0.775;0.78;1" values="0;0;1;1;0;0"/></rect>
+<circle r="7" fill="#e7edf6" stroke="#34d3b8" stroke-width="3" opacity="0"><animateMotion dur="20s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.608;0.72;1" path="M104,184 L655,184 L655,216 C655,300 520,300 500,356"/><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.604;0.609;0.775;0.78;1" values="0;0;1;1;0;0"/></circle>
+<g opacity="0"><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.6;0.605;0.7925;0.7975;1" values="0;0;1;1;0;0"/><text x="480" y="476" font-size="13.5" fill="#e7edf6" font-weight="normal" text-anchor="middle">4/5  Long and clean, but from team legal: every gate passes, tiering allows legal only the local model</text></g>
+<rect x="790" y="150" width="150" height="68" rx="12" fill="none" stroke="#f4b04a" stroke-width="3" opacity="0" filter="url(#glow)"><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.92;0.925;0.975;0.98;1" values="0;0;1;1;0;0"/></rect>
+<circle r="7" fill="#e7edf6" stroke="#f4b04a" stroke-width="3" opacity="0"><animateMotion dur="20s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.808;0.92;1" path="M104,184 L865,184"/><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.804;0.809;0.975;0.98;1" values="0;0;1;1;0;0"/></circle>
+<g opacity="0"><animate attributeName="opacity" dur="20s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.8;0.805;0.9925;0.9975;1" values="0;0;1;1;0;0"/><text x="480" y="476" font-size="13.5" fill="#e7edf6" font-weight="normal" text-anchor="middle">5/5  Long, complex, nothing sensitive (agentic-triage, public): every step passes, the SOTA model answers</text></g>
+</g>
+<g class="static"><text x="480" y="476" font-size="13" fill="#e7edf6" font-weight="normal" text-anchor="middle">Examples: restricted namespace → local · short question → local · personal data → local · team legal → local · long and clean → SOTA</text></g>
+</svg>

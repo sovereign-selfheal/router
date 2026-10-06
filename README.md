@@ -23,6 +23,14 @@ truth. `tests/policy/` holds a copy for the tests and the evaluation.
 
 ## How the hook decides
 
+![Animated diagram of the routing chain: a request passes the namespace gate, the efficiency gate, the
+privacy gate and the tiering; the first step that says LOCAL sends it to the local GPU model, otherwise
+the external SOTA model answers](docs/img/routing-chain.svg)
+
+The animation shows five example requests, one after the other. Its source is
+`scripts/routing_chain_svg.py`: change it when the chain changes, then run
+`python3 scripts/routing_chain_svg.py docs/img/routing-chain.svg`.
+
 `policy_hook_chain.py` runs two gates in order. The first gate that says LOCAL wins. Since v0.11.0 an
 optional **namespace policy** runs before them (off by default; see "Namespace policy"): a request
 about a restricted namespace stays local and no gate runs.
