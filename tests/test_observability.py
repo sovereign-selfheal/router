@@ -112,6 +112,24 @@ def test_short_circuit_opens_no_privacy_span(router):
     assert "gate.efficiency" in spans and "gate.privacy" not in spans
 
 
+def test_restricted_namespace_span_tree(router):
+    from namespace_policy import NamespacePolicy
+
+    router.namespaces = NamespacePolicy({"scan": True}, fetch=lambda: {"payments": "restricted"},
+                                        start=False)
+    router.namespaces.labels.refresh()
+    text = LONG_BENIGN + ' up{namespace="payments"}'
+    out, decision, spans, _proxy = route_under_proxy_span(router, text)
+    assert out["model"] == "local-fast" and decision["decided_by"] == "namespace"
+    ns = spans["gate.namespace"]
+    assert ns.parent.span_id == spans["router.chain"].context.span_id
+    assert ns.attributes["gate.verdict"] == "local"
+    assert "gate.efficiency" not in spans and "gate.privacy" not in spans
+    _out, decision, spans, _proxy = route_under_proxy_span(router, LONG_BENIGN)
+    assert decision["decided_by"] == "all-sota"
+    assert spans["gate.namespace"].attributes["gate.verdict"] == "pass"
+
+
 def test_without_parent_span_the_chain_is_a_root_span(router):
     _out, decision = route(router, LONG_BENIGN)
     chain = {s.name: s for s in EXPORTER.get_finished_spans()}["router.chain"]
