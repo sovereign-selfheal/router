@@ -28,24 +28,24 @@
 <text x="399" y="234" font-size="11.5" fill="#34d3b8" font-weight="normal" text-anchor="start">short / budget used</text>
 <text x="531" y="234" font-size="11.5" fill="#34d3b8" font-weight="normal" text-anchor="start">sensitive</text>
 <text x="663" y="234" font-size="11.5" fill="#34d3b8" font-weight="normal" text-anchor="start">team capped</text>
-<rect x="200" y="152" width="118" height="64" rx="10" fill="#131c2b" stroke="#2a3750" stroke-width="1.5"/>
+<g><rect x="200" y="152" width="118" height="64" rx="10" fill="#131c2b" stroke="#2a3750" stroke-width="1.5"/>
 <text x="259" y="178" font-size="13.5" fill="#e7edf6" font-weight="600" text-anchor="middle">1 · Namespace</text>
-<text x="259" y="198" font-size="11" fill="#8d9ab0" font-weight="normal" text-anchor="middle">restricted label?</text>
-<rect x="332" y="152" width="118" height="64" rx="10" fill="#131c2b" stroke="#2a3750" stroke-width="1.5"/>
+<text x="259" y="198" font-size="11" fill="#8d9ab0" font-weight="normal" text-anchor="middle">restricted label?</text></g>
+<g><rect x="332" y="152" width="118" height="64" rx="10" fill="#131c2b" stroke="#2a3750" stroke-width="1.5"/>
 <text x="391" y="178" font-size="13.5" fill="#e7edf6" font-weight="600" text-anchor="middle">2 · Efficiency</text>
-<text x="391" y="198" font-size="11" fill="#8d9ab0" font-weight="normal" text-anchor="middle">short? budget left?</text>
-<rect x="464" y="152" width="118" height="64" rx="10" fill="#131c2b" stroke="#2a3750" stroke-width="1.5"/>
+<text x="391" y="198" font-size="11" fill="#8d9ab0" font-weight="normal" text-anchor="middle">short? budget left?</text></g>
+<g><rect x="464" y="152" width="118" height="64" rx="10" fill="#131c2b" stroke="#2a3750" stroke-width="1.5"/>
 <text x="523" y="178" font-size="13.5" fill="#e7edf6" font-weight="600" text-anchor="middle">3 · Privacy</text>
-<text x="523" y="198" font-size="11" fill="#8d9ab0" font-weight="normal" text-anchor="middle">PII, rules, C2</text>
-<rect x="596" y="152" width="118" height="64" rx="10" fill="#131c2b" stroke="#2a3750" stroke-width="1.5"/>
+<text x="523" y="198" font-size="11" fill="#8d9ab0" font-weight="normal" text-anchor="middle">PII, rules, C2</text></g>
+<g><rect x="596" y="152" width="118" height="64" rx="10" fill="#131c2b" stroke="#2a3750" stroke-width="1.5"/>
 <text x="655" y="178" font-size="13.5" fill="#e7edf6" font-weight="600" text-anchor="middle">4 · Tiering</text>
-<text x="655" y="198" font-size="11" fill="#8d9ab0" font-weight="normal" text-anchor="middle">team may use SOTA?</text>
-<rect x="790" y="150" width="150" height="68" rx="12" fill="#131c2b" stroke="#f4b04a" stroke-width="1.5"/>
+<text x="655" y="198" font-size="11" fill="#8d9ab0" font-weight="normal" text-anchor="middle">team may use SOTA?</text></g>
+<g><rect x="790" y="150" width="150" height="68" rx="12" fill="#131c2b" stroke="#f4b04a" stroke-width="1.5"/>
 <text x="865" y="180" font-size="15" fill="#e7edf6" font-weight="600" text-anchor="middle">SOTA model</text>
-<text x="865" y="200" font-size="11.5" fill="#8d9ab0" font-weight="normal" text-anchor="middle">external · Gemini</text>
-<rect x="300" y="356" width="260" height="64" rx="12" fill="#131c2b" stroke="#34d3b8" stroke-width="1.5"/>
+<text x="865" y="200" font-size="11.5" fill="#8d9ab0" font-weight="normal" text-anchor="middle">external · Gemini</text></g>
+<g><rect x="300" y="356" width="260" height="64" rx="12" fill="#131c2b" stroke="#34d3b8" stroke-width="1.5"/>
 <text x="430" y="383" font-size="15" fill="#e7edf6" font-weight="600" text-anchor="middle">Local GPU model</text>
-<text x="430" y="403" font-size="11.5" fill="#8d9ab0" font-weight="normal" text-anchor="middle">Qwen3.8 on vLLM · the data stays here</text>
+<text x="430" y="403" font-size="11.5" fill="#8d9ab0" font-weight="normal" text-anchor="middle">Qwen3.8 on vLLM · the data stays here</text></g>
 <text x="36" y="434" font-size="11" fill="#8d9ab0" font-weight="normal" text-anchor="start">public or no label: the namespace gate lets the request pass</text>
 <g class="anim">
 <rect x="200" y="152" width="118" height="64" rx="10" fill="none" stroke="#ff6670" stroke-width="3" opacity="0" filter="url(#glow)"><animate attributeName="opacity" dur="24s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.0333;0.0383;0.1458;0.1508;1" values="0;0;1;1;0;0"/></rect>
