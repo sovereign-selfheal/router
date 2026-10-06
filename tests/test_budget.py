@@ -195,6 +195,24 @@ def test_store_error_fails_open():
 
 
 # ------------------------------------------------------------------ what counts as SOTA
+def test_tier_comes_from_the_headers_of_the_success_event():
+    # What LiteLLM 1.102 really passes (checked on ocp.8mqfl): no routing_decision in the
+    # metadata, but the request headers and the model group of the deployment that answered.
+    r = make_router()
+    kwargs = {
+        "litellm_params": {"metadata": {"headers": {"x-team": "Research"},
+                                        "model_group": "sota-smart"}},
+        "standard_logging_object": {"model_group": "sota-smart"},
+    }
+    response = types.SimpleNamespace(model="gemini-2.5-pro",
+                                      usage=types.SimpleNamespace(total_tokens=486))
+    asyncio.run(r.async_log_success_event(kwargs, response, None, None))
+    assert asyncio.run(r.budget.used("research")) == 486
+    _out, decision = route(r, LONG_BENIGN)
+    assert decision["routed_to"] == "local-fast"
+    assert "SOTA budget of tier research used (486/100" in decision["reason"]
+
+
 def test_fallback_to_local_is_not_counted():
     r = make_router()
     answer(r, tokens=150, group="local-fast", routed_to="sota-smart")

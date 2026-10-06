@@ -636,7 +636,10 @@ class ChainRouter(CustomLogger):
             total = int(getattr(usage, "total_tokens", 0) or 0) if usage else 0
             if not total:
                 return
-            team = decision.get("team")
+            # LiteLLM does not pass the routing_decision of the pre-call hook to this event
+            # (checked with LiteLLM 1.102 on 2026-10-06), but it keeps metadata.headers: the
+            # tier comes from x-team, the header that the gateway sets from the API key.
+            team = decision.get("team") or self._team(kwargs.get("litellm_params") or {})
             try:
                 if SOTA_TOKENS is not None:
                     SOTA_TOKENS.labels(team=self._team_label(team)).inc(total)
