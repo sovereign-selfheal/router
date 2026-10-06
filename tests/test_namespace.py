@@ -1,7 +1,8 @@
-"""Namespace policy (v0.11.0): a restricted namespace keeps the request LOCAL."""
+"""Namespace policy (v0.11.0; scan fixes v0.11.1): a restricted namespace stays LOCAL."""
 
 import ast
 import asyncio
+import json
 import time
 
 import namespace_policy
@@ -74,6 +75,41 @@ def test_scan_ignores_prose_and_other_keys():
     assert scan_names(text) == set()
 
 
+def test_scan_reads_json_encoded_tool_call_arguments():
+    # Tool call arguments are JSON strings: the quotes of PromQL are escaped (v0.11.1).
+    query = 'sum(rate(http_server_requests_seconds_count{namespace="payments",status=~"5.."}[5m]))'
+    args = json.dumps({"query": query})
+    assert '\\"payments\\"' in args
+    assert scan_names(args) == {"payments"}
+    assert scan_names(json.dumps({"payload": args})) == {"payments"}  # encoded twice
+
+
+def test_scan_reads_json_argv_arrays():
+    argv = json.dumps({"command": ["oc", "get", "pods", "-n", "payments"]})
+    assert scan_names(argv) == {"payments"}
+    assert scan_names(json.dumps(["kubectl", "logs", "--namespace", "ns-b", "x"])) == {"ns-b"}
+    assert scan_names("['oc','get','pods','-n','ns-c']") == {"ns-c"}
+
+
+def test_scan_reads_every_alternative_of_a_regex_matcher():
+    assert scan_names('rate(m{namespace=~"agentic-triage|payments"}[5m])') == {
+        "agentic-triage", "payments"}
+    assert scan_names('m{namespace=~"(payments)"}') == {"payments"}
+    assert scan_names('m{namespace=~"^(?:payments|ns-b)$"}') == {"payments", "ns-b"}
+    assert scan_names('m{namespace!~"ns-a|ns-b"}') == {"ns-a", "ns-b"}  # stricter, as for !=
+
+
+def test_scan_expands_wildcard_prefixes_against_known_names():
+    known = {"payments", "payroll", "agentic-triage"}
+    assert scan_names('m{namespace=~"pay.*"}', known=known) >= {"payments", "payroll"}
+    assert "agentic-triage" not in scan_names('m{namespace=~"pay.*"}', known=known)
+    assert scan_names('m{namespace=~"agentic-triage|pay.+"}', known=known) >= {
+        "agentic-triage", "payments", "payroll"}
+    # A match-all value names no namespace (like a query without namespace).
+    assert scan_names('m{namespace=~".*"}', known=known) == set()
+    assert scan_names('m{namespace=~".+"}', known=known) == set()
+
+
 def test_scan_is_fast_on_large_contexts():
     text = ('level=info msg="GET /orders 200" pod=api-7 ' * 9500
             + 'rate(x{namespace="payments"}[5m])')
@@ -88,7 +124,9 @@ def test_hint_names_are_validated():
     assert hint_names(["payments", "payments", " a-b ", 3, "", "Not_Valid", "x" * 64]) == [
         "payments", "a-b"]
     assert hint_names({"payments": 1}) == []
-    assert len(hint_names([f"ns-{i}" for i in range(50)])) == 20
+    # v0.11.1: every valid name is checked (no cap at 20); only the input is bounded.
+    assert len(hint_names([f"ns-{i}" for i in range(50)])) == 50
+    assert len(hint_names([f"ns-{i}" for i in range(900)])) == namespace_policy.MAX_HINT_ITEMS
 
 
 def test_pop_hint_removes_the_field_everywhere():
@@ -162,6 +200,46 @@ def test_scan_alone_finds_a_restricted_namespace():
     _out, decision = route(r, LONG_BENIGN + " curl http://api.payments.svc:8080/health")
     assert decision["routed_to"] == "local-fast"
     assert decision["ns_source"] == "scan"
+
+
+def test_tool_call_arguments_reach_the_scan():
+    # An investigation started by a human ("why is payments failing?"), hint off: the only
+    # structured mention is the PromQL in the JSON arguments of a tool call (v0.11.1).
+    cfg = dict(CFG, hint=False)
+    r = make_router(cfg=cfg)
+    query = 'sum(rate(http_server_requests_seconds_count{namespace="payments",status=~"5.."}[5m]))'
+    extra = {"messages": [
+        {"role": "user", "content": LONG_BENIGN},
+        {"role": "assistant", "content": None, "tool_calls": [{
+            "id": "c1", "type": "function",
+            "function": {"name": "query_prometheus", "arguments": json.dumps({"query": query})}}]},
+        {"role": "tool", "tool_call_id": "c1",
+         "content": '{"status":"success","data":{"result":[]}}'},
+    ]}
+    out, decision = route(r, "unused", extra=extra)
+    assert out["model"] == "local-fast"
+    assert decision["decided_by"] == "namespace"
+    assert decision["ns_restricted"] == ["payments"]
+    assert decision["ns_source"] == "scan"
+
+
+def test_regex_matcher_with_two_namespaces_routes_local():
+    r = make_router()
+    _out, decision = route(r, LONG_BENIGN + ' rate(m{namespace=~"agentic-triage|payments"}[5m])')
+    assert decision["routed_to"] == "local-fast"
+    assert decision["ns_restricted"] == ["payments"]
+    _out, decision = route(r, LONG_BENIGN + ' rate(m{namespace=~"pay.*"}[5m])')
+    assert decision["routed_to"] == "local-fast"
+    assert decision["ns_restricted"] == ["payments"]
+
+
+def test_restricted_hint_after_many_names_is_seen():
+    r = make_router()
+    hint = [f"ns-{i}" for i in range(30)] + ["payments"]
+    _out, decision = route(r, LONG_BENIGN, hint=hint)
+    assert decision["routed_to"] == "local-fast"
+    assert decision["ns_restricted"] == ["payments"]
+    assert len(decision["namespaces"]) == namespace_policy.MAX_LOG_NAMES
 
 
 def test_public_and_unlabelled_namespaces_keep_the_normal_routing():
@@ -288,6 +366,11 @@ def test_restricted_series_start_at_zero():
         "router_namespace_decisions_total",
         {"target_namespace": "zero-ns", "routed_to": "local-fast", "source": "hint"})
     assert value == 0.0
+    # The most common series: no restricted namespace, nothing found (v0.11.1).
+    for routed_to in ("local-fast", "sota-smart"):
+        assert REGISTRY.get_sample_value(
+            "router_namespace_decisions_total",
+            {"target_namespace": "none", "routed_to": routed_to, "source": "none"}) is not None
 
 
 def test_namespace_decisions_metric():
@@ -316,11 +399,12 @@ def test_fetch_from_api_reads_the_labels(monkeypatch, tmp_path):
     monkeypatch.setattr(namespace_policy.ssl, "create_default_context", lambda cafile: cafile)
     monkeypatch.setenv("KUBERNETES_SERVICE_HOST", "fd00::1")
     monkeypatch.setenv("KUBERNETES_SERVICE_PORT", "443")
-    seen = {}
+    clients, calls = [], []
 
     class Resp:
         def raise_for_status(self):
-            pass
+            if calls[-1].get("fail"):
+                raise ConnectionError("API down")
 
         def json(self):
             return {"items": [
@@ -328,18 +412,40 @@ def test_fetch_from_api_reads_the_labels(monkeypatch, tmp_path):
                 {"metadata": {"name": "agentic-triage", "labels": {"k": "public"}}},
             ]}
 
-    def fake_get(url, params, headers, verify, timeout):
-        seen.update(url=url, params=params, auth=headers["Authorization"], verify=verify)
-        return Resp()
+    class FakeClient:
+        fail_next = False
 
-    monkeypatch.setattr(namespace_policy.httpx, "get", fake_get)
+        def __init__(self, base_url, verify, timeout):
+            self.base_url, self.verify, self.closed = base_url, verify, False
+            clients.append(self)
+
+        def get(self, path, params, headers):
+            calls.append({"path": path, "params": params, "auth": headers["Authorization"],
+                          "fail": FakeClient.fail_next})
+            return Resp()
+
+        def close(self):
+            self.closed = True
+
+    monkeypatch.setattr(namespace_policy.httpx, "Client", FakeClient)
     labels = NamespaceLabels("k")
     assert labels.refresh() is True
     assert labels.labels() == {"payments": "restricted", "agentic-triage": "public"}
-    assert seen["url"] == "https://[fd00::1]:443/api/v1/namespaces"
-    assert seen["params"] == {"labelSelector": "k"}
-    assert seen["auth"] == "Bearer tok"
-    assert seen["verify"].endswith("ca.crt")
+    assert clients[0].base_url == "https://[fd00::1]:443"
+    assert clients[0].verify.endswith("ca.crt")
+    assert calls[0] == {"path": "/api/v1/namespaces", "params": {"labelSelector": "k"},
+                        "auth": "Bearer tok", "fail": False}
+    # The TLS client is reused: no new handshake setup at every refresh (v0.11.1).
+    (tmp_path / "token").write_text("tok2\n")
+    assert labels.refresh() is True
+    assert len(clients) == 1 and calls[1]["auth"] == "Bearer tok2"
+    # After an error the client is closed and built again at the next refresh.
+    FakeClient.fail_next = True
+    assert labels.refresh() is False
+    assert clients[0].closed is True
+    FakeClient.fail_next = False
+    assert labels.refresh() is True
+    assert len(clients) == 2
 
 
 @pytest.mark.parametrize("value", [None, ""])

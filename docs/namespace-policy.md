@@ -21,7 +21,8 @@ One field in the body of **every** chat completion request:
 ```
 
 - A list of namespace names (a single string also works). Names are lowercase RFC 1123 labels; the
-  router ignores invalid names and keeps at most 20.
+  router ignores invalid names. It checks every valid name of the first 500 entries (since v0.11.1;
+  v0.11.0 kept only 20) and logs at most 20.
 - Send the namespaces that the investigation is about, for example the `namespace` label of each alert
   of the Alertmanager group. Send the same list on every call of the investigation: the router decides
   each call on its own and keeps no state between calls.
@@ -32,6 +33,14 @@ One field in the body of **every** chat completion request:
 The router also scans the request text for namespace names when its `scan` switch is on. The hint is
 still useful: a name that never appears in the text (an alert without a `namespace` label, a log line
 without it) is found only through the hint. A restricted namespace found by either way is enough.
+
+Since v0.11.1 the scan also reads the names inside JSON strings (the arguments of a tool call, where
+the quotes are escaped: `{"query": "up{namespace=\"payments\"}"}`), in JSON argv arrays
+(`["oc", "get", "pods", "-n", "payments"]`) and in every alternative of a PromQL regex matcher:
+`namespace=~"agentic-triage|payments"`, `"(payments)"`, `"^(?:a|b)$"`. A wildcard alternative
+(`"pay.*"`) selects the labelled namespaces that start with `pay`. The router parses the value and
+never runs it as a regex; a match-all value (`".*"`, `".+"`) names no namespace, like a query without
+`namespace`.
 
 ## How to send it
 
