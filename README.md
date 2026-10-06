@@ -96,7 +96,7 @@ restricted namespace from either way is enough.
 | Switch | Way | Notes |
 |---|---|---|
 | `hint` | The agent sends the names in the request body: `"selfheal_namespaces": ["payments"]` | Precise. Contract for agents: [`docs/namespace-policy.md`](docs/namespace-policy.md) |
-| `scan` | The router finds names in the text of the request: PromQL label matchers (`namespace="payments"`), JSON and YAML `namespace` keys, the alert labels of ogx-alert-translator (``- `namespace`: payments``), `payments.svc`, `-n payments`, `/namespaces/payments` | Needs no change in the agent. A name that never appears in the text is not seen. It also catches a tool that reads a restricted namespace during an investigation of another one. About 8 ms for 400,000 characters |
+| `scan` | The router finds names in the text of the request: PromQL label matchers (`namespace="payments"`, every alternative of `namespace=~"a\|b"`, wildcards like `"pay.*"` against the labelled names), JSON and YAML `namespace` keys, the alert labels of ogx-alert-translator (``- `namespace`: payments``), `payments.svc`, `-n payments` (also in a JSON argv array), `/namespaces/payments`; also inside JSON-encoded tool call arguments (v0.11.1) | Needs no change in the agent. A name that never appears in the text is not seen. It also catches a tool that reads a restricted namespace during an investigation of another one. About 8 ms for 400,000 characters (v0.11.0; the v0.11.1 forms add a few ms) |
 
 The hint field is removed from **every** request, also when the switch is off, so LiteLLM never sends
 it to a model.

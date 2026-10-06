@@ -11,7 +11,11 @@ The router learns which namespaces a request is about in two ways:
     (`namespace_policy.hint_field`). The hook always removes this field, also when the
     hint is off, so LiteLLM never forwards it to a model.
   * scan (C): the router finds namespace names in the text of the request (PromQL label
-    matchers, JSON and YAML `namespace` keys, `<name>.svc`, `-n <name>`, API paths).
+    matchers, JSON and YAML `namespace` keys, `<name>.svc`, `-n <name>`, API paths). Since
+    v0.11.1 it also reads them inside JSON-encoded strings (tool call arguments, where the
+    quotes are escaped), in JSON argv arrays (`"-n", "<name>"`) and in every alternative of a
+    PromQL regex matcher (`namespace=~"a|b"`, `"(b)"`, `"pay.*"`). The regex value is parsed,
+    never compiled: a match-all value (`".*"`) names no namespace.
 
 A request is about a restricted namespace when the hint OR the scan names one: the scan
 can only make the routing stricter. The labels are read from the Kubernetes API with the
@@ -40,8 +44,9 @@ DEFAULT_REFRESH_S = 5.0
 RESTRICTED = "restricted"
 KNOWN_VALUES = ("restricted", "public")
 SA_DIR = "/var/run/secrets/kubernetes.io/serviceaccount"
-MAX_HINT_NAMES = 20
+MAX_HINT_ITEMS = 500  # entries of a hint that are read; every valid one is checked
 MAX_LOG_NAMES = 20
+MAX_MATCHER_VALUE = 512  # characters of a PromQL regex matcher value that are parsed
 
 # A namespace name: an RFC 1123 label (lowercase letters, digits and '-', at most 63).
 _NAME = r"[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?"
@@ -50,14 +55,24 @@ _NAME_RE = re.compile(rf"^{_NAME}$")
 #   namespace="x" / namespace=~"x|y" / namespace!="x" / "namespace": "x" / namespace: x /
 #   - `namespace`: x (the alert labels in the prompt of ogx-alert-translator)
 #   (also exported_namespace=... of the GPU metrics)
-#   x.svc (service DNS names), -n x / --namespace x / --namespace=x, /namespaces/x
+#   x.svc (service DNS names), -n x / --namespace x / --namespace=x / "-n", "x" (JSON argv),
+#   /namespaces/x
 _SCAN_RE = re.compile(
     r"(?<![a-z0-9])namespace[\"'`]?\s*(?:=~|!~|!=|==|=|:)\s*[\"'`]?(" + _NAME + r")"
     r"|(?<![-a-z0-9])(" + _NAME + r")\.svc(?![-a-z0-9])"
-    r"|(?:^|\s)(?:-n|--namespace)(?:\s+|=)[\"']?(" + _NAME + r")"
+    r"|(?:^|[\s\"'\[,])(?:-n|--namespace)(?:[\"']\s*,\s*[\"']|\s+|=)[\"']?(" + _NAME + r")"
     r"|/namespaces/(" + _NAME + r")",
     re.IGNORECASE,
 )
+# The value of a PromQL regex matcher, read whole: namespace=~"a|b", namespace!~"(c)".
+_MATCHER_RE = re.compile(
+    r"(?<![a-z0-9])namespace\s*(?:=~|!~)\s*([\"'`])([^\"'`\n]{0,%d})\1" % MAX_MATCHER_VALUE,
+    re.IGNORECASE,
+)
+# Backslashes before a quote: the escaping of JSON strings (tool call arguments), any depth.
+_ESCAPED_QUOTE_RE = re.compile(r"\\+([\"'])")
+# One alternative of a regex matcher: a name, or a name with a trailing wildcard (a prefix).
+_PREFIX_RE = re.compile(rf"^({_NAME})?\.[*+]$")
 
 
 def env_flag(name):
@@ -68,31 +83,79 @@ def env_flag(name):
     return value.strip().lower() in ("1", "true", "yes", "on")
 
 
-def scan_names(text):
-    """Every namespace name that the text mentions in a structured form, lowercase."""
-    names = set()
-    for match in _SCAN_RE.finditer(text or ""):
+def _matcher_terms(value):
+    """Names and prefixes of a PromQL regex matcher value (`a|b`, `^(c)$`, `pay.*`).
+
+    Prometheus anchors the regex: `pay.*` selects every namespace that starts with `pay`.
+    Only this safe subset is read (no regex from a request is ever compiled); a match-all
+    alternative (`.*`, `.+`) and any other form name nothing.
+    """
+    names, prefixes = set(), set()
+    for alt in value.split("|"):
+        alt = alt.strip().lower()
+        while alt.startswith(("^", "(")):  # leading anchors and groups: ^(?:a  (b  ^c
+            alt = alt[3:] if alt.startswith("(?:") else alt[1:]
+        alt = alt.rstrip("$)")
+        if _NAME_RE.match(alt):
+            names.add(alt)
+            continue
+        m = _PREFIX_RE.match(alt)
+        if m and m.group(1):
+            prefixes.add(m.group(1))
+    return names, prefixes
+
+
+def scan_terms(text):
+    """Names and name prefixes that the text mentions in a structured form, lowercase.
+
+    The text is read once with the JSON escaping of quotes removed, so a PromQL query in
+    the arguments of a tool call (`namespace=\\"payments\\"`) counts like plain text.
+    """
+    text = text or ""
+    if "\\" in text:
+        text = _ESCAPED_QUOTE_RE.sub(r"\1", text)
+    names, prefixes = set(), set()
+    for match in _SCAN_RE.finditer(text):
         name = next((g for g in match.groups() if g), None)
         if name:
             names.add(name.lower())
+    for match in _MATCHER_RE.finditer(text) if "~" in text else ():
+        more, pre = _matcher_terms(match.group(2))
+        names |= more
+        prefixes |= pre
+    return names, prefixes
+
+
+def scan_names(text, known=()):
+    """Every namespace name that the text mentions in a structured form, lowercase.
+
+    A wildcard alternative of a regex matcher (`pay.*`) adds the names of `known` that
+    start with its prefix.
+    """
+    names, prefixes = scan_terms(text)
+    if prefixes:
+        names |= {n for n in known if any(n.startswith(p) for p in prefixes)}
     return names
 
 
 def hint_names(value):
-    """The valid names of a hint: a list of strings (or one string), lowercase, at most 20."""
+    """The valid names of a hint: a list of strings (or one string), lowercase, no duplicates.
+
+    The first MAX_HINT_ITEMS entries are read and every valid name among them is checked
+    against the restricted namespaces; only the log line keeps at most MAX_LOG_NAMES.
+    """
     if isinstance(value, str):
         value = [value]
     if not isinstance(value, (list, tuple)):
         return []
-    names = []
-    for item in value:
+    names, seen = [], set()
+    for item in value[:MAX_HINT_ITEMS]:
         if not isinstance(item, str):
             continue
         name = item.strip().lower()
-        if _NAME_RE.match(name) and name not in names:
+        if _NAME_RE.match(name) and name not in seen:
+            seen.add(name)
             names.append(name)
-        if len(names) >= MAX_HINT_NAMES:
-            break
     return names
 
 
@@ -137,6 +200,7 @@ class NamespaceLabels:
         self.loaded = False
         self.last_error = None
         self._thread = None
+        self._client = None  # one TLS client for every refresh (built on first use)
 
     # -- reading -----------------------------------------------------------------
     def labels(self):
@@ -154,6 +218,7 @@ class NamespaceLabels:
             labels = dict(self._fetch())
         except Exception as exc:
             self.last_error = f"{type(exc).__name__}: {exc}"
+            self._drop_client()
             print(f"[policy-router] namespace labels: read error, keeping the last list "
                   f"(loaded={self.loaded}): {self.last_error}", flush=True)
             return False
@@ -185,18 +250,26 @@ class NamespaceLabels:
             time.sleep(self.refresh_s)
             self.refresh()
 
+    def _drop_client(self):
+        client, self._client = self._client, None
+        if client is not None:
+            try:
+                client.close()
+            except Exception:
+                pass
+
     def _fetch_from_api(self):
         if httpx is None:
             raise RuntimeError("httpx unavailable")
         with open(os.path.join(SA_DIR, "token")) as fh:  # re-read: the token rotates
             token = fh.read().strip()
-        ctx = ssl.create_default_context(cafile=os.path.join(SA_DIR, "ca.crt"))
-        resp = httpx.get(
-            f"{_api_base()}/api/v1/namespaces",
+        if self._client is None:  # rebuilt after an error (e.g. a new CA bundle)
+            ctx = ssl.create_default_context(cafile=os.path.join(SA_DIR, "ca.crt"))
+            self._client = httpx.Client(base_url=_api_base(), verify=ctx, timeout=5.0)
+        resp = self._client.get(
+            "/api/v1/namespaces",
             params={"labelSelector": self.label},
             headers={"Authorization": f"Bearer {token}"},
-            verify=ctx,
-            timeout=5.0,
         )
         resp.raise_for_status()
         out = {}
@@ -239,7 +312,7 @@ class NamespacePolicy:
         labels = self.labels.labels()
         restricted = {n for n, v in labels.items() if v == RESTRICTED}
         hinted = hint_names(hint_value) if self.hint_enabled else []
-        scanned = scan_names(text_fn()) if self.scan_enabled else set()
+        scanned = scan_names(text_fn(), known=labels) if self.scan_enabled else set()
         r_hint = {n for n in hinted if n in restricted}
         r_scan = {n for n in scanned if n in restricted}
         sources = [s for s, hit in (("hint", r_hint), ("scan", r_scan)) if hit]

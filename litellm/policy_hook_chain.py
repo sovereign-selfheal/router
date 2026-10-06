@@ -367,11 +367,13 @@ class ChainRouter(CustomLogger):
     def _observe_namespace_labels(self, labels):
         try:
             # Create the decision series of every restricted namespace at 0: increase() in
-            # the dashboards then counts the first request after a pod start, too.
+            # the dashboards then counts the first request after a pod start, too. A request
+            # with no restricted namespace counts as "none", also with source "none".
             if NS_DECISIONS is not None:
                 for name in sorted(labels.restricted()) + ["none"]:
+                    sources = ("hint", "scan", "hint+scan") + (("none",) if name == "none" else ())
                     for routed_to in (self.local_model, self.sota_model):
-                        for source in ("hint", "scan", "hint+scan"):
+                        for source in sources:
                             NS_DECISIONS.labels(target_namespace=name, routed_to=routed_to,
                                                 source=source)
             if NS_LABELS_LOADED is not None:
