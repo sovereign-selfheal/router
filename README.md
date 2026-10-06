@@ -27,7 +27,7 @@ truth. `tests/policy/` holds a copy for the tests and the evaluation.
 privacy gate and the tiering; the first step that says LOCAL sends it to the local GPU model, otherwise
 the external SOTA model answers](docs/img/routing-chain.svg)
 
-The animation shows five example requests, one after the other. Its source is
+The animation shows six example requests, one after the other. Its source is
 `scripts/routing_chain_svg.py`: change it when the chain changes, then run
 `python3 scripts/routing_chain_svg.py docs/img/routing-chain.svg`.
 
@@ -64,7 +64,8 @@ previous behaviour, so an old policy works with a new release.
 
 Keys in `chain.yaml`: `efficiency.sota_max_prompt_chars` (since v0.8.0, default `0` = no cap), the
 SOTA size cap of "Large requests"; the block `namespace_policy` (since v0.11.0, default off), see
-"Namespace policy".
+"Namespace policy"; the block `efficiency.sota_budget` (since v0.12.0, default off), see "SOTA budget
+per tier".
 
 The key `classifier.chat_template_kwargs` (since v0.6.0, default: none) is a mapping of chat template
 arguments sent with the call of the C2 classifier. The env var `CLASSIFIER_CHAT_TEMPLATE_KWARGS` (a JSON
@@ -81,6 +82,48 @@ Quality and gate time with C1 on and off: [`docs/c1-off-eval-2026-10-05.md`](doc
 
 Ignored entities stay in the log with weight 0, for example `NRP@0.85(no id):0.00` or
 `PERSON@0.85(<2 words):0.00`, so the log shows what the engine saw and why it did not count it.
+
+## SOTA budget per tier (since v0.12.0)
+
+Each **tier** can have a budget of SOTA tokens per time window. The tier is the `x-team` header that
+the gateway sets from the API key (label `maas-group`; a client cannot change it). With one agent per
+application and one key per agent, a tier is an application: a business-critical application gets a
+larger budget. When the SOTA tokens of a tier in the last window reach its budget, the efficiency gate
+keeps the request **LOCAL**: the agent goes on with the local model. The gateway tiers (Kuadrant
+`TokenRateLimitPolicy` in the gitops repo) still count all the tokens and answer 429 above their limit:
+they stay the ceiling.
+
+```yaml
+efficiency:
+  sota_budget:
+    window_s: 300
+    tiers: {agents: 150000, agents-critical: 600000}   # SOTA tokens per window; no entry = no limit
+    redis_url: redis://litellm-redis:6379/0
+```
+
+| Env var | Overrides |
+|---|---|
+| `SOTA_BUDGET_TIERS` | `tiers`, as a JSON object (`{"agents": 150000}`) |
+| `SOTA_BUDGET_WINDOW_S` | `window_s` |
+| `SOTA_BUDGET_REDIS_URL`, `SOTA_BUDGET_REDIS_PASSWORD` | `redis_url`; the password only comes from the env |
+| `SOTA_ENABLED` | `0` in the local-only mode of gitops: `sota-smart` is then the local model, and nothing counts |
+
+- **Counters in Redis**, shared by the LiteLLM pods (`litellm/sota_budget.py`). The window slides: one
+  key per fixed window with a TTL of two windows; the tokens used are the current window plus the share
+  of the previous one that still falls in the last `window_s` seconds. A Redis restart starts the
+  counters from zero.
+- **Only SOTA answers count**: the model group of the deployment that answered must be `sota-smart`. A
+  fallback to the local model after a SOTA error does not count, and neither does the local-only mode.
+- The budget is read **once per request, before the gates**, and the answer is counted when it arrives:
+  parallel requests can go a little over the budget.
+- **Fail-open**: when Redis cannot be reached, the budget does not apply (normal routing), with a log
+  line and `router_sota_budget_store_errors_total`. The budget controls cost, not privacy: the gates
+  still run. This is the one exception to fail-closed in this repo (decided on 2026-10-06).
+- A restricted namespace keeps the request local before the budget is read (no store call).
+- Log line, only for a tier with a budget: `sota_budget_used`, `sota_budget_limit`, and
+  `sota_budget_error` after a store error. Reason when the budget is used:
+  `efficiency: SOTA budget of tier agents used (151200/150000 tokens in 5m) -> LOCAL`.
+- The old key `efficiency.sota_token_budget` (one counter per pod, no window) still works and stays off.
 
 ## Namespace policy (since v0.11.0)
 
@@ -245,7 +288,11 @@ its own metrics, and the ones of LiteLLM's `prometheus` callback when that is on
 |---|---|---|---|
 | `router_requests_total` | counter | `routed_to`, `decided_by`, `team` | One per decision. `decided_by`: `namespace` (v0.11.0), `efficiency`, `privacy`, `tiering`, `all-sota`, `fail-closed`. `team` is a team named in the policies, `none` or `other` |
 | `router_privacy_score` | histogram | `team` (threshold key) | Privacy score of the requests that reached the privacy gate |
-| `router_sota_budget_used_tokens` | gauge | | SOTA tokens counted by the budget of the efficiency gate, **per pod** |
+| `router_sota_budget_used_tokens` | gauge | | SOTA tokens counted by the old per-pod budget (`sota_token_budget`) |
+| `router_sota_tokens_total` | counter | `team` | v0.12.0: tokens of the answers of the SOTA model, per tier (fallbacks and local-only mode excluded) |
+| `router_sota_budget_window_tokens` | gauge | `team` | v0.12.0: SOTA tokens of the tier in the last window, read from Redis at the last check of this pod |
+| `router_sota_budget_limit_tokens` | gauge | `team` | v0.12.0: budget of the tier per window |
+| `router_sota_budget_store_errors_total` | counter | `op` (`read`, `write`) | v0.12.0: Redis errors; the budget did not apply (fail-open) |
 | `router_namespace_decisions_total` | counter | `target_namespace`, `routed_to`, `source` | v0.11.0, namespace policy on: one per decision and restricted namespace. `target_namespace` is a restricted namespace or `none` (a bounded set: the platform team sets the labels; not `namespace`, which Prometheus sets to the scrape namespace) |
 | `router_namespace_labels_loaded` | gauge | | v0.11.0: 1 when this pod read the namespace labels at least once |
 | `router_namespace_labels` | gauge | `state` | v0.11.0: labelled namespaces, `restricted`, `public` or `unknown` (another value) |

@@ -1,7 +1,7 @@
 """Write docs/img/routing-chain.svg: the routing chain of the router, animated (SMIL, no script).
 
-Five example requests run one after the other in a 20 s loop. With prefers-reduced-motion the
-moving parts are hidden and a static caption lists the five examples. The image has its own dark
+Six example requests run one after the other in a 24 s loop. With prefers-reduced-motion the
+moving parts are hidden and a static caption lists the six examples. The image has its own dark
 panel (the palette of the routing-live-view page), so it reads the same in the light and the dark
 theme of GitHub. Change this file when the chain changes, then run it again:
 
@@ -14,17 +14,17 @@ BG, PANEL, LINE, FG, MUTED = "#0c1320", "#131c2b", "#2a3750", "#e7edf6", "#8d9ab
 WIRE = "#5b6e92"  # the wires of the chain: visible on the dark panel
 ROUTER, LOCAL, EXTERNAL, RESTRICTED = "#7ea6ff", "#34d3b8", "#f4b04a", "#ff6670"
 SANS = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
-CYCLE = 20  # seconds for the five scenarios (4 s each)
+CYCLE = 24  # seconds for the six scenarios (4 s each)
 
 GATES = [  # (title, question, center x)
     ("1 · Namespace", "restricted label?", 259),
-    ("2 · Efficiency", "short or simple?", 391),
+    ("2 · Efficiency", "short? budget left?", 391),
     ("3 · Privacy", "PII, rules, C2", 523),
     ("4 · Tiering", "team may use SOTA?", 655),
 ]
 DROPS = [  # path from the gate to the local model, label
     ("M259,216 C259,300 360,300 380,356", "restricted"),
-    ("M391,216 C391,290 410,320 415,356", "short / simple"),
+    ("M391,216 C391,290 410,320 415,356", "short / budget used"),
     ("M523,216 C523,290 470,320 465,356", "sensitive"),
     ("M655,216 C655,300 520,300 500,356", "team capped"),
 ]
@@ -35,6 +35,10 @@ SCENARIOS = [  # dot path, caption, highlighted gate index (None = SOTA), destin
      0, "local"),
     ("M104,184 L391,184 L391,216 C391,290 410,320 415,356",
      "“What is the capital of France?”: short and simple, the efficiency gate keeps it local",
+     1, "local"),
+    ("M104,184 L391,184 L391,216 C391,290 410,320 415,356",
+     "An agent whose tier used its SOTA budget (5 min window): the efficiency gate keeps it "
+     "local, no 429",
      1, "local"),
     ("M104,184 L523,184 L523,216 C523,290 470,320 465,356",
      "A customer record with an IBAN: the privacy gate finds personal data and keeps it local",
@@ -102,7 +106,7 @@ def build():
     # panel and titles
     add(f'<rect width="960" height="500" rx="18" fill="{BG}"/>')
     add(text(28, 40, "How the router decides, request by request", 19, FG, "600"))
-    add(text(28, 62, "router v0.11.1 · the first step that says LOCAL wins · "
+    add(text(28, 62, "router v0.12.0 · the first step that says LOCAL wins · "
                      "SOTA only when every step lets the request pass", 12.5))
     # cluster boundary
     add(f'<rect x="20" y="84" width="730" height="362" rx="16" fill="none" stroke="{LINE}" '
@@ -179,9 +183,9 @@ def build():
             + "</g>")
     add("</g>")
     add('<g class="static">' + text(
-        480, 476, "Examples: restricted namespace \u2192 local \u00b7 short question \u2192 local "
-        "\u00b7 personal data \u2192 local \u00b7 team legal \u2192 local \u00b7 long and clean "
-        "\u2192 SOTA", 13, FG, anchor="middle") + "</g>")
+        480, 476, "Examples: restricted namespace, short question, SOTA budget used, personal "
+        "data, team legal \u2192 local \u00b7 long and clean \u2192 SOTA", 13, FG,
+        anchor="middle") + "</g>")
     add("</svg>")
     return "\n".join(out) + "\n"
 
