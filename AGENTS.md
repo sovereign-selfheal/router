@@ -69,9 +69,9 @@ litellm/                 # hook code, copied by gitops into the LiteLLM ConfigMa
 tests/                   # unit tests (fake Presidio, fake LiteLLM); tests/policy/ = copy of the gitops policies
 eval/                    # labelled prompt sets, run_eval.py, check_baseline.py, baseline.json,
                          # build_agent_contexts.py (writes agent-contexts.yaml)
-scripts/                 # fetch-lid-model.sh
+scripts/                 # fetch-lid-model.sh, routing_chain_svg.py (writes docs/img/routing-chain.svg)
 docs/                    # evaluations and measurements (C2 backends, large contexts, SOTA size cap, Qwen prefix cache,
-                         # C2 questions, C1 off); img/ = charts; namespace-policy.md = contract for agents
+                         # C2 questions, C1 off); img/ = charts and routing-chain.svg; namespace-policy.md = contract for agents
 perf/                    # c2_perf.py (C2, Presidio and whole-gate performance, in a cluster pod), agent_growth.py,
                          # shared_prefix.py, vllm_metrics.py, qwen_cache_run.sh, plot_context_cap.py,
                          # plot_c2_questions.py, plot_c1_off.py; results/
