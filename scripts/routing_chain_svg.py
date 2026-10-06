@@ -1,13 +1,16 @@
 """Write docs/img/routing-chain.svg: the routing chain of the router, animated (SMIL, no script).
 
 Six example requests run one after the other in a 24 s loop. With prefers-reduced-motion the
-moving parts are hidden and a static caption lists the six examples. The image has its own dark
-panel (the palette of the routing-live-view page), so it reads the same in the light and the dark
-theme of GitHub. Change this file when the chain changes, then run it again:
+moving parts are hidden and a static caption lists the six examples. Next to it, one static image
+per step (routing-chain-<n>-<step>.svg): the same diagram with that step, its path and its
+destination in front, the rest dimmed; the README explains each step under it. The images have
+their own dark panel (the palette of the routing-live-view page), so they read the same in the
+light and the dark theme of GitHub. Change this file when the chain changes, then run it again:
 
     python3 scripts/routing_chain_svg.py docs/img/routing-chain.svg
 """
 
+import os
 import sys
 
 BG, PANEL, LINE, FG, MUTED = "#0c1320", "#131c2b", "#2a3750", "#e7edf6", "#8d9ab0"
@@ -27,6 +30,24 @@ DROPS = [  # path from the gate to the local model, label
     ("M391,216 C391,290 410,320 415,356", "short / budget used"),
     ("M523,216 C523,290 470,320 465,356", "sensitive"),
     ("M655,216 C655,300 520,300 500,356", "team capped"),
+]
+# One static image per step: file suffix, title, caption, gate index (None = SOTA), path.
+STEPS = [
+    ("1-namespace", "Step 1 · Namespace gate",
+     "A restricted namespace in the request: LOCAL at once, no other step runs",
+     0, "M104,184 L259,184 L259,216 C259,300 360,300 380,356"),
+    ("2-efficiency", "Step 2 · Efficiency gate",
+     "Short and simple, too large for SOTA, or the SOTA budget of the tier used: LOCAL",
+     1, "M104,184 L391,184 L391,216 C391,290 410,320 415,356"),
+    ("3-privacy", "Step 3 · Privacy gate",
+     "Personal or sensitive data in the whole request: LOCAL (also when a detector fails)",
+     2, "M104,184 L523,184 L523,216 C523,290 470,320 465,356"),
+    ("4-tiering", "Step 4 · Tiering",
+     "A team that may not use SOTA (legal): LOCAL, even when every gate said SOTA",
+     3, "M104,184 L655,184 L655,216 C655,300 520,300 500,356"),
+    ("5-sota", "Every step passes · SOTA model",
+     "Only a request that passes every step leaves the cluster",
+     None, "M104,184 L865,184"),
 ]
 SCENARIOS = [  # dot path, caption, highlighted gate index (None = SOTA), destination
     ("M104,184 L259,184 L259,216 C259,300 360,300 380,356",
@@ -80,12 +101,19 @@ def text(x, y, s, size=12, fill=MUTED, weight="normal", anchor="start", extra=""
             f'text-anchor="{anchor}"{extra}>{s}</text>')
 
 
-def build():
+def build(step=None):
+    """The animated image (step None), or the static image of one entry of STEPS."""
+    st = STEPS[step] if step is not None else None
+    focus = st[3] if st else None  # gate index in front; None with st = the SOTA step
+
+    def dim(on):  # opacity of an element that is not part of the step in front
+        return "" if st is None or on else ' opacity="0.3"'
+
     out = []
     add = out.append
     add('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 500" width="960" height="500" '
         f'role="img" aria-labelledby="t d" font-family="{SANS}">')
-    add('<title id="t">Routing chain of the router</title>')
+    add(f'<title id="t">{st[1] if st else "Routing chain of the router"}</title>')
     add('<desc id="d">A request passes four steps in order: namespace gate, efficiency gate, '
         'privacy gate, tiering. The first step that says LOCAL sends it to the local GPU model in '
         'the cluster; only a request that passes every step goes to the external SOTA model.'
@@ -105,7 +133,7 @@ def build():
         '<feMergeNode in="SourceGraphic"/></feMerge></filter></defs>')
     # panel and titles
     add(f'<rect width="960" height="500" rx="18" fill="{BG}"/>')
-    add(text(28, 40, "How the router decides, request by request", 19, FG, "600"))
+    add(text(28, 40, st[1] if st else "How the router decides, request by request", 19, FG, "600"))
     add(text(28, 62, "router v0.12.0 · the first step that says LOCAL wins · "
                      "SOTA only when every step lets the request pass", 12.5))
     # cluster boundary
@@ -129,27 +157,35 @@ def build():
         add(f'<line x1="{x1}" y1="184" x2="{x2}" y2="184" stroke="{WIRE}" stroke-width="2" '
             'marker-end="url(#arrow)"/>')
     # drops to the local model
-    for d, _label in DROPS:
+    for i, (d, _label) in enumerate(DROPS):
         add(f'<path d="{d}" fill="none" stroke="{LOCAL}" stroke-opacity="0.5" stroke-width="2" '
-            'marker-end="url(#arrow-local)"/>')
-    for (_, label), (_, _, cx) in zip(DROPS, GATES, strict=True):
-        add(text(cx + 8, 234, label, 11.5, LOCAL))
-    # gates
-    for title, question, cx in GATES:
-        add(f'<rect x="{cx - 59}" y="152" width="118" height="64" rx="10" fill="{PANEL}" '
-            f'stroke="{LINE}" stroke-width="1.5"/>')
+            f'marker-end="url(#arrow-local)"{dim(i == focus)}/>')
+    for i, ((_, label), (_, _, cx)) in enumerate(zip(DROPS, GATES, strict=True)):
+        add(text(cx + 8, 234, label, 11.5, LOCAL, extra=dim(i == focus)))
+    # gates (the SOTA step keeps them all in front: each one let the request pass)
+    for i, (title, question, cx) in enumerate(GATES):
+        on = i == focus or (st is not None and focus is None)
+        add(f'<g{dim(on)}><rect x="{cx - 59}" y="152" width="118" height="64" rx="10" '
+            f'fill="{PANEL}" stroke="{LINE}" stroke-width="1.5"/>')
         add(text(cx, 178, title, 13.5, FG, "600", "middle"))
-        add(text(cx, 198, question, 11, MUTED, anchor="middle"))
+        add(text(cx, 198, question, 11, MUTED, anchor="middle") + "</g>")
     # destinations
-    add(f'<rect x="790" y="150" width="150" height="68" rx="12" fill="{PANEL}" stroke="{EXTERNAL}" '
-        'stroke-width="1.5"/>')
+    sota_on = st is None or focus is None
+    add(f'<g{dim(sota_on)}><rect x="790" y="150" width="150" height="68" rx="12" fill="{PANEL}" '
+        f'stroke="{EXTERNAL}" stroke-width="1.5"/>')
     add(text(865, 180, "SOTA model", 15, FG, "600", "middle"))
-    add(text(865, 200, "external · Gemini", 11.5, MUTED, anchor="middle"))
-    add(f'<rect x="300" y="356" width="260" height="64" rx="12" fill="{PANEL}" stroke="{LOCAL}" '
-        'stroke-width="1.5"/>')
+    add(text(865, 200, "external · Gemini", 11.5, MUTED, anchor="middle") + "</g>")
+    add(f'<g{dim(not sota_on)}><rect x="300" y="356" width="260" height="64" rx="12" '
+        f'fill="{PANEL}" stroke="{LOCAL}" stroke-width="1.5"/>')
     add(text(430, 383, "Local GPU model", 15, FG, "600", "middle"))
-    add(text(430, 403, "Qwen3.8 on vLLM · the data stays here", 11.5, MUTED, anchor="middle"))
-    add(text(36, 434, "public or no label: the namespace gate lets the request pass", 11, MUTED))
+    add(text(430, 403, "Qwen3.8 on vLLM · the data stays here", 11.5, MUTED, anchor="middle")
+        + "</g>")
+    add(text(36, 434, "public or no label: the namespace gate lets the request pass", 11, MUTED,
+             extra=dim(focus == 0)))
+    if st is not None:
+        add(static_step(st))
+        add("</svg>")
+        return "\n".join(out) + "\n"
     # animation: one dot, one gate highlight, one destination glow and one caption per scenario.
     # Times in seconds inside the 4 s window of each scenario, written as fractions of the cycle.
     win = CYCLE / len(SCENARIOS)
@@ -190,6 +226,32 @@ def build():
     return "\n".join(out) + "\n"
 
 
+def static_step(st):
+    """The path of the request, the step and its destination in front, and the caption."""
+    _suffix, _title, caption, gate, path = st
+    color = EXTERNAL if gate is None else LOCAL
+    parts = [f'<path d="{path}" fill="none" stroke="{color}" stroke-width="4" '
+             'stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>',
+             f'<circle cx="104" cy="184" r="7" fill="{FG}" stroke="{color}" stroke-width="3"/>']
+    if gate is not None:
+        cx = GATES[gate][2]
+        parts.append(f'<rect x="{cx - 59}" y="152" width="118" height="64" rx="10" fill="none" '
+                     f'stroke="{RESTRICTED if gate == 0 else LOCAL}" stroke-width="3" '
+                     'filter="url(#glow)"/>')
+        parts.append(f'<rect x="300" y="356" width="260" height="64" rx="12" fill="none" '
+                     f'stroke="{LOCAL}" stroke-width="3" filter="url(#glow)"/>')
+    else:
+        parts.append(f'<rect x="790" y="150" width="150" height="68" rx="12" fill="none" '
+                     f'stroke="{EXTERNAL}" stroke-width="3" filter="url(#glow)"/>')
+    parts.append(text(480, 476, caption, 13.5, FG, anchor="middle"))
+    return "\n".join(parts)
+
+
 if __name__ == "__main__":
-    with open(sys.argv[1], "w", encoding="utf-8") as fh:
+    target = sys.argv[1]
+    with open(target, "w", encoding="utf-8") as fh:
         fh.write(build())
+    base, ext = os.path.splitext(target)
+    for n, step in enumerate(STEPS):
+        with open(f"{base}-{step[0]}{ext}", "w", encoding="utf-8") as fh:
+            fh.write(build(n))

@@ -29,7 +29,74 @@ the external SOTA model answers](docs/img/routing-chain.svg)
 
 The animation shows six example requests, one after the other. Its source is
 `scripts/routing_chain_svg.py`: change it when the chain changes, then run
-`python3 scripts/routing_chain_svg.py docs/img/routing-chain.svg`.
+`python3 scripts/routing_chain_svg.py docs/img/routing-chain.svg` (it also writes the step images below).
+
+### The steps, one by one
+
+Every request passes the steps in this order. The first step that says LOCAL decides, and the steps
+after it do not run. The values are those of the gitops policies (`chain.yaml`, `privacy-plus.yaml`).
+
+#### 1. Namespace gate (since v0.11.0)
+
+<img src="docs/img/routing-chain-1-namespace.svg" width="640" alt="Step 1: the namespace gate sends a request about a restricted namespace to the local GPU model">
+
+- **Checks** which namespaces the request is about: the router scans the text (PromQL matchers such as
+  `namespace="payments"` or `=~"a|b"`, JSON and YAML `namespace` keys, `payments.svc`, `-n payments`,
+  `/namespaces/payments`, also inside tool call arguments), and can read the list that an agent sends
+  (`selfheal_namespaces`).
+- **LOCAL** when one of them has the label `sovereign-selfheal.io/data-class=restricted`. No other step
+  runs: no Presidio, no classifier, no budget read. `public`, no label or another value: next step.
+- **Log:** `decided_by: namespace`, `namespace: restricted payments (found by scan) -> LOCAL`.
+- **Keys:** `namespace_policy.*` in `chain.yaml`, env `NAMESPACE_SCAN_ENABLED` / `NAMESPACE_HINT_ENABLED`
+  (off by default in the router; the gitops seed turns the scan on). See "Namespace policy".
+
+#### 2. Efficiency gate
+
+<img src="docs/img/routing-chain-2-efficiency.svg" width="640" alt="Step 2: the efficiency gate keeps short questions, very large requests and tiers without SOTA budget on the local GPU model">
+
+- **LOCAL** in three cases, checked in this order:
+  1. the whole request is larger than the SOTA size cap (`sota_max_prompt_chars`, 150,000 characters):
+     `efficiency: SOTA context limit (...)`, and no privacy detector runs (since v0.8.0);
+  2. the tier of the API key used its SOTA budget in the window (`efficiency.sota_budget`, for example
+     30k tokens in 5 minutes for `agents`): `efficiency: SOTA budget of tier agents used (...)` (since
+     v0.12.0; the agent goes on with the local model, no 429);
+  3. the question (last user turn) is short and simple: at most `max_prompt_chars_for_local` (280)
+     characters and `simple_max_words` (40) words, and no `complex_keywords`:
+     `efficiency: short/simple (...)`.
+- Otherwise the next step: `efficiency: long/complex (...)`.
+- **Log:** `decided_by: efficiency`; with a budget, also `sota_budget_used` and `sota_budget_limit`.
+
+#### 3. Privacy gate
+
+<img src="docs/img/routing-chain-3-privacy.svg" width="640" alt="Step 3: the privacy gate keeps requests with personal or sensitive data on the local GPU model">
+
+- **Checks the whole request**: every turn, the tool output and the tool call arguments, not only the
+  last question. It adds the signals of: rules (regular expressions with validators, for example cards
+  with the Luhn check, IBAN, Italian tax codes), lexicons (health, credentials, ...), Presidio NER (C1,
+  can be off with `NER_ENABLED`) and the classifier (C2: the decision model with its yes/no questions,
+  or a chat model).
+- **LOCAL** when the score reaches the threshold of the team (`privacy-plus.yaml`: `legal` 0.30,
+  `research` 0.70, others 0.50): `privacy: score 0.80 (health:0.80) >= 0.50[team=_default] -> LOCAL`.
+- **Fail-closed:** when a detector fails, the request stays LOCAL.
+- It is the last gate before the external model: no request reaches SOTA without this scan.
+
+#### 4. Tiering
+
+<img src="docs/img/routing-chain-4-tiering.svg" width="640" alt="Step 4: tiering keeps the requests of a team that may not use SOTA on the local GPU model">
+
+- **Runs after the gates** and can only move a decision to LOCAL. `tiering` in `chain.yaml` lists the
+  models of each team: `legal` may use only `local-fast`.
+- The team is the tier of the API key (header `x-team`, set by the gateway; a client cannot change it).
+- **Log:** `decided_by: tiering`, `tiering: team 'legal' not allowed 'sota-smart' -> LOCAL`.
+
+#### 5. Every step passes: the SOTA model
+
+<img src="docs/img/routing-chain-5-sota.svg" width="640" alt="Every step lets the request pass: the external SOTA model answers">
+
+- **Log:** `decided_by: all-sota`; the reason is the one of the last gate (`privacy: score 0.00 ... -> SOTA`).
+- When the SOTA call fails, LiteLLM answers with the local model (`fallbacks` in the gitops LiteLLM
+  config): the answer stays in the cluster, and its tokens do not count in the SOTA budget.
+- Any unexpected error in the hook sends the request LOCAL (`decided_by: fail-closed`).
 
 `policy_hook_chain.py` runs two gates in order. The first gate that says LOCAL wins. Since v0.11.0 an
 optional **namespace policy** runs before them (off by default; see "Namespace policy"): a request
