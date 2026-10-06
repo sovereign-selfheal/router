@@ -46,26 +46,34 @@ Then the **tiering** of the team can only move the decision to LOCAL. Any unexpe
 
 ## Policy keys by version
 
-The code reads its settings from the gitops policies. A new key always has a default that keeps the
-previous behaviour, so an old policy works with a new release.
+The code reads its settings from the gitops policies (`chain.yaml`, `privacy-plus.yaml`) and from a few
+env vars that the gitops repo sets on the LiteLLM pods. A new key always has a default that keeps the
+previous behaviour, so an old policy works with a new release. Every release is listed, also the ones
+without a new key.
 
-| Key (in `privacy-plus.yaml`) | Since | Default | Meaning |
-|---|---|---|---|
-| `ner.person_min_words` | v0.4.0 | `1` | A `PERSON` entity counts only with at least this many words. `2` ignores single words that Presidio reads as names ("Kafka", "Paxos", "Spiega"); a full name like "Mario Rossi" still counts |
-| `classifier.backend` | v0.7.0 | `chat` | Backend of the C2 classifier: `chat` (one JSON verdict from a chat model, as before) or `systemone` (a decision server, see "C2 backends"). Env override: `CLASSIFIER_BACKEND` |
-| `classifier.decision_threshold` | v0.7.0 | `0.5` | Backend `systemone`: a positive question at or above this probability adds the C2 signal |
-| `classifier.samples` | v0.7.0 | none | Backend `systemone`: noise draws per question; none = the default of the decision server (4) |
-| `classifier.fallback_base_url_env` / `fallback_model_env` | v0.7.0 | `CLASSIFIER_FALLBACK_BASE_URL` / `CLASSIFIER_FALLBACK_MODEL` | Backend `systemone`: env vars of the chat fallback |
-| `ner.context_entities` | v0.4.0 | `[]` | These entity types (for example `NRP`, `LOCATION`) count only when the text also has an identifier: structured personal data (card, IBAN, email, phone...) or another entity that counts. "European banks in Italy" names nobody |
-| `ner.timeout_per_1k_chars` / `classifier.timeout_per_1k_chars` | v0.8.0 | `0` | Seconds of timeout per 1,000 characters of text, for Presidio and for each C2 call. `0` = the fixed `timeout_seconds`, as before. See "Large requests" |
-| `ner.timeout_max_seconds` / `classifier.timeout_max_seconds` | v0.8.0 | `timeout_seconds` | Upper bound of the timeout that grows with the text |
-| `classifier.systemone.questions` | v0.9.0 | the built-in questions | Backend `systemone`: the yes/no questions, `{id: {instructions: <text>, ignored: <bool>}}`. Positive questions add the C2 signal; `ignored: true` questions only show in the log. An invalid set (no positive question, an empty or missing `instructions`) is logged and the built-in questions are used. Keep the ids short: the answer template must fit the canvas of the decision server (64 tokens: about ten questions with one-token ids) |
-| `classifier.systemone.show_all` | v0.9.0 | `false` | Backend `systemone`: every positive question below the threshold also shows in the log with weight 0, for example `systemone/health@0.03(shown):0.00`. For evaluations |
-
-Keys in `chain.yaml`: `efficiency.sota_max_prompt_chars` (since v0.8.0, default `0` = no cap), the
-SOTA size cap of "Large requests"; the block `namespace_policy` (since v0.11.0, default off), see
-"Namespace policy"; the block `efficiency.sota_budget` (since v0.12.0, default off), see "SOTA budget
-per tier".
+| Since | Key (env override) | File | Default | Meaning |
+|---|---|---|---|---|
+| v0.3.0 | none | | | First release in this repo, the same code as the old images |
+| v0.4.0 | `ner.person_min_words` | `privacy-plus.yaml` | `1` | A `PERSON` entity counts only with at least this many words. `2` ignores single words that Presidio reads as names ("Kafka", "Paxos", "Spiega"); a full name like "Mario Rossi" still counts |
+| v0.4.0 | `ner.context_entities` | `privacy-plus.yaml` | `[]` | These entity types (for example `NRP`, `LOCATION`) count only when the text also has an identifier: structured personal data (card, IBAN, email, phone...) or another entity that counts. "European banks in Italy" names nobody |
+| v0.5.0 | env `ROUTER_METRICS_PORT` | | `9091` | Port of the router metrics; no policy key (see "Traces and metrics") |
+| v0.6.0 | `classifier.chat_template_kwargs` (`CLASSIFIER_CHAT_TEMPLATE_KWARGS`) | `privacy-plus.yaml` | none | Chat template arguments of the C2 call (see below) |
+| v0.7.0 | `classifier.backend` (`CLASSIFIER_BACKEND`) | `privacy-plus.yaml` | `chat` | Backend of the C2 classifier: `chat` (one JSON verdict from a chat model, as before) or `systemone` (a decision server, see "C2 backends") |
+| v0.7.0 | `classifier.decision_threshold` | `privacy-plus.yaml` | `0.5` | Backend `systemone`: a positive question at or above this probability adds the C2 signal |
+| v0.7.0 | `classifier.samples` | `privacy-plus.yaml` | none | Backend `systemone`: noise draws per question; none = the default of the decision server (4) |
+| v0.7.0 | `classifier.fallback_base_url_env` / `fallback_model_env` | `privacy-plus.yaml` | `CLASSIFIER_FALLBACK_BASE_URL` / `CLASSIFIER_FALLBACK_MODEL` | Backend `systemone`: env vars of the chat fallback |
+| v0.8.0 | `efficiency.sota_max_prompt_chars` | `chain.yaml` | `0` (no cap) | SOTA size cap in characters of the whole request (see "Large requests") |
+| v0.8.0 | `ner.timeout_per_1k_chars` / `classifier.timeout_per_1k_chars` | `privacy-plus.yaml` | `0` | Seconds of timeout per 1,000 characters of text, for Presidio and for each C2 call. `0` = the fixed `timeout_seconds`, as before. See "Large requests" |
+| v0.8.0 | `ner.timeout_max_seconds` / `classifier.timeout_max_seconds` | `privacy-plus.yaml` | `timeout_seconds` | Upper bound of the timeout that grows with the text |
+| v0.9.0 | `classifier.systemone.questions` | `privacy-plus.yaml` | the built-in questions | Backend `systemone`: the yes/no questions, `{id: {instructions: <text>, ignored: <bool>}}`. Positive questions add the C2 signal; `ignored: true` questions only show in the log. An invalid set (no positive question, an empty or missing `instructions`) is logged and the built-in questions are used. Keep the ids short: the answer template must fit the canvas of the decision server (64 tokens: about ten questions with one-token ids) |
+| v0.9.0 | `classifier.systemone.show_all` | `privacy-plus.yaml` | `false` | Backend `systemone`: every positive question below the threshold also shows in the log with weight 0, for example `systemone/health@0.03(shown):0.00`. For evaluations |
+| v0.10.0 | env `NER_ENABLED` (overrides `ner.enabled`) | | unset: the policy decides | C1 (Presidio NER) on or off (see below) |
+| v0.11.0 | `namespace_policy.scan` / `.hint` (`NAMESPACE_SCAN_ENABLED` / `NAMESPACE_HINT_ENABLED`) | `chain.yaml` | `false` / `false` | The namespace policy: names found in the request text / sent by the agents (see "Namespace policy") |
+| v0.11.0 | `namespace_policy.label` / `.hint_field` / `.refresh_s` | `chain.yaml` | `sovereign-selfheal.io/data-class` / `selfheal_namespaces` / `5` | Label key of the data class, body field of the hint, seconds between two reads of the labels |
+| v0.11.1 | none | | | The scan also reads JSON tool call arguments, JSON argv arrays and every alternative of a regex matcher; the hint checks every name |
+| v0.12.0 | `efficiency.sota_budget.tiers` / `.window_s` / `.redis_url` (`SOTA_BUDGET_TIERS` as JSON / `SOTA_BUDGET_WINDOW_S` / `SOTA_BUDGET_REDIS_URL`, and `SOTA_BUDGET_REDIS_PASSWORD`) | `chain.yaml` | `{}` (off) / `300` / `""` | SOTA token budget per tier, counters in Redis (see "SOTA budget per tier") |
+| v0.12.0 | env `SOTA_ENABLED` | | unset: SOTA on | `0` in the local-only mode of gitops: nothing counts as SOTA |
+| v0.12.1 | none | | | The tier of an answer comes from the `x-team` header (fix of the SOTA budget) |
 
 The key `classifier.chat_template_kwargs` (since v0.6.0, default: none) is a mapping of chat template
 arguments sent with the call of the C2 classifier. The env var `CLASSIFIER_CHAT_TEMPLATE_KWARGS` (a JSON
