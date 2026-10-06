@@ -38,6 +38,13 @@ labelled `sovereign-selfheal.io/data-class=restricted` goes LOCAL and no gate ru
 the body) and/or from a scan of the request text; see namespace_policy.py. The hint field
 is removed from every request, also when the policy is off.
 
+SOTA BUDGET PER TIER (v0.12.0, off by default): each tier (the `x-team` header, from the API
+key) can have a budget of SOTA tokens per time window, counted in Redis and shared by the
+LiteLLM pods; see sota_budget.py. When the tier used it, the efficiency gate keeps the
+request LOCAL. Only the answers of the SOTA model count (not a fallback to the local model,
+not the local-only mode). A store error FAILS OPEN: the budget is cost control, the gates
+still run.
+
 OBSERVABILITY (never on the decision path): with LiteLLM's `otel` callback on, the hook
 opens a `router.chain` span under the proxy request span, one `gate.<name>` span per gate
 and, through privacy_scoring, one `presidio.analyze` span per Presidio call. The router
@@ -55,8 +62,9 @@ import threading
 import yaml
 from litellm.integrations.custom_logger import CustomLogger
 
-from namespace_policy import KNOWN_VALUES, RESTRICTED, NamespacePolicy, pop_hint
+from namespace_policy import KNOWN_VALUES, RESTRICTED, NamespacePolicy, env_flag, pop_hint
 from privacy_scoring import PrivacyScorer, annotate_current_span, safe_span
+from sota_budget import SotaBudget
 
 try:  # prometheus_client is in the LiteLLM image; optional so import never breaks the proxy
     import prometheus_client
@@ -109,6 +117,18 @@ PRIVACY_SCORE = _metric("Histogram", "router_privacy_score",
                         buckets=(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0))
 SOTA_BUDGET_USED = _metric("Gauge", "router_sota_budget_used_tokens",
                            "SOTA tokens counted by the efficiency gate budget (this pod only).")
+# SOTA budget per tier (v0.12.0). `team` is the tier of the API key (bounded: the teams named in
+# the policies, else "other"). The tokens are counted only when the SOTA model answered.
+SOTA_TOKENS = _metric("Counter", "router_sota_tokens",
+                      "Tokens of the answers of the SOTA model, per tier (this pod).", ("team",))
+BUDGET_WINDOW = _metric("Gauge", "router_sota_budget_window_tokens",
+                        "SOTA tokens of the tier in the last budget window, read from the store "
+                        "at the last check.", ("team",))
+BUDGET_LIMIT = _metric("Gauge", "router_sota_budget_limit_tokens",
+                       "SOTA token budget of the tier per window.", ("team",))
+BUDGET_ERRORS = _metric("Counter", "router_sota_budget_store_errors",
+                        "Errors of the SOTA budget store (the budget does not apply: fail-open).",
+                        ("op",))
 # Namespace policy (v0.11.0). The `target_namespace` label is a restricted namespace or "none":
 # a bounded set, decided by the platform team that sets the labels. Not `namespace`: Prometheus
 # adds that label (the scrape namespace) and would rename this one to exported_namespace.
@@ -183,6 +203,12 @@ class ChainRouter(CustomLogger):
         self.sota_max_prompt_chars = int(eff.get("sota_max_prompt_chars", 0) or 0)
         self._lock = threading.Lock()
         self._sota_tokens_used = 0
+        # SOTA budget per tier, shared in Redis (v0.12.0; default off: no tier has a budget).
+        self.budget = SotaBudget(eff.get("sota_budget"))
+        # False in the local-only mode of gitops: sota-smart is then the local model, and its
+        # tokens are not SOTA tokens. Unset = a real SOTA model (the behaviour before v0.12.0).
+        _sota_enabled = env_flag("SOTA_ENABLED")
+        self.sota_enabled = True if _sota_enabled is None else _sota_enabled
 
         # -- privacy gate: reuse the privacy-plus engine AND its config ---------
         # Single source of truth: privacy tuning lives in policy/privacy-plus.yaml,
@@ -195,8 +221,10 @@ class ChainRouter(CustomLogger):
         self.scorer = PrivacyScorer(self.privacy_policy)
         # Bounded values of the `team` metric label: the teams named in the policies.
         self._known_teams = {
-            t for t in list(self.thresholds) + list(self.tiering) if not str(t).startswith("_")
+            t for t in list(self.thresholds) + list(self.tiering) + list(self.budget.tiers)
+            if not str(t).startswith("_")
         }
+        self._observe_budget_limits()
 
         # -- namespace policy (v0.11.0; default off) ------------------------------
         # Off: no Kubernetes API call, no thread; the hint field is still removed.
@@ -268,7 +296,7 @@ class ChainRouter(CustomLogger):
         return self.threshold_default, "_default"
 
     # -- gates: each returns (verdict, reason) with verdict in {"local","sota"} --
-    def _gate_efficiency(self, data):
+    def _gate_efficiency(self, data, budget=None):
         if self.sota_max_prompt_chars > 0:
             # FAIL-CLOSED: a request that cannot be measured stays LOCAL.
             try:
@@ -289,6 +317,11 @@ class ChainRouter(CustomLogger):
                 return "local", (
                     f"efficiency: SOTA budget exhausted ({used}/{self.sota_token_budget} tok)"
                 )
+        if budget and budget.get("used") is not None and budget["used"] >= budget["limit"]:
+            return "local", (
+                f"efficiency: SOTA budget of tier {budget['team']} used "
+                f"({budget['used']}/{budget['limit']} tokens in {budget['window']})"
+            )
         lowered = text.lower()
         complex_kw = next((k for k in self.complex_keywords if k in lowered), None)
         words = len(text.split())
@@ -356,6 +389,69 @@ class ChainRouter(CustomLogger):
         if not team:
             return "none"
         return team if team in self._known_teams else "other"
+
+    # -- SOTA budget per tier (v0.12.0) -----------------------------------------
+    async def _budget_state(self, team):
+        """Used tokens and budget of the tier, or None when the tier has no budget.
+
+        FAIL-OPEN on a store error: `used` stays None and the budget does not apply (it
+        controls cost, not privacy; the gates still run).
+        """
+        limit = self.budget.limit(team)
+        if limit is None:
+            return None
+        state = {"team": team, "limit": limit, "window": self.budget.window_label(), "used": None}
+        try:
+            state["used"] = await self.budget.used(team)
+        except Exception as exc:
+            state["error"] = f"{type(exc).__name__}: {exc}"
+            self._count_budget_error("read")
+            print(f"[policy-router] SOTA budget: store read error, budget not applied: "
+                  f"{state['error']}", flush=True)
+            return state
+        try:
+            if BUDGET_WINDOW is not None:
+                BUDGET_WINDOW.labels(team=self._team_label(team)).set(state["used"])
+        except Exception as exc:
+            _metrics_error(exc)
+        return state
+
+    def _observe_budget_limits(self):
+        try:
+            if BUDGET_LIMIT is not None:
+                for tier, tokens in self.budget.tiers.items():
+                    BUDGET_LIMIT.labels(team=self._team_label(tier)).set(tokens)
+        except Exception as exc:
+            _metrics_error(exc)
+
+    @staticmethod
+    def _count_budget_error(op):
+        try:
+            if BUDGET_ERRORS is not None:
+                BUDGET_ERRORS.labels(op=op).inc()
+        except Exception as exc:
+            _metrics_error(exc)
+
+    def _answered_by_sota(self, kwargs, response_obj, decision):
+        """True when the SOTA model really answered (v0.12.0).
+
+        The model group of the deployment that answered is in the standard logging object:
+        after a fallback it is the local alias, also when the decision said SOTA. In the
+        local-only mode (SOTA_ENABLED=0) sota-smart is the local model: never SOTA. Without
+        the model group (older LiteLLM), the decision and the served-id backstop decide.
+        """
+        if not self.sota_enabled:
+            return False
+        slo = kwargs.get("standard_logging_object") or {}
+        md = (kwargs.get("litellm_params") or {}).get("metadata") or {}
+        group = slo.get("model_group") or md.get("model_group")
+        if group:
+            return group == self.sota_model
+        served = str(getattr(response_obj, "model", "") or kwargs.get("model") or "")
+        served_n = _norm_model_id(served)
+        return decision.get("routed_to") == self.sota_model or any(
+            tok in served_n for tok in self.sota_served_match
+        )
 
     def _observe_privacy_score(self, score, team_key):
         try:
@@ -457,12 +553,15 @@ class ChainRouter(CustomLogger):
                         trace.append(f"{reason} -> LOCAL")
                         target, deciding = self.local_model, "namespace"
                         gates = ()
+                # SOTA budget of the tier (v0.12.0): read once, before the gates; the
+                # efficiency gate decides with it. None = the tier has no budget.
+                budget = await self._budget_state(team) if "efficiency" in gates else None
                 for gate in gates:
                     if gate not in ("efficiency", "privacy"):
                         continue  # unknown gate name in config -> skip, don't crash
                     with safe_span(f"gate.{gate}") as gate_span:
                         if gate == "efficiency":
-                            verdict, reason = self._gate_efficiency(data)
+                            verdict, reason = self._gate_efficiency(data, budget)
                         else:
                             verdict, reason = await self._gate_privacy(data, extra)
                         gate_span.set("gate.verdict", verdict)
@@ -486,6 +585,11 @@ class ChainRouter(CustomLogger):
                 }
                 decision.update(self._size_fields(data))  # additive (v0.8.0)
                 decision.update(extra)
+                if budget is not None:  # additive (v0.12.0), only for a tier with a budget
+                    decision["sota_budget_used"] = budget["used"]
+                    decision["sota_budget_limit"] = budget["limit"]
+                    if budget.get("error"):
+                        decision["sota_budget_error"] = budget["error"]
                 if ns is not None:  # additive (v0.11.0), only with the namespace policy on
                     decision["ns_restricted"] = ns["restricted"]
                     decision["ns_source"] = ns["source"]
@@ -517,26 +621,35 @@ class ChainRouter(CustomLogger):
         return data
 
     async def async_log_success_event(self, kwargs, response_obj, start_time, end_time):
-        # Accumulate SOTA token usage to drive the efficiency gate's budget guard.
+        # Count the SOTA tokens: the tier budget in the store (v0.12.0), the per-tier metric
+        # and the old per-pod budget guard of the efficiency gate.
         try:
-            if self.sota_token_budget <= 0:
-                return
             md = (kwargs.get("litellm_params") or {}).get("metadata") or {}
             decision = (
                 md.get("routing_decision")
                 or (kwargs.get("metadata") or {}).get("routing_decision")
                 or {}
             )
-            served = str(getattr(response_obj, "model", "") or kwargs.get("model") or "")
-            _served_n = _norm_model_id(served)
-            is_sota = decision.get("routed_to") == self.sota_model or any(
-                tok in _served_n for tok in self.sota_served_match
-            )
-            if not is_sota:
+            if not self._answered_by_sota(kwargs, response_obj, decision):
                 return
             usage = getattr(response_obj, "usage", None)
             total = int(getattr(usage, "total_tokens", 0) or 0) if usage else 0
-            if total:
+            if not total:
+                return
+            team = decision.get("team")
+            try:
+                if SOTA_TOKENS is not None:
+                    SOTA_TOKENS.labels(team=self._team_label(team)).inc(total)
+            except Exception as exc:
+                _metrics_error(exc)
+            if self.budget.limit(team) is not None:
+                try:
+                    await self.budget.add(team, total)
+                except Exception as exc:
+                    self._count_budget_error("write")
+                    print(f"[policy-router] SOTA budget: store write error ({total} tokens of "
+                          f"tier {team} not counted): {type(exc).__name__}: {exc}", flush=True)
+            if self.sota_token_budget > 0:
                 with self._lock:
                     self._sota_tokens_used += total
                     used = self._sota_tokens_used

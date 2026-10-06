@@ -77,6 +77,17 @@ efficiency:
                                     # quota of the SOTA provider on its API key; the per-tier
                                     # limits of the gateway bound the token rate. A value > 0
                                     # turns the cap on again (for example to show fallback).
+                                    # Superseded by sota_budget (v0.12.0) below.
+  # SOTA token budget per tier (router >= v0.12.0; default off: no tier has a budget). The tier
+  # is the x-team header that the gateway sets from the API key. When the SOTA tokens of a tier
+  # in the last window reach its budget, the request stays LOCAL (decided_by efficiency); the
+  # 429 of the gateway tiers stays as the ceiling. Counters in Redis, shared by the LiteLLM pods;
+  # a Redis error fails open (no budget). Env overrides: SOTA_BUDGET_TIERS (JSON),
+  # SOTA_BUDGET_WINDOW_S, SOTA_BUDGET_REDIS_URL, SOTA_BUDGET_REDIS_PASSWORD.
+  sota_budget:
+    window_s: 300
+    tiers: {}                       # tier -> SOTA tokens per window, e.g. {agents: 150000}
+    redis_url: ""                   # redis://host:6379/0
   # SOTA size cap (router >= v0.8.0; default 0 = off). Size of the WHOLE request in characters:
   # every message, tool output, tool call arguments and tool definitions. Above the cap the
   # request stays LOCAL (reason "efficiency: SOTA context limit") and no detector runs: the SOTA

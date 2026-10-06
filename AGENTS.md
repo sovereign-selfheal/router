@@ -44,7 +44,8 @@ Rules. The same rules are in `gitops/AGENTS.md`: keep both in sync.
      `CLASSIFIER_BASE_URL`, `CLASSIFIER_MODEL`, `CLASSIFIER_API_KEY`, `ROUTER_METRICS_PORT` (v0.5.0),
      `CLASSIFIER_CHAT_TEMPLATE_KWARGS` (v0.6.0), `CLASSIFIER_BACKEND`, `CLASSIFIER_FALLBACK_BASE_URL`,
      `CLASSIFIER_FALLBACK_MODEL` (v0.7.0), `NER_ENABLED` (v0.10.0), `NAMESPACE_SCAN_ENABLED`,
-     `NAMESPACE_HINT_ENABLED` (v0.11.0);
+     `NAMESPACE_HINT_ENABLED` (v0.11.0), `SOTA_BUDGET_TIERS`, `SOTA_BUDGET_WINDOW_S`,
+     `SOTA_BUDGET_REDIS_URL`, `SOTA_BUDGET_REDIS_PASSWORD`, `SOTA_ENABLED` (v0.12.0);
    - the request body field `selfheal_namespaces` (v0.11.0, the agents send it; always removed
      before the model call) and the label key `sovereign-selfheal.io/data-class` (defaults,
      overridable in `chain.yaml`);
@@ -53,7 +54,10 @@ Rules. The same rules are in `gitops/AGENTS.md`: keep both in sync.
      (v0.5.0; the demo video and `gitops/docs/observability.md` use them), the span `gate.namespace`
      and the metrics `router_namespace_decisions_total`, `router_namespace_labels_loaded`,
      `router_namespace_labels` (v0.11.0; the gitops dashboards and the `routing-live-view` page use
-     them, and the page reads the log line);
+     them, and the page reads the log line), the metrics `router_sota_tokens_total`,
+     `router_sota_budget_window_tokens`, `router_sota_budget_limit_tokens`,
+     `router_sota_budget_store_errors_total` and the Redis key format `sota-budget:<tier>:<window>`
+     (v0.12.0);
    - in the image: the model at `/opt/models/lid.176.ftz`, the `litellm` command, a non-root user.
 5. **Presidio interface.** The code calls `POST /analyze` with `text`, `language` (`en` or `it`) and the
    `entities` it scores. The entity types come from `ner.entity_weights` in the policy. A change of the
@@ -66,6 +70,7 @@ litellm/                 # hook code, copied by gitops into the LiteLLM ConfigMa
   policy_hook_chain.py   # LiteLLM async_pre_call_hook: efficiency gate, privacy gate, tiering
   privacy_scoring.py     # privacy engine; no LiteLLM import, so it is testable alone
   namespace_policy.py    # namespace labels, hint and scan (v0.11.0); no LiteLLM import
+  sota_budget.py         # SOTA token budget per tier in Redis (v0.12.0); no LiteLLM import
 tests/                   # unit tests (fake Presidio, fake LiteLLM); tests/policy/ = copy of the gitops policies
 eval/                    # labelled prompt sets, run_eval.py, check_baseline.py, baseline.json,
                          # build_agent_contexts.py (writes agent-contexts.yaml)
@@ -81,7 +86,9 @@ Containerfile            # LiteLLM + fastText + lid.176.ftz
 ## 4. Conventions
 
 - **Fail-closed.** On any error or doubt the request stays LOCAL. Never add a path that sends a request
-  to SOTA when a detector fails.
+  to SOTA when a detector fails. One exception, decided on 2026-10-06: the SOTA budget per tier
+  (v0.12.0) fails open when Redis cannot be reached, because it controls cost and the privacy gates
+  still run.
 - **No LiteLLM import in `privacy_scoring.py`**: it must stay testable without LiteLLM.
 - **Instrumentation is never on the decision path.** Traces and metrics only observe: every tracing or
   metrics call is wrapped so that its error is logged and ignored, the decision is computed the same
